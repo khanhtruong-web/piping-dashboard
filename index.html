@@ -412,88 +412,124 @@
 
     <!-- CỘT SIDEBAR -->
     <div class="sidebar">
-        <div class="sidebar-header"><i class="fas fa-tools me-2"></i> PIPING V19.0 - PRO</div>
+        <div class="sidebar-header" style="cursor: pointer; user-select: none;" ondblclick="promptAdminPasscode()"><i class="fas fa-tools me-2"></i> PIPING V19.0 - PRO</div>
 
-        <!-- UPLOAD DATABASE MAIN -->
-        <div class="mb-3">
-            <label class="filter-label">Upload Data (Master DB)</label>
-            <input type="file" id="fileUpload" class="form-control form-control-sm" accept=".csv, .xlsx, .xls">
-            <!-- Hidden input for specific field uploads -->
-            <input type="file" id="fieldFileUpload" class="d-none" accept=".csv, .xlsx, .xls" onchange="handleFieldFileUpload(event)">
-            <div id="dataListContainer" class="mt-2 file-status-box" style="display:none;">
-                <span id="activeFileName" class="text-truncate fw-bold text-success w-100" style="max-width: 170px;"></span>
-                <button class="btn-del-file" onclick="clearDatabase()" title="Xóa dữ liệu bộ nhớ"><i class="fas fa-trash-alt"></i></button>
+        <!-- VIEWER CLOUD STATUS PANEL -->
+        <div id="viewerSyncPanel" class="mb-3 p-3 rounded shadow-sm border border-info" style="background: linear-gradient(135deg, rgba(13, 202, 240, 0.05), rgba(13, 202, 240, 0.15)); backdrop-filter: blur(10px);">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fw-bold text-info" style="font-size:0.85rem;"><i class="fas fa-sync fa-spin me-2"></i>Realtime Cloud</span>
+                <span class="badge bg-success shadow-sm" style="font-size:0.65rem; border-radius:12px; padding: 4px 8px;" id="viewerStatusBadge"><span class="spinner-grow spinner-grow-sm me-1" role="status" aria-hidden="true" style="width: 8px; height: 8px; vertical-align: middle;"></span>Connected</span>
+            </div>
+            <div id="viewerSyncMsg" class="small text-muted" style="font-size:0.72rem; line-height: 1.3;">
+                <i class="fas fa-info-circle text-info me-1"></i>Đang tự động cập nhật dữ liệu mới nhất từ máy chủ dự án.
+            </div>
+            <div id="viewerTimeMsg" class="small text-muted mt-2 pt-2 border-top border-info border-opacity-10 d-flex justify-content-between" style="font-size:0.65rem;">
+                <span>Cập nhật:</span> <span id="viewerLastSyncTime" class="fw-bold text-dark">--:--:--</span>
             </div>
         </div>
 
-        <!-- UPLOAD BATCH FILTER -->
-        <div class="mb-3 p-2 border rounded" style="background-color: #e3f2fd;">
-            <label class="filter-label text-primary" title="Tải file Excel chứa cột Spool hoặc Line để kiểm tra tiến độ tự động"><i class="fas fa-search-plus me-1"></i>Batch Check by Excel</label>
-            <input type="file" id="batchFileUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls" disabled>
-            <small class="text-muted" style="font-size: 0.65rem;">Tải file chứa danh sách Spool/Line để lọc hàng loạt</small>
+        <!-- ADMIN SYNC ACTION PANEL -->
+        <div id="adminSyncPanel" class="mb-3 p-3 rounded shadow-sm border border-primary" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(13, 110, 253, 0.15)); display:none;">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-primary border-opacity-10">
+                <span class="fw-bold text-primary" style="font-size:0.85rem;"><i class="fas fa-shield-alt me-2"></i>Admin Console</span>
+                <span class="badge bg-danger shadow-sm" style="font-size:0.65rem; border-radius:12px; padding: 4px 8px;">Host Mode</span>
+            </div>
+            
+            <button id="btnUnifiedSync" class="btn btn-primary w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 py-2" onclick="unifiedCloudSync()" style="background: linear-gradient(135deg, #0d6efd, #0b5ed7); transition: transform 0.2s; border: none;">
+                <i class="fas fa-cloud-upload-alt fs-5"></i> Đồng bộ lên Cloud
+            </button>
+            
+            <div class="mt-2 text-center">
+                <small id="adminSyncStatus" class="text-muted" style="font-size:0.68rem;"></small>
+            </div>
+            
+            <button class="btn btn-link btn-sm w-100 mt-2 text-decoration-none text-muted py-0" onclick="exitAdminMode()" style="font-size:0.7rem;"><i class="fas fa-sign-out-alt me-1"></i>Thoát Admin</button>
         </div>
 
-        <!-- UPLOAD HYDROTEST PLAN VỚI NÚT XÓA -->
-        <div class="mb-3 p-2 border rounded" style="background-color: #e0f7fa;">
-            <label class="filter-label text-info" title="Tải file Excel Hydrotest Plan để tự động đối chiếu NDT"><i class="fas fa-tint me-1"></i>Hydrotest Plan</label>
-            <input type="file" id="hydroUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls" disabled>
-            <div id="hydroListContainer" style="display:none;" class="mt-1 file-status-box fw-bold text-info">
-                <span id="activeHydroName" class="text-truncate w-100"></span>
-                <button class="btn-del-file" onclick="clearHydroData()" title="Xóa dữ liệu Hydrotest"><i class="fas fa-trash-alt"></i></button>
-            </div>
-            <small class="text-muted" style="font-size: 0.65rem;">Tải file chứa TestPackNo/Line và Hydro Date</small>
-        </div>
+        <!-- ADMIN WRAPPER -->
+        <div id="adminPanel" style="display:none;">
 
-        <!-- TÍNH NĂNG MỚI: TẢI / XÓA CUSTOM NDT MATRIX -->
-        <div class="mb-3 p-2 border rounded" style="background-color: #fff3e0;">
-            <label class="filter-label text-warning text-dark" title="Thay đổi mảng %NDT mặc định của hệ thống"><i class="fas fa-table me-1"></i> Custom NDT Matrix</label>
-            <input type="file" id="matrixUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls">
-            <div id="matrixListContainer" style="display:none;" class="mt-1 file-status-box fw-bold text-warning text-dark">
-                <span id="activeMatrixName" class="text-truncate w-100"></span>
-                <button class="btn-del-file" onclick="clearMatrixData()" title="Xóa Matrix Custom để quay lại cấu hình Gốc"><i class="fas fa-trash-alt"></i></button>
-            </div>
-            <small class="text-muted" style="font-size: 0.65rem;">Tải file NDT % theo chuẩn để thay thế Ma trận mặc định</small>
-        </div>
-        
-        <!-- FIREBASE SYNC (Existing) -->
-        <div class="mb-2 p-2 bg-white border border-primary rounded shadow-sm">
-            <label class="filter-label text-primary d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-fire me-1"></i>Firebase Sync</span>
-                <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold" onclick="configFirebase()" title="Cài đặt Firebase" style="font-size:0.7rem;">Cấu hình</button>
-            </label>
-            <div class="d-flex flex-column gap-2 mt-2">
-                <button id="btnPushCloud" class="btn btn-sm btn-primary text-white shadow-sm fw-bold" onclick="pushToFirebase()" style="display:none;"><i class="fas fa-cloud-upload-alt me-1"></i>Push to Firebase</button>
-                <div id="firebaseStatus" class="small text-muted text-center" style="font-size: 0.75rem;"><i class="fas fa-info-circle"></i> Firebase: Chưa kết nối</div>
-            </div>
-            <div class="mt-2 pt-2 border-top text-center" style="font-size: 0.65rem;">
-                <span id="storageStatus" class="text-muted"><i class="fas fa-hdd me-1"></i>Storage: Ready</span>
-            </div>
-        </div>
-
-        <!-- GOOGLE SHEETS SYNC (Simplified) -->
-        <div class="mb-3 p-2 bg-white border border-success rounded shadow-sm">
-            <label class="filter-label text-success d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-file-excel me-1"></i>Google Drive Sync</span>
-                <button class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" onclick="configGoogleSheets()" style="font-size:0.7rem;">Cài đặt</button>
-            </label>
-            <div class="alert alert-info py-1 px-2 mt-2 mb-2" style="font-size: 0.65rem; border-left: 3px solid #0dcaf0;">
-                <i class="fas fa-lightbulb me-1"></i> <strong>Lợi ích 3-trong-1:</strong>
-                <ul class="ps-3 mb-0">
-                    <li><b>Tốc độ:</b> Mở app thấy ngay dữ liệu (Cache).</li>
-                    <li><b>Offline:</b> Sửa data không cần internet.</li>
-                    <li><b>An toàn:</b> Tự động sao lưu lên Drive.</li>
-                </ul>
-            </div>
-            <div class="d-flex flex-column gap-2 mt-2">
-                <div class="form-check form-switch ps-4 ms-1">
-                    <input class="form-check-input" type="checkbox" id="gsAutoSaveToggle" onchange="toggleAutoSave()">
-                    <label class="form-check-label small fw-bold text-success" for="gsAutoSaveToggle">Tự động Lưu (Auto-Save)</label>
+            <!-- UPLOAD DATABASE MAIN -->
+            <div class="mb-3">
+                <label class="filter-label">Upload Data (Master DB)</label>
+                <input type="file" id="fileUpload" class="form-control form-control-sm" accept=".csv, .xlsx, .xls">
+                <!-- Hidden input for specific field uploads -->
+                <input type="file" id="fieldFileUpload" class="d-none" accept=".csv, .xlsx, .xls" onchange="handleFieldFileUpload(event)">
+                <div id="dataListContainer" class="mt-2 file-status-box" style="display:none;">
+                    <span id="activeFileName" class="text-truncate fw-bold text-success w-100" style="max-width: 170px;"></span>
+                    <button class="btn-del-file" onclick="clearDatabase()" title="Xóa dữ liệu bộ nhớ"><i class="fas fa-trash-alt"></i></button>
                 </div>
-                <div class="d-flex gap-1">
-                    <button id="btnGSheetsPull" class="btn btn-sm btn-success text-white shadow-sm flex-fill fw-bold" onclick="pullFromSheets()" style="display:none;"><i class="fas fa-cloud-download-alt me-1"></i>Tải về</button>
-                    <button id="btnGSheetsPush" class="btn btn-sm btn-outline-success shadow-sm flex-fill fw-bold" onclick="pushToSheets()" style="display:none;"><i class="fas fa-cloud-upload-alt me-1"></i>Đẩy lên</button>
+            </div>
+
+            <!-- UPLOAD BATCH FILTER -->
+            <div class="mb-3 p-2 border rounded" style="background-color: #e3f2fd;">
+                <label class="filter-label text-primary" title="Tải file Excel chứa cột Spool hoặc Line để kiểm tra tiến độ tự động"><i class="fas fa-search-plus me-1"></i>Batch Check by Excel</label>
+                <input type="file" id="batchFileUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls" disabled>
+                <small class="text-muted" style="font-size: 0.65rem;">Tải file chứa danh sách Spool/Line để lọc hàng loạt</small>
+            </div>
+
+            <!-- UPLOAD HYDROTEST PLAN VỚI NÚT XÓA -->
+            <div class="mb-3 p-2 border rounded" style="background-color: #e0f7fa;">
+                <label class="filter-label text-info" title="Tải file Excel Hydrotest Plan để tự động đối chiếu NDT"><i class="fas fa-tint me-1"></i>Hydrotest Plan</label>
+                <input type="file" id="hydroUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls" disabled>
+                <div id="hydroListContainer" style="display:none;" class="mt-1 file-status-box fw-bold text-info">
+                    <span id="activeHydroName" class="text-truncate w-100"></span>
+                    <button class="btn-del-file" onclick="clearHydroData()" title="Xóa dữ liệu Hydrotest"><i class="fas fa-trash-alt"></i></button>
                 </div>
-                <div id="gSheetsStatus" class="small text-muted text-center" style="font-size: 0.7rem;"><i class="fas fa-info-circle"></i> Chưa kết nối Drive</div>
+                <small class="text-muted" style="font-size: 0.65rem;">Tải file chứa TestPackNo/Line và Hydro Date</small>
+            </div>
+
+            <!-- TÍNH NĂNG MỚI: TẢI / XÓA CUSTOM NDT MATRIX -->
+            <div class="mb-3 p-2 border rounded" style="background-color: #fff3e0;">
+                <label class="filter-label text-warning text-dark" title="Thay đổi mảng %NDT mặc định của hệ thống"><i class="fas fa-table me-1"></i> Custom NDT Matrix</label>
+                <input type="file" id="matrixUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls">
+                <div id="matrixListContainer" style="display:none;" class="mt-1 file-status-box fw-bold text-warning text-dark">
+                    <span id="activeMatrixName" class="text-truncate w-100"></span>
+                    <button class="btn-del-file" onclick="clearMatrixData()" title="Xóa Matrix Custom để quay lại cấu hình Gốc"><i class="fas fa-trash-alt"></i></button>
+                </div>
+                <small class="text-muted" style="font-size: 0.65rem;">Tải file NDT % theo chuẩn để thay thế Ma trận mặc định</small>
+            </div>
+            
+            <!-- FIREBASE SYNC (Existing) -->
+            <div class="mb-2 p-2 bg-white border border-primary rounded shadow-sm">
+                <label class="filter-label text-primary d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-fire me-1"></i>Firebase Sync</span>
+                    <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold" onclick="configFirebase()" title="Cài đặt Firebase" style="font-size:0.7rem;">Cấu hình</button>
+                </label>
+                <div class="d-flex flex-column gap-2 mt-2">
+                    <button id="btnPushCloud" class="btn btn-sm btn-primary text-white shadow-sm fw-bold" onclick="pushToFirebase()" style="display:none;"><i class="fas fa-cloud-upload-alt me-1"></i>Push to Firebase</button>
+                    <div id="firebaseStatus" class="small text-muted text-center" style="font-size: 0.75rem;"><i class="fas fa-info-circle"></i> Firebase: Chưa kết nối</div>
+                </div>
+                <div class="mt-2 pt-2 border-top text-center" style="font-size: 0.65rem;">
+                    <span id="storageStatus" class="text-muted"><i class="fas fa-hdd me-1"></i>Storage: Ready</span>
+                </div>
+            </div>
+
+            <!-- GOOGLE SHEETS SYNC (Simplified) -->
+            <div class="mb-3 p-2 bg-white border border-success rounded shadow-sm">
+                <label class="filter-label text-success d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-file-excel me-1"></i>Google Drive Sync</span>
+                    <button class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" onclick="configGoogleSheets()" style="font-size:0.7rem;">Cài đặt</button>
+                </label>
+                <div class="alert alert-info py-1 px-2 mt-2 mb-2" style="font-size: 0.65rem; border-left: 3px solid #0dcaf0;">
+                    <i class="fas fa-lightbulb me-1"></i> <strong>Lợi ích 3-trong-1:</strong>
+                    <ul class="ps-3 mb-0">
+                        <li><b>Tốc độ:</b> Mở app thấy ngay dữ liệu (Cache).</li>
+                        <li><b>Offline:</b> Sửa data không cần internet.</li>
+                        <li><b>An toàn:</b> Tự động sao lưu lên Drive.</li>
+                    </ul>
+                </div>
+                <div class="d-flex flex-column gap-2 mt-2">
+                    <div class="form-check form-switch ps-4 ms-1">
+                        <input class="form-check-input" type="checkbox" id="gsAutoSaveToggle" onchange="toggleAutoSave()">
+                        <label class="form-check-label small fw-bold text-success" for="gsAutoSaveToggle">Tự động Lưu (Auto-Save)</label>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <button id="btnGSheetsPull" class="btn btn-sm btn-success text-white shadow-sm flex-fill fw-bold" onclick="pullFromSheets()" style="display:none;"><i class="fas fa-cloud-download-alt me-1"></i>Tải về</button>
+                        <button id="btnGSheetsPush" class="btn btn-sm btn-outline-success shadow-sm flex-fill fw-bold" onclick="pushToSheets()" style="display:none;"><i class="fas fa-cloud-upload-alt me-1"></i>Đẩy lên</button>
+                    </div>
+                    <div id="gSheetsStatus" class="small text-muted text-center" style="font-size: 0.7rem;"><i class="fas fa-info-circle"></i> Chưa kết nối Drive</div>
+                </div>
             </div>
         </div>
 
@@ -1561,7 +1597,7 @@
         function getDashboardContext() {
             if (filteredData.length === 0) return "Chưa có dữ liệu. Vui lòng upload file CSV hoặc Excel.";
             const sum = getSummary();
-            const rate = sum.ndtL > 0 ? (sum.defL/sum.ndtL*100) : 0;
+            const rate = sum.ndtCount > 0 ? (sum.rejCount/sum.ndtCount*100) : 0;
             
             const welderMap = {};
             filteredData.forEach(d => {
@@ -2091,6 +2127,17 @@
 
         // AUTO LOAD ON STARTUP
         window.addEventListener('DOMContentLoaded', async () => {
+            // Check Admin role immediately on page load
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdminParam = urlParams.get('admin') === 'true' || urlParams.get('mode') === 'admin';
+            const isLocalAdmin = localStorage.getItem('adminMode') === 'true';
+            
+            if (isAdminParam || isLocalAdmin) {
+                enterAdminMode();
+            } else {
+                exitAdminMode();
+            }
+
             showLoading(); updateAiBadge();
             document.getElementById('loadingText').innerText = "Checking saved data...";
             
@@ -2929,7 +2976,7 @@
             animateValue('kpiTotal', 0, sum.total, 800);
             animateValue('kpiDiaInch', 0, sum.diaInch, 800);
             animateValue('kpiVisual', 0, sum.vis, 800);
-            const rate = sum.ndtL > 0 ? (sum.defL/sum.ndtL*100) : (sum.ndtCount > 0 ? (sum.rejCount/sum.ndtCount*100) : 0);
+            const rate = sum.ndtCount > 0 ? (sum.rejCount/sum.ndtCount*100) : 0;
             animateValue('kpiRate', 0, rate, 800);
             
             buildHydroMap(); // Populate global hMap before rendering
@@ -3681,7 +3728,6 @@
             const labels = Object.keys(dateMap).sort((a,b) => dateMap[a].dt - dateMap[b].dt);
             const vols = labels.map(k=>dateMap[k].vol);
             const rates = labels.map(k => {
-                if (dateMap[k].ndt > 0) return (dateMap[k].def / dateMap[k].ndt * 100);
                 if (dateMap[k].ndtC > 0) return (dateMap[k].rejC / dateMap[k].ndtC * 100);
                 return 0;
             });
@@ -3916,7 +3962,7 @@
                 ["Total Scope (Dia-Inch)", parseFloat(s.diaInch).toFixed(1)],
                 ["Total Joints", s.total],
                 ["Visual Accepted", s.vis],
-                ["Repair Rate (%)", s.ndtL > 0 ? (s.defL/s.ndtL*100).toFixed(2) + '%' : '0.00%'],
+                ["Repair Rate (%)", s.ndtCount > 0 ? (s.rejCount/s.ndtCount*100).toFixed(2) + '%' : '0.00%'],
                 ["NDT Length", parseFloat(s.ndtL).toFixed(2)],
                 ["Defect Length", parseFloat(s.defL).toFixed(2)],
                 [""],
@@ -4294,80 +4340,102 @@
             calculateReminders();
         }
 
-        // --- FIREBASE REALTIME SYNC LOGIC ---
+        // --- FIREBASE REALTIME SYNC LOGIC (Unified One-Click V19.0) ---
+        const firebaseClientConfig = {
+            apiKey: "AIzaSyC5EsHVPXa_uCSQNoPRnQduJDJUYB_7_Js",
+            authDomain: "piping-dashboard-v12.firebaseapp.com",
+            databaseURL: "https://piping-dashboard-v12-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "piping-dashboard-v12",
+            storageBucket: "piping-dashboard-v12.firebasestorage.app",
+            messagingSenderId: "741369085833",
+            appId: "1:741369085833:web:849469f0c9d079502d2b58",
+            measurementId: "G-V884EJ8B49"
+        };
+
         let fbApp = null;
         let fbDb = null;
-        function toggleFbMode() {
-            const mode = document.getElementById('fbMode').value;
-            document.getElementById('fbHostConfig').style.display = mode === 'host' ? 'block' : 'none';
-        }
+        let isAdminMode = false;
 
-        function configFirebase() {
-            const fbConfig = JSON.parse(localStorage.getItem('fbSyncConfig') || '{"mode":"viewer", "url":"", "pid":"", "key":""}');
-            document.getElementById('fbMode').value = fbConfig.mode || 'viewer';
-            document.getElementById('fbDbUrl').value = fbConfig.url || '';
-            document.getElementById('fbProjectId').value = fbConfig.pid || '';
-            document.getElementById('fbApiKey').value = fbConfig.key || '';
-            toggleFbMode();
-            new bootstrap.Modal(document.getElementById('firebaseModal')).show();
-        }
-
-        function clearFirebaseConfig() {
-            localStorage.removeItem('fbSyncConfig');
-            document.getElementById('firebaseStatus').innerHTML = '<span class="small text-muted text-center" style="font-size: 0.75rem;"><i class="fas fa-info-circle"></i> Chưa kết nối Cloud</span>';
-            document.getElementById('btnPushCloud').style.display = 'none';
-            if(fbApp) {
-                fbDb = null;
-                fbApp = null;
+        function promptAdminPasscode() {
+            const code = prompt("Nhập mật mã quản trị:");
+            if (code === 'C2A22') {
+                enterAdminMode();
+                alert("Đăng nhập Admin thành công!");
+            } else if (code !== null) {
+                alert("Sai mật mã quản trị!");
             }
-            alert('Đã xoá cấu hình Firebase.');
         }
 
-        function saveFirebaseConfig() {
-            const mode = document.getElementById('fbMode').value;
-            let url = document.getElementById('fbDbUrl').value.trim();
-            const pid = document.getElementById('fbProjectId').value.trim();
-            const key = document.getElementById('fbApiKey').value.trim();
+        function enterAdminMode() {
+            isAdminMode = true;
+            localStorage.setItem('adminMode', 'true');
             
-            if(!url) return alert('Vui lòng nhập Database URL');
+            // Adjust Sidebar Panels
+            const viewerSyncPanel = document.getElementById('viewerSyncPanel');
+            const adminSyncPanel = document.getElementById('adminSyncPanel');
+            const adminPanel = document.getElementById('adminPanel');
             
-            // Tự động sửa lỗi nếu user copy dư đường dẫn con (child path)
-            try {
-                const urlObj = new URL(url);
-                url = urlObj.origin; // Cắt bỏ mọi thứ phía sau ví dụ /data
-            } catch(e) {}
-
-            if(!url.includes('firebasedatabase.app') && !url.includes('firebaseio.com')) {
-                return alert('Link URL bạn dán không đúng. Link đúng phải có chứa đuôi "firebasedatabase.app" hoặc "firebaseio.com". Xem lại hướng dẫn để copy đúng link.');
+            if (viewerSyncPanel) viewerSyncPanel.style.display = 'none';
+            if (adminSyncPanel) adminSyncPanel.style.display = 'block';
+            if (adminPanel) adminPanel.style.display = 'block';
+            
+            const adminStatus = document.getElementById('adminSyncStatus');
+            if (adminStatus) {
+                adminStatus.innerHTML = '<span class="text-success"><i class="fas fa-unlock-alt me-1"></i>Chế độ Admin: Sẵn sàng đồng bộ</span>';
             }
+        }
 
-            if(mode === 'host' && (!pid || !key)) return alert('Host bắt buộc phải nhập Project ID và API Key');
+        function exitAdminMode() {
+            isAdminMode = false;
+            localStorage.setItem('adminMode', 'false');
             
-            localStorage.setItem('fbSyncConfig', JSON.stringify({mode: mode, url: url, pid: pid, key: key}));
+            // Adjust Sidebar Panels
+            const viewerSyncPanel = document.getElementById('viewerSyncPanel');
+            const adminSyncPanel = document.getElementById('adminSyncPanel');
+            const adminPanel = document.getElementById('adminPanel');
             
-            // Đóng Modal mượt mà không cần Load lại trang
-            const modalEl = document.getElementById('firebaseModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if(modalInstance) { modalInstance.hide(); } 
-            else { modalEl.classList.remove('show'); modalEl.style.display = 'none'; document.querySelector('.modal-backdrop')?.remove(); document.body.classList.remove('modal-open'); }
-            
-            initFirebaseListeners();
-            alert('Lưu cấu hình thành công! Đang kết nối mà KHÔNG làm mất dữ liệu hiện tại...');
+            if (viewerSyncPanel) viewerSyncPanel.style.display = 'block';
+            if (adminSyncPanel) adminSyncPanel.style.display = 'none';
+            if (adminPanel) adminPanel.style.display = 'none';
         }
 
         function initFirebaseListeners() {
-            const fbConfigStr = localStorage.getItem('fbSyncConfig');
-            if(!fbConfigStr) return;
+            // Inject animation styles dynamically
+            if (!document.getElementById('fb-sync-styles')) {
+                const style = document.createElement('style');
+                style.id = 'fb-sync-styles';
+                style.innerHTML = `
+                    @keyframes pulse-emerald {
+                        0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4); }
+                        70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); }
+                        100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+                    }
+                    .pulse-active {
+                        animation: pulse-emerald 2s infinite;
+                        border-radius: 12px;
+                    }
+                    .pulsing-text {
+                        animation: text-pulse 1.5s ease-in-out;
+                    }
+                    @keyframes text-pulse {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(1.08); color: #198754; }
+                        100% { transform: scale(1); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            const statusBadge = document.getElementById('viewerStatusBadge');
+            const syncMsg = document.getElementById('viewerSyncMsg');
+            const legacyStatus = document.getElementById('firebaseStatus');
             
-            const fbConfig = JSON.parse(fbConfigStr);
-            if(!fbConfig.url) return;
-
-            document.getElementById('firebaseStatus').innerHTML = '<span class="text-warning"><i class="fas fa-spinner fa-spin"></i> Đang kết nối Firebase...</span>';
-
-            const firebaseClientConfig = { databaseURL: fbConfig.url };
-            if(fbConfig.mode === 'host') {
-                firebaseClientConfig.apiKey = fbConfig.key;
-                firebaseClientConfig.projectId = fbConfig.pid;
+            if (statusBadge) {
+                statusBadge.className = "badge bg-warning text-dark shadow-sm";
+                statusBadge.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" style="width: 8px; height: 8px; vertical-align: middle;"></span>Connecting...';
+            }
+            if (legacyStatus) {
+                legacyStatus.innerHTML = '<span class="text-warning"><i class="fas fa-spinner fa-spin"></i> Kết nối Cloud...</span>';
             }
 
             try {
@@ -4375,105 +4443,192 @@
                 else fbApp = firebase.app();
                 fbDb = firebase.database();
                 
-                document.getElementById('firebaseStatus').innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Đã kết nối Cloud (${fbConfig.mode.toUpperCase()})</span>`;
-                
-                if (fbConfig.mode === 'host') {
-                    document.getElementById('btnPushCloud').style.display = 'block';
+                if (statusBadge) {
+                    statusBadge.className = "badge bg-success shadow-sm pulse-active";
+                    statusBadge.innerHTML = '<span class="spinner-grow spinner-grow-sm me-1" role="status" aria-hidden="true" style="width: 8px; height: 8px; vertical-align: middle;"></span>Connected';
+                }
+                if (legacyStatus) {
+                    legacyStatus.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Đã kết nối Cloud</span>';
                 }
 
-                // Luôn listen remote updates (cho cả Host & Viewer)
+                // Listen to database ref
                 const dbRef = fbDb.ref('dashboard_data');
                 dbRef.on('value', (snapshot) => {
                     const data = snapshot.val();
-                    if(data && data.timestamp) {
+                    if (data && data.timestamp) {
+                        const syncTimeStr = new Date(data.timestamp).toLocaleTimeString();
                         
-                        // Nếu là Người xem (Viewer) => Tự động tải data về và ghi đè
-                        if (fbConfig.mode === 'viewer') {
+                        // Viewer mode: Auto update
+                        if (!isAdminMode) {
                             console.log("Cloud Data received. Synchronizing Viewer...");
-                            document.getElementById('firebaseStatus').innerHTML = `<span class="text-success"><i class="fas fa-sync fa-spin me-1"></i>Đang tải Data mới từ Cloud...</span>`;
+                            if (syncMsg) {
+                                syncMsg.innerHTML = '<i class="fas fa-sync fa-spin text-info me-1"></i>Đang đồng bộ dữ liệu mới...';
+                            }
                             
                             try {
                                 let rawStr = data.rawJson || '[]';
                                 let hydroStr = data.hydroJson || '[]';
+                                let matrixStr = data.matrixJson || '[]';
                                 
-                                // Nén giải Data (Decompression)
+                                // Decompress using LZString
                                 if (data.isCompressed && typeof LZString !== 'undefined') {
                                     rawStr = LZString.decompressFromUTF16(rawStr) || '[]';
                                     hydroStr = LZString.decompressFromUTF16(hydroStr) || '[]';
+                                    matrixStr = LZString.decompressFromUTF16(matrixStr) || '[]';
                                 }
 
                                 const parsedRaw = JSON.parse(rawStr);
                                 const parsedHydro = JSON.parse(hydroStr);
+                                const parsedMatrix = JSON.parse(matrixStr);
                                 
-                                if(parsedRaw.length > 0) {
+                                let hasUpdated = false;
+                                if (parsedRaw && parsedRaw.length > 0) {
                                     rawData = parsedRaw;
-                                    idb.save('currentRawData', { fileName: `Cloud Sync (${new Date(data.timestamp).toLocaleTimeString()})`, data: rawData });
-                                    document.getElementById('activeFileName').innerHTML = `<i class="fas fa-cloud-download-alt text-success me-1"></i> Đồng bộ từ Cloud lúc ${new Date(data.timestamp).toLocaleTimeString()}`;
-                                    
-                                    if(parsedHydro.length > 0) {
-                                        hydroPlanData = parsedHydro;
-                                        idb.save('hydroData', { fileName: `Cloud Sync`, data: hydroPlanData });
+                                    idb.save('currentRawData', { fileName: `Cloud Sync (${syncTimeStr})`, data: rawData });
+                                    const activeFileEl = document.getElementById('activeFileName');
+                                    if (activeFileEl) {
+                                        activeFileEl.innerHTML = `<i class="fas fa-cloud-download-alt text-success me-1"></i> Cloud: ${syncTimeStr}`;
                                     }
-                                    
+                                    document.getElementById('dataStatus').innerText = `Loaded ${rawData.length} rows`;
+                                    hasUpdated = true;
+                                }
+                                
+                                if (parsedHydro && parsedHydro.length > 0) {
+                                    hydroPlanData = parsedHydro;
+                                    idb.save('hydroData', { fileName: 'Cloud Sync', data: hydroPlanData });
+                                    const activeHydroEl = document.getElementById('activeHydroName');
+                                    if (activeHydroEl) {
+                                        activeHydroEl.innerHTML = `<i class="fas fa-cloud-download-alt text-info me-1"></i> Cloud: ${syncTimeStr}`;
+                                    }
+                                }
+                                
+                                if (parsedMatrix && parsedMatrix.length > 0) {
+                                    FULL_MATRIX = parsedMatrix;
+                                    idb.save('customMatrix', { fileName: 'Cloud Sync', data: FULL_MATRIX });
+                                    const activeMatrixEl = document.getElementById('activeMatrixName');
+                                    if (activeMatrixEl) {
+                                        activeMatrixEl.innerHTML = `<i class="fas fa-cloud-download-alt text-warning me-1"></i> Cloud: ${syncTimeStr}`;
+                                    }
+                                }
+                                
+                                if (hasUpdated) {
                                     populateWeldTypeDropdown(rawData);
+                                    populateSystemDropdown();
                                     applyFilters();
                                     calculateReminders();
-                                    document.getElementById('firebaseStatus').innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Viewer: Đã đồng bộ lúc ${new Date(data.timestamp).toLocaleTimeString()}</span>`;
+                                }
+                                
+                                if (syncMsg) {
+                                    syncMsg.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i>Đã cập nhật tự động từ Cloud.';
+                                }
+                                const timeMsg = document.getElementById('viewerLastSyncTime');
+                                if (timeMsg) {
+                                    timeMsg.innerText = syncTimeStr;
+                                    timeMsg.className = "fw-bold text-success pulsing-text";
                                 }
                             } catch(e) {
-                                console.error("Error parsing Cloud Data", e);
+                                console.error("Error parsing Cloud Data:", e);
+                                if (syncMsg) {
+                                    syncMsg.innerHTML = '<i class="fas fa-exclamation-triangle text-danger me-1"></i>Lỗi giải nén dữ liệu Cloud.';
+                                }
                             }
-                        } 
-                        // Nếu là Máy Chủ (Host) => KHÔNG GHI ĐÈ dữ liệu nội bộ. Chỉ báo có data trên cloud.
-                        else if (fbConfig.mode === 'host') {
-                            console.log("Cloud has data. Host mode ensures local data is NOT overwritten.");
-                            document.getElementById('firebaseStatus').innerHTML = `<span class="text-primary fw-bold"><i class="fas fa-server"></i> Host: Cloud Đã Sẵn Sàng (Bấm Push để đẩy lên)</span>`;
+                        } else {
+                            // Admin Mode: skip overwrite but notify
+                            console.log("Cloud updated. Admin Mode: keeping local changes.");
+                            const adminStatus = document.getElementById('adminSyncStatus');
+                            if (adminStatus) {
+                                adminStatus.innerHTML = `<span class="text-primary small"><i class="fas fa-info-circle me-1"></i>Cloud updated: ${syncTimeStr}</span>`;
+                            }
                         }
                     }
                 });
 
             } catch (e) {
                 console.error("Firebase init failed:", e);
-                document.getElementById('firebaseStatus').innerHTML = `<span class="text-danger" style="font-size: 0.65rem;"><i class="fas fa-times-circle"></i> Lỗi: ${e.message}</span>`;
+                if (statusBadge) {
+                    statusBadge.className = "badge bg-danger shadow-sm";
+                    statusBadge.innerHTML = 'Offline';
+                }
+                if (syncMsg) {
+                    syncMsg.innerHTML = `<i class="fas fa-times-circle text-danger me-1"></i>Lỗi kết nối: ${e.message}`;
+                }
             }
         }
 
-        function pushToFirebase() {
-            if(!fbDb) return alert("Firebase chưa được kết nối!");
-            if(!rawData || rawData.length === 0) return alert("Chưa có Dữ liệu để đẩy lên!");
-
-            const btn = document.getElementById('btnPushCloud');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang Đẩy...';
-            btn.disabled = true;
-
-            // Nén dữ liệu trước khi đẩy để tránh quá tải dung lượng (Limit 16MB)
-            let finalRaw = JSON.stringify(rawData);
-            let finalHydro = JSON.stringify(hydroPlanData || []);
-            let compressed = false;
-            
-            if (typeof LZString !== 'undefined') {
-                finalRaw = LZString.compressToUTF16(finalRaw);
-                finalHydro = LZString.compressToUTF16(finalHydro);
-                compressed = true;
+        function unifiedCloudSync() {
+            if (!fbDb) return alert("Firebase chưa được kết nối!");
+            if (!rawData || rawData.length === 0) {
+                return alert("Chưa có Dữ liệu Master DB để đồng bộ!");
             }
 
-            const pushObj = {
-                timestamp: Date.now(),
-                rawJson: finalRaw,
-                hydroJson: finalHydro,
-                isCompressed: compressed
-            };
+            const btn = document.getElementById('btnUnifiedSync');
+            const statusEl = document.getElementById('adminSyncStatus');
+            
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang Đồng bộ...';
+                btn.disabled = true;
+            }
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="text-warning"><i class="fas fa-compress-arrows-alt me-1"></i>Đang nén dữ liệu...</span>';
+            }
 
-            fbDb.ref('dashboard_data').set(pushObj, (error) => {
-                btn.innerHTML = '<i class="fas fa-cloud-upload-alt me-1"></i>Đẩy dữ liệu lên Cloud';
-                btn.disabled = false;
-                if (error) {
-                    alert("Đẩy dữ liệu thất bại. Lỗi quyền hoặc sai Cấu hình?\n" + error.message);
-                } else {
-                    localStorage.setItem('fbLastPushTs', pushObj.timestamp.toString());
-                    alert("Đẩy dữ liệu lên Cloud THÀNH CÔNG! Điện thoại của nhóm đang cập nhật.");
+            setTimeout(() => {
+                try {
+                    let rawStr = JSON.stringify(rawData);
+                    let hydroStr = JSON.stringify(hydroPlanData || []);
+                    let matrixStr = JSON.stringify(FULL_MATRIX || []);
+                    let compressed = false;
+                    
+                    if (typeof LZString !== 'undefined') {
+                        rawStr = LZString.compressToUTF16(rawStr);
+                        hydroStr = LZString.compressToUTF16(hydroStr);
+                        matrixStr = LZString.compressToUTF16(matrixStr);
+                        compressed = true;
+                    }
+
+                    const payload = {
+                        timestamp: Date.now(),
+                        rawJson: rawStr,
+                        hydroJson: hydroStr,
+                        matrixJson: matrixStr,
+                        isCompressed: compressed
+                    };
+
+                    if (statusEl) {
+                        statusEl.innerHTML = '<span class="text-primary"><i class="fas fa-cloud-upload-alt fa-bounce me-1"></i>Đang tải dữ liệu...</span>';
+                    }
+
+                    fbDb.ref('dashboard_data').set(payload, (error) => {
+                        if (btn) {
+                            btn.innerHTML = '<i class="fas fa-cloud-upload-alt fs-5"></i> Đồng bộ lên Cloud';
+                            btn.disabled = false;
+                        }
+                        
+                        if (error) {
+                            if (statusEl) {
+                                statusEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Lỗi: ${error.message}</span>`;
+                            }
+                            alert("Đồng bộ lên Cloud thất bại: " + error.message);
+                        } else {
+                            if (statusEl) {
+                                statusEl.innerHTML = `<span class="text-success fw-bold"><i class="fas fa-check-double me-1"></i>Đồng bộ thành công!</span>`;
+                            }
+                            localStorage.setItem('fbLastPushTs', payload.timestamp.toString());
+                            alert("Đồng bộ lên Cloud THÀNH CÔNG!\nDữ liệu đã được nén và cập nhật tức thì đến mọi máy khách.");
+                        }
+                    });
+                } catch(e) {
+                    console.error("Sync error:", e);
+                    if (btn) {
+                        btn.innerHTML = '<i class="fas fa-cloud-upload-alt fs-5"></i> Đồng bộ lên Cloud';
+                        btn.disabled = false;
+                    }
+                    if (statusEl) {
+                        statusEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Lỗi: ${e.message}</span>`;
+                    }
+                    alert("Lỗi xử lý dữ liệu: " + e.message);
                 }
-            });
+            }, 100);
         }
 
         // --- GOOGLE SHEETS SYNC LOGIC ---
