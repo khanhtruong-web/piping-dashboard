@@ -1,0 +1,31 @@
+{
+  "rules": {
+    "dashboard_data": {
+      ".read": true,
+      ".write": "newData.hasChildren(['timestamp', 'rawJson', 'isCompressed'])",
+      ".validate": "newData.child('timestamp').isNumber() && newData.child('rawJson').isString() && newData.child('isCompressed').isBoolean()",
+      "timestamp": {
+        ".validate": "newData.isNumber()"
+      },
+      "rawJson": {
+        ".validate": "newData.isString()"
+      },
+      "hydroJson": {
+        ".validate": "newData.isString()"
+      },
+      "matrixJson": {
+        ".validate": "newData.isString()"
+      },
+      "isCompressed": {
+        ".validate": "newData.isBoolean()"
+      },
+      "$other": {
+        ".validate": false
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
