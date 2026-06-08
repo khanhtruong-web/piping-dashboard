@@ -1,0 +1,7 @@
+*.csv
+*.png
+*.py
+*.ps1
+*.js
+Launch_InspectorAI.bat
+node_modules/
