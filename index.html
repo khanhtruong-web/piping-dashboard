@@ -2795,7 +2795,7 @@
                     weldType: getVal(r, 'weldType') || '', jointRem: getVal(r, 'jointRem') || '', location: getVal(r, 'location') || '', testPkg: getVal(r, 'testPkg'),
                     rtRep: getVal(r, 'rtRep'), pautRep: getVal(r, 'pautRep'), 
                     mtRep: getVal(r, 'mtRep'), ptRep: getVal(r, 'ptRep'),
-                    pmiRep: getVal(r, 'pmiRep'), hardRep: getVal(r, 'hardRep') || '', 
+                    pmiRep: hasRep(getVal(r, 'pmiRep')) ? getVal(r, 'pmiRep') : '', hardRep: getVal(r, 'hardRep') || '', 
                     ferriteRep: hasRep(getVal(r, 'ferriteRep')) ? getVal(r, 'ferriteRep') : '',
                     ndtRate: getVal(r, 'ndtRate'), spec: getVal(r, 'spec'),
                     wDate: wDateObj ? wDateObj.getTime() : null, 
@@ -5362,7 +5362,7 @@
                 const g = groups[gk];
                 if (d.weldType && d.weldType.toString().trim()) g.actual++;
                 if (d.mat) g.mats.add(d.mat);
-                if (d.joint) g.dwgJoints.add(d.joint.toString().trim());
+                if (d.joint && wtClass !== 'DEL') g.dwgJoints.add(d.joint.toString().trim());
                 if (d.line) g.lines.add(d.line);
                 
                 if (d.fitupAcc === 'ACC') g.fitupAcc++;
@@ -5420,7 +5420,7 @@
                 g.matStr = g.mats.size > 0 ? Array.from(g.mats).join(', ') : 'N/A';
                 g.dwgTotal = g.dwgJoints.size;
                 g.visualRemain = Math.max(0, g.fitupAcc - g.visualAcc);
-                g.weldedBacklog = Math.max(0, g.fitupAcc - g.weldedCompleted);
+                g.weldedBacklog = Math.max(0, g.fitupAcc - g.visualAcc);
 
                 // Strict Compliance: Calculate requirements per line and sum them up
                 let linesAllCompliant = true;
