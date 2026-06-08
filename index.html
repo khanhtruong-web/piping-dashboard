@@ -5348,7 +5348,7 @@
                     groups[gk] = {
                         key, wt: wtClass, wtClass: wtClass, sys: d.system || '', spec: d.spec || '',
                         testDate: hpMap.get(key.toUpperCase()) || '', mats: new Set(),
-                        actual: 0, dwgJoints: new Set(), lines: new Set(),
+                        actual: 0, dwgTotal: 0, dwgJoints: new Set(), lines: new Set(),
                         visualAcc: 0, fitupAcc: 0, weldedCompleted: 0,
                         rtPct: 0, rtReq: 0, rtSelect: 0, rtDone: 0,
                         mtPct: 0, mtReq: 0, mtSelect: 0,
@@ -5361,6 +5361,7 @@
                 }
                 const g = groups[gk];
                 if (d.weldType && d.weldType.toString().trim()) g.actual++;
+                if (d.weldType && d.weldType.toString().trim().toUpperCase() !== 'DEL') g.dwgTotal++;
                 if (d.mat) g.mats.add(d.mat);
                 if (d.joint && wtClass !== 'DEL') g.dwgJoints.add(d.joint.toString().trim());
                 if (d.line) g.lines.add(d.line);
@@ -5418,7 +5419,6 @@
             // Calculate derived fields
             Object.values(groups).forEach(g => {
                 g.matStr = g.mats.size > 0 ? Array.from(g.mats).join(', ') : 'N/A';
-                g.dwgTotal = g.dwgJoints.size;
                 g.visualRemain = Math.max(0, g.fitupAcc - g.visualAcc);
                 g.weldedBacklog = Math.max(0, g.fitupAcc - g.visualAcc);
 
