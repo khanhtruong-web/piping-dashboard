@@ -303,6 +303,30 @@
         .ndr-kpi-card.kpi-pct::before { background: #f57c00; }
         .ndr-kpi-label { font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase; }
         .ndr-kpi-val { font-size: 1.6rem; font-weight: 800; color: #333; }
+
+        /* FABRICATION FLOWCHART STYLES */
+        .flow-card { background: var(--glass-bg); border-radius: 12px; border: var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px; }
+        .flow-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding-bottom: 10px; align-items: stretch; justify-content: space-between; }
+        .flow-step { flex: 1; min-width: 110px; background: #fff; border: 1px solid #e8f5e9; border-radius: 8px; padding: 10px; position: relative; text-align: center; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.02); }
+        .flow-step:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(67, 160, 71, 0.1); border-color: #a5d6a7; }
+        .flow-step::after { content: '\f054'; font-family: 'Font Awesome 5 Free'; font-weight: 900; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: #81c784; font-size: 0.8rem; z-index: 10; }
+        .flow-step:last-child::after { display: none; }
+        .flow-title { font-size: 0.65rem; font-weight: 800; color: #666; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+        .flow-value { font-size: 1.25rem; font-weight: 800; color: #1b5e20; }
+        .flow-pct { font-size: 0.65rem; color: #888; font-weight: 600; margin-top: 2px; }
+        .flow-backlog-badge { display: inline-block; font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 10px; margin-top: 4px; }
+        .bg-backlog-weld { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+        .bg-backlog-vis { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .flow-icon { font-size: 1.1rem; margin-bottom: 6px; }
+        .flow-step-total { border-left: 3px solid #607d8b; }
+        .flow-step-fitup { border-left: 3px solid #2196f3; }
+        .flow-step-weld { border-left: 3px solid #ff9800; }
+        .flow-step-vis { border-left: 3px solid #4caf50; }
+        .flow-step-ndtreq { border-left: 3px solid #9c27b0; }
+        .flow-step-ndtback { border-left: 3px solid #f44336; }
+        .flow-step-hydro { border-left: 3px solid #00cbd6; }
+        .flow-step-reins { border-left: 3px solid #3f51b5; }
+        .flow-step-leak { border-left: 3px solid #009688; }
     </style>
 </head>
 <body>
@@ -700,6 +724,125 @@
 
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="home" role="tabpanel">
+                <!-- ROW: Fabrication Flowchart -->
+                <div class="flow-card mb-4" id="fabricationFlowchartCard">
+                    <div class="chart-header">
+                        <span><i class="fas fa-project-diagram me-2 text-success"></i>Fabrication Progress Flowchart (Platform CPP Topside)</span>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Real-time fabrication pipeline tracking</small>
+                    </div>
+                    <div class="flow-container">
+                        <!-- Step 1: Total Joints -->
+                        <div class="flow-step flow-step-total">
+                            <div>
+                                <div class="flow-icon text-muted"><i class="fas fa-layer-group"></i></div>
+                                <div class="flow-title">Total Joints</div>
+                            </div>
+                            <div>
+                                <div class="flow-value" id="flowTotal">0</div>
+                                <div class="flow-pct">100% Scope</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Fit-up Accepted -->
+                        <div class="flow-step flow-step-fitup">
+                            <div>
+                                <div class="flow-icon text-primary"><i class="fas fa-toolbox"></i></div>
+                                <div class="flow-title">Fit-up Acc</div>
+                            </div>
+                            <div>
+                                <div class="flow-value" id="flowFitup">0</div>
+                                <div class="flow-pct" id="flowFitupPct">0%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Welded Completion -->
+                        <div class="flow-step flow-step-weld">
+                            <div>
+                                <div class="flow-icon text-warning"><i class="fas fa-fire"></i></div>
+                                <div class="flow-title">Welded Compl</div>
+                            </div>
+                            <div>
+                                <div class="flow-value" id="flowWelded">0</div>
+                                <div class="flow-pct" id="flowWeldedPct">0%</div>
+                                <span class="flow-backlog-badge bg-backlog-weld" id="flowWeldBacklog" title="Fit-up Accepted - Welded Completed">Backlog: 0</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 4: Visual Accepted -->
+                        <div class="flow-step flow-step-vis">
+                            <div>
+                                <div class="flow-icon text-success"><i class="fas fa-eye"></i></div>
+                                <div class="flow-title">Visual Acc</div>
+                            </div>
+                            <div>
+                                <div class="flow-value" id="flowVisual">0</div>
+                                <div class="flow-pct" id="flowVisualPct">0%</div>
+                                <span class="flow-backlog-badge bg-backlog-vis" id="flowVisBacklog" title="Welded Completed - Visual Accepted">Backlog: 0</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 5: NDT Requested -->
+                        <div class="flow-step flow-step-ndtreq">
+                            <div>
+                                <div class="flow-icon" style="color:#9c27b0;"><i class="fas fa-radiation"></i></div>
+                                <div class="flow-title">NDT Req</div>
+                            </div>
+                            <div>
+                                <div class="flow-value" id="flowNdtReq">0</div>
+                                <div class="flow-pct" id="flowNdtReqPct">0%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 6: NDT Backlog -->
+                        <div class="flow-step flow-step-ndtback">
+                            <div>
+                                <div class="flow-icon text-danger"><i class="fas fa-clipboard-check"></i></div>
+                                <div class="flow-title">NDT Backlog</div>
+                            </div>
+                            <div>
+                                <div class="flow-value text-danger" id="flowNdtBacklog">0</div>
+                                <div class="flow-pct" id="flowNdtBacklogPct">0%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 7: Hydrotest -->
+                        <div class="flow-step flow-step-hydro">
+                            <div>
+                                <div class="flow-icon" style="color:#00cbd6;"><i class="fas fa-tint"></i></div>
+                                <div class="flow-title">Hydrotest</div>
+                            </div>
+                            <div>
+                                <div class="flow-value" id="flowHydro">0</div>
+                                <div class="flow-pct" id="flowHydroPct">0%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 8: Reins -->
+                        <div class="flow-step flow-step-reins">
+                            <div>
+                                <div class="flow-icon text-primary"><i class="fas fa-wrench"></i></div>
+                                <div class="flow-title">Reins</div>
+                            </div>
+                            <div>
+                                <div class="flow-value" id="flowReins">0</div>
+                                <div class="flow-pct" id="flowReinsPct">0%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 9: Leak test -->
+                        <div class="flow-step flow-step-leak">
+                            <div>
+                                <div class="flow-icon text-success"><i class="fas fa-check-double"></i></div>
+                                <div class="flow-title">Leak test</div>
+                            </div>
+                            <div>
+                                <div class="flow-value text-success" id="flowLeak">0</div>
+                                <div class="flow-pct" id="flowLeakPct">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ROW 1: NDT KPI Cards -->
                 <div class="glass-card mb-4">
                     <div class="chart-header"><span><i class="fas fa-tasks me-2"></i>NDT Status & Backlog</span></div>
@@ -1146,6 +1289,14 @@
                             <button class="ndr-toggle-btn" id="ndrViewLine" onclick="setNdrView('line')">By Line</button>
                         </div>
                         <select class="form-select-sm" id="ndrFilterSys" onchange="renderNdtRandom()" style="min-width:100px;"><option value="">All System</option></select>
+                        <select class="form-select-sm" id="ndrFilterSubcon" onchange="renderNdtRandom()" style="min-width:110px;"><option value="">All Subcon</option></select>
+                        <select class="form-select-sm" id="ndrFilterWtype" onchange="renderNdtRandom()" style="min-width:110px;">
+                            <option value="">All Weld Type</option>
+                            <option value="BW">BW</option>
+                            <option value="SW">SW</option>
+                            <option value="FW">FW</option>
+                            <option value="DEL">DEL</option>
+                        </select>
                         <!-- Month filter -->
                         <select class="form-select-sm" id="ndrFilterMonth" onchange="renderNdtRandom()" title="Filter by Test Date Month" style="min-width:115px;">
                             <option value="">All Month</option>
@@ -2554,27 +2705,27 @@
                 diaIn: findKey(['DiaIn', 'Dia-Inch', 'DiaInch']),
                 thick: findKey(['Thickness', 'Thick', 'Độ dày', 'Thk']),
                 mat: findKey(['Material', 'Mat', 'Vật liệu']),
-                wDate: findKey(['Welding Completed Date', 'Weld Date', 'Welding Date', 'Ngày hàn']),
+                wDate: findKey(['WeldingCompletedDate', 'Welding Completed Date', 'Weld Date', 'Welding Date', 'Ngày hàn']),
                 weldType: findKey(['Weld Type', 'WeldType', 'Loại mối hàn']),
-                testPkg: findKey(['Test Package No.', 'Test Package', 'TestPkg', 'TP No', 'Mã Test Package']),
+                testPkg: findKey(['Test Package No.', 'Test Package', 'TestPkg', 'TP No', 'Mã Test Package', 'TestPackageNo']),
                 spec: findKey(['Spec', 'Specification', 'Tiêu chuẩn']),
                 visualRes: findKey(['Visual Result', 'Visual', 'VT Result']),
                 rtRes: findKey(['RTResult', 'RT Result', 'RT_Result']),
                 pautRes: findKey(['PAUT Result', 'PAUTResult']),
-                rtRep: findKey(['RT Report No.', 'RT Rep']),
-                pautRep: findKey(['PAUT Report No', 'PAUT Rep']),
-                mtRep: findKey(['MT Report No.', 'MT Rep']),
-                ptRep: findKey(['PT Report No.', 'PT Rep']),
-                pmiRep: findKey(['PMI Report No.', 'PMI Rep']),
+                rtRep: findKey(['RT Report No.', 'RT Rep', 'RTReportNo']),
+                pautRep: findKey(['PAUT Report No', 'PAUT Rep', 'PAUTReportNo']),
+                mtRep: findKey(['MT Report No.', 'MT Rep', 'MTReportNo']),
+                ptRep: findKey(['PT Report No.', 'PT Rep', 'PTReportNo']),
+                pmiRep: findKey(['PMIReportNo', 'PMI Report No.', 'PMI Rep']),
                 reqRT: findKey(['RT']),
                 reqPAUT: findKey(['PAUT']),
                 reqMT: findKey(['MT']),
                 reqPT: findKey(['PT']),
-                mtRes: findKey(['MT Result', 'MT_Result']),
-                ptRes: findKey(['PT Result', 'PT_Result']),
+                mtRes: findKey(['MT Result', 'MT_Result', 'MTResult']),
+                ptRes: findKey(['PT Result', 'PT_Result', 'PTResult']),
                 rtDate: findKey(['RT Report Date', 'RT Date']),
                 pautDate: findKey(['PAUT Report Date', 'PAUT Date']),
-                pwhtRes: findKey(['PWHT Result', 'PWHT']),
+                pwhtRes: findKey(['PWHTResult', 'PWHT Result', 'PWHT']),
                 lenNDT: findKey(['LengthNDT', 'Length']),
                 lenDefect: findKey(['Defect Length', 'Defect']),
                 jointRem: findKey(['TV', 'Joint Remark', 'Remark', 'Ghi chú']),
@@ -2584,7 +2735,15 @@
                 defectLoc: findKey(['DefectLocation', 'Defect Location']),
                 defectID: findKey(['DefectID', 'Defect ID']),
                 defectLenInfo: findKey(['DefectLengthInfo', 'Defect Length Info']),
-                typeOfDefect: findKey(['TypeOfDefect', 'Type Of Defect', 'Defect Type'])
+                typeOfDefect: findKey(['TypeOfDefect', 'Type Of Defect', 'Defect Type']),
+                fitupAcc: findKey(['FitUpACC', 'FitUp ACC', 'Fit-Up ACC']),
+                hardnessRep: findKey(['HardnessTestReportNo', 'Hardness Report No', 'HardnessRep']),
+                ferriteRep: findKey(['FerriteTestReportNo', 'Ferrite Report No', 'FerriteRep']),
+                hardRep: findKey(['Hardness', 'HardnessReq']),
+                penalty: findKey(['Penalty', 'PEN']),
+                hydroRep: findKey(['HydroTestReportNo', 'Hydro Test Report No', 'HydroRep']),
+                releaseRep: findKey(['ReleaseNotesReportNo', 'Release Notes Report No', 'ReleaseRep']),
+                summaryRep: findKey(['SummaryReportNo', 'Summary Report No', 'SummaryRep'])
             };
 
             const getVal = (row, field) => { const k = map[field]; return (k && row[k] !== undefined && row[k] !== null) ? row[k] : ""; };
@@ -2599,7 +2758,7 @@
                 if(!jointVal) { skipCount++; continue; }
 
                 const diaInVal = parseFloat(getVal(r, 'diaIn')) || 0;
-                const sizeVal = (diaInVal > 0) ? diaInVal : (parseFloat(getVal(r, 'size')) || 0);
+                const sizeVal = diaInVal;
 
                 const wDateStr = getVal(r, 'wDate') || '';
                 const wDateObj = parseExDate(wDateStr);
@@ -2626,6 +2785,9 @@
                     return s.length > 0 && s !== '(BLANK)' && s !== 'PENDING' && s !== 'TBA' && s !== 'WAIT' && s !== 'N/A' && s !== '-' && s !== 'NULL';
                 };
 
+                const fitupVal = getStatus(getVal(r, 'fitupAcc'));
+                const visAccVal = getStatus(getVal(r, 'visualACC'));
+
                 processed.push({
                     id: i+1, isSub: clean(getVal(r, 'sub')), system: getVal(r, 'sys'), dwg: getVal(r, 'dwg'),
                     line: getVal(r, 'line'), spool: getVal(r, 'spool'), welder: getVal(r, 'welder'), joint: jointVal.toString(),
@@ -2634,7 +2796,7 @@
                     rtRep: getVal(r, 'rtRep'), pautRep: getVal(r, 'pautRep'), 
                     mtRep: getVal(r, 'mtRep'), ptRep: getVal(r, 'ptRep'),
                     pmiRep: getVal(r, 'pmiRep'), hardRep: getVal(r, 'hardRep') || '', 
-                    ferriteRep: getVal(r, 'ferriteRep') || '',
+                    ferriteRep: hasRep(getVal(r, 'ferriteRep')) ? getVal(r, 'ferriteRep') : '',
                     ndtRate: getVal(r, 'ndtRate'), spec: getVal(r, 'spec'),
                     wDate: wDateObj ? wDateObj.getTime() : null, 
                     wDateStr: wDateObj ? wDateObj.toLocaleDateString('en-GB') : (wDateStr.trim() !== '' ? wDateStr.trim() : 'No Date'), 
@@ -2653,16 +2815,22 @@
                     visualRes: (() => {
                         const vr = getStatus(getVal(r, 'visualRes'));
                         if (vr) return vr;
-                        const vAcc = getVal(r, 'visualACC');
                         const vRej = getVal(r, 'visualREJ');
                         if (vRej && hasRep(vRej)) return 'REJ';
-                        if (vAcc && hasRep(vAcc)) return 'ACC';
+                        if (visAccVal) return visAccVal;
                         return '';
                     })(),
                     defectLoc: getVal(r, 'defectLoc') || '',
                     defectID: getVal(r, 'defectID') || '',
                     defectLenInfo: getVal(r, 'defectLenInfo') || '',
-                    typeOfDefect: getVal(r, 'typeOfDefect') || ''
+                    typeOfDefect: getVal(r, 'typeOfDefect') || '',
+                    fitupAcc: fitupVal,
+                    visualACC: visAccVal,
+                    hardnessRep: hasRep(getVal(r, 'hardnessRep')) ? getVal(r, 'hardnessRep') : '',
+                    penalty: parseFloat(getVal(r, 'penalty')) || 0,
+                    hydroRep: getVal(r, 'hydroRep'),
+                    releaseRep: getVal(r, 'releaseRep'),
+                    summaryRep: getVal(r, 'summaryRep')
                 });
             }
 
@@ -2852,7 +3020,32 @@
         }
 
         function getSummary() {
-            let s = { total: filteredData.length, diaInch: 0, vis:0, ndtL:0, defL:0, rtA:0, rtR:0, mtA:0, mtR:0, ptA:0, ptR:0, pwhtA:0, pwhtR:0, pautA:0, pautR:0, ndtCount:0, rejCount:0 };
+            let s = { 
+                total: filteredData.length, 
+                diaInch: 0, 
+                vis:0, 
+                ndtL:0, 
+                defL:0, 
+                rtA:0, 
+                rtR:0, 
+                mtA:0, 
+                mtR:0, 
+                ptA:0, 
+                ptR:0, 
+                pwhtA:0, 
+                pwhtR:0, 
+                pautA:0, 
+                pautR:0, 
+                ndtCount:0, 
+                rejCount:0,
+                fitupAcc: 0,
+                weldedCompleted: 0,
+                ndtRequested: 0,
+                ndtBacklog: 0,
+                hydroDone: 0,
+                reinsDone: 0,
+                leakDone: 0
+            };
             const len = filteredData.length;
             for(let i=0; i<len; i++) {
                 const d = filteredData[i];
@@ -2864,9 +3057,22 @@
                 if(d.mtRes==='ACC') s.mtA++; else if(d.mtRes==='REJ') s.mtR++;
                 if(d.ptRes==='ACC') s.ptA++; else if(d.ptRes==='REJ') s.ptR++;
                 if(d.pwhtRes==='ACC') s.pwhtA++; else if(d.pwhtRes==='REJ') s.pwhtR++;
-                // Count-based repair rate
                 if(d.rtRes||d.pautRes||d.mtRes||d.ptRes) s.ndtCount++;
                 if(d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ') s.rejCount++;
+
+                if (d.fitupAcc === 'ACC') s.fitupAcc++;
+                if (d.wDate) s.weldedCompleted++;
+
+                const isNdtReq = d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
+                if (isNdtReq) {
+                    s.ndtRequested++;
+                    const isNdtDone = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
+                    if (!isNdtDone) s.ndtBacklog++;
+                }
+
+                if (d.hydroRep && d.hydroRep.trim() !== '') s.hydroDone++;
+                if (d.releaseRep && d.releaseRep.trim() !== '') s.reinsDone++;
+                if (d.summaryRep && d.summaryRep.trim() !== '') s.leakDone++;
             }
             return s;
         }
@@ -2874,16 +3080,42 @@
         let cachedAnalytics = {};
 
         function processFilteredData() {
-            const sum = { total: filteredData.length, diaInch: 0, vis:0, ndtL:0, defL:0, rtA:0, rtR:0, mtA:0, mtR:0, ptA:0, ptR:0, pwhtA:0, pwhtR:0, pautA:0, pautR:0, ndtCount:0, rejCount:0 };
+            const sum = { 
+                total: filteredData.length, 
+                diaInch: 0, 
+                vis:0, 
+                ndtL:0, 
+                defL:0, 
+                rtA:0, 
+                rtR:0, 
+                mtA:0, 
+                mtR:0, 
+                ptA:0, 
+                ptR:0, 
+                pwhtA:0, 
+                pwhtR:0, 
+                pautA:0, 
+                pautR:0, 
+                ndtCount:0, 
+                rejCount:0,
+                fitupAcc: 0,
+                weldedCompleted: 0,
+                ndtRequested: 0,
+                ndtBacklog: 0,
+                hydroDone: 0,
+                reinsDone: 0,
+                leakDone: 0
+            };
             const dateMap = {};
             const pwhtStats = { acc:0, pending:0, required: 0 };
             const ndtStats = { PAUT:{s:0,d:0,b:0}, RT:{s:0,d:0,b:0}, MT:{s:0,d:0,b:0}, PT:{s:0,d:0,b:0} };
             const systemSet = new Set();
+            const subconSet = new Set();
+            const weldTypeSet = new Set();
             
             const len = filteredData.length;
             for(let i=0; i<len; i++) {
                 const d = filteredData[i];
-                // Summary calculation
                 if(d.visualRes === 'ACC') sum.vis++;
                 sum.ndtL += d.lenNDT; sum.defL += d.lenDefect;
                 sum.diaInch += d.sizeVal;
@@ -2892,11 +3124,23 @@
                 if(d.mtRes==='ACC') sum.mtA++; else if(d.mtRes==='REJ') sum.mtR++;
                 if(d.ptRes==='ACC') sum.ptA++; else if(d.ptRes==='REJ') sum.ptR++;
                 if(d.pwhtRes==='ACC') sum.pwhtA++; else if(d.pwhtRes==='REJ') sum.pwhtR++;
-                // Count-based repair rate
                 if(d.rtRes||d.pautRes||d.mtRes||d.ptRes) sum.ndtCount++;
                 if(d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ') sum.rejCount++;
+
+                if (d.fitupAcc === 'ACC') sum.fitupAcc++;
+                if (d.wDate) sum.weldedCompleted++;
+
+                const isNdtReq = d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
+                if (isNdtReq) {
+                    sum.ndtRequested++;
+                    const isNdtDone = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
+                    if (!isNdtDone) sum.ndtBacklog++;
+                }
+
+                if (d.hydroRep && d.hydroRep.trim() !== '') sum.hydroDone++;
+                if (d.releaseRep && d.releaseRep.trim() !== '') sum.reinsDone++;
+                if (d.summaryRep && d.summaryRep.trim() !== '') sum.leakDone++;
                 
-                // Trend calculation
                 if(d.wDate) {
                     const k = d.wDateStr;
                     if(!dateMap[k]) dateMap[k]={vol:0,ndt:0,def:0, ndtC:0, rejC:0, dt: d.wDate};
@@ -2905,22 +3149,32 @@
                     if(d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ') dateMap[k].rejC++;
                 }
                 
-                // PWHT calculation
                 const needsPwht = (d.pwhtRes === 'ACC' || d.pwhtRes === '' || d.pwhtRes === 'REJ') && (d.rtRes === 'ACC' || d.pautRes === 'ACC' || d.reqRT || d.reqPAUT);
                 if(d.pwhtRes==='ACC') { pwhtStats.acc++; pwhtStats.required++; }
                 else if(needsPwht) { pwhtStats.pending++; pwhtStats.required++; }
                 
-                // NDT Stats calculation
                 if(d.reqRT){ ndtStats.RT.s++; if(d.hasRT) ndtStats.RT.d++; else ndtStats.RT.b++; }
                 if(d.reqPAUT){ ndtStats.PAUT.s++; if(d.hasPAUT) ndtStats.PAUT.d++; else ndtStats.PAUT.b++; }
                 if(d.reqMT){ ndtStats.MT.s++; if(d.hasMT) ndtStats.MT.d++; else ndtStats.MT.b++; }
                 if(d.reqPT){ ndtStats.PT.s++; if(d.hasPT) ndtStats.PT.d++; else ndtStats.PT.b++; }
                 
-                // System list
                 if(d.system) systemSet.add(d.system);
+                if(d.isSub) subconSet.add(d.isSub);
+                if(d.weldType) {
+                    const wtc = classifyWeldType(d.weldType);
+                    if(wtc) weldTypeSet.add(wtc);
+                }
             }
             
-            cachedAnalytics = { sum, dateMap, pwhtStats, ndtStats, systems: Array.from(systemSet).sort() };
+            cachedAnalytics = { 
+                sum, 
+                dateMap, 
+                pwhtStats, 
+                ndtStats, 
+                systems: Array.from(systemSet).sort(),
+                subcontractors: Array.from(subconSet).sort(),
+                weldTypes: Array.from(weldTypeSet).sort()
+            };
             currentSummary = sum;
         }
 
@@ -2979,6 +3233,42 @@
             const rate = sum.ndtCount > 0 ? (sum.rejCount/sum.ndtCount*100) : 0;
             animateValue('kpiRate', 0, rate, 800);
             
+            // Update Flowchart elements
+            const updateFlowElement = (id, val, pctText) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = val.toLocaleString();
+                const pctEl = document.getElementById(id + 'Pct');
+                if (pctEl && pctText) pctEl.innerText = pctText;
+            };
+
+            const totVal = sum.total || 0;
+            const fitVal = sum.fitupAcc || 0;
+            const weldVal = sum.weldedCompleted || 0;
+            const visVal = sum.vis || 0;
+            const ndtReqVal = sum.ndtRequested || 0;
+            const ndtBackVal = sum.ndtBacklog || 0;
+            const hydroVal = sum.hydroDone || 0;
+            const reinsVal = sum.reinsDone || 0;
+            const leakVal = sum.leakDone || 0;
+
+            updateFlowElement('flowTotal', totVal, '100% Scope');
+            updateFlowElement('flowFitup', fitVal, totVal > 0 ? (fitVal / totVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowWelded', weldVal, fitVal > 0 ? (weldVal / fitVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowVisual', visVal, weldVal > 0 ? (visVal / weldVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowNdtReq', ndtReqVal, totVal > 0 ? (ndtReqVal / totVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowNdtBacklog', ndtBackVal, ndtReqVal > 0 ? (ndtBackVal / ndtReqVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowHydro', hydroVal, totVal > 0 ? (hydroVal / totVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowReins', reinsVal, totVal > 0 ? (reinsVal / totVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowLeak', leakVal, totVal > 0 ? (leakVal / totVal * 100).toFixed(1) + '%' : '0%');
+
+            // Backlog badges
+            const weldBacklog = Math.max(0, fitVal - weldVal);
+            const visBacklog = Math.max(0, weldVal - visVal);
+            const wBEl = document.getElementById('flowWeldBacklog');
+            if (wBEl) wBEl.innerText = `Backlog: ${wBEl.title = weldBacklog.toLocaleString()}`;
+            const vBEl = document.getElementById('flowVisBacklog');
+            if (vBEl) vBEl.innerText = `Backlog: ${vBEl.title = visBacklog.toLocaleString()}`;
+
             buildHydroMap(); // Populate global hMap before rendering
             
             renderNDTStatusTable(); 
@@ -5016,21 +5306,22 @@
 
         function getNdrHeader(keyLabel) {
             return `<tr>
-                <th>No.</th><th>${keyLabel}</th><th>Test Date</th><th>Material</th><th>Weld Type</th><th>Actual Joint</th><th>DWG_total Joint</th>
-                <th>Fit-up Acc</th><th>Visual Acc</th><th>Visual_ Remain</th>
-                <th class="ndr-grp-rt">%RT</th><th class="ndr-grp-rt">RT Required</th>
-                <th class="ndr-grp-rt">RT/PAUT Select</th><th class="ndr-grp-rt">RT/PAUT Done</th>
-                <th class="ndr-grp-rt">%RT Current</th><th class="ndr-grp-rt">%RT final</th>
+                <th>No.</th><th>${keyLabel}</th><th>Test Date</th><th>Material</th><th>Weld Type</th><th>Actual Joint</th>
+                <th>DWG_total Joint</th><th>Fit-up Acc</th><th>Welded Completed</th><th>Welded Backlog</th><th>Visual Acc</th><th>Visual Remain</th>
+                <th class="ndr-grp-rt">%RT/PAUT</th><th class="ndr-grp-rt">RT/PAUT Required</th>
+                <th class="ndr-grp-rt">RT/PAUT Select</th><th class="ndr-grp-rt">RT/PAUT Done</th><th class="ndr-grp-rt">RT/PAUT Remaining</th>
+                <th class="ndr-grp-rt">%RT/PAUT Current</th><th class="ndr-grp-rt">%RT/PAUT Final</th>
                 <th class="ndr-grp-mt">%MT/PT</th><th class="ndr-grp-mt">MT/PT Required</th>
-                <th class="ndr-grp-mt">MT/PT Select</th><th class="ndr-grp-mt">%MT/PT current</th>
-                <th class="ndr-grp-mt">%MT/PT final</th>
-                <th class="ndr-grp-other">%Hard</th><th class="ndr-grp-other">PMI</th><th class="ndr-grp-other">%PMI</th>
+                <th class="ndr-grp-mt">MT/PT Select</th><th class="ndr-grp-mt">%MT/PT Current</th><th class="ndr-grp-mt">%MT/PT Final</th>
+                <th class="ndr-grp-other">HT Done</th><th class="ndr-grp-other">%Hard</th><th class="ndr-grp-other">PMI Done</th><th class="ndr-grp-other">%PMI</th>
+                <th class="ndr-grp-other">PWHT Done</th><th class="ndr-grp-other">Ferrite Done</th>
                 <th class="ndr-grp-repair">R1</th><th class="ndr-grp-repair">R2</th>
                 <th class="ndr-grp-repair">RS</th><th class="ndr-grp-repair">RW_ total</th>
                 <th class="ndr-grp-other">PEN_ total</th>
                 <th>Line Count</th>
                 <th>Location</th>
                 <th>TV</th>
+                <th>Status</th>
             </tr>`;
         }
 
@@ -5058,20 +5349,24 @@
                         key, wt: wtClass, wtClass: wtClass, sys: d.system || '', spec: d.spec || '',
                         testDate: hpMap.get(key.toUpperCase()) || '', mats: new Set(),
                         actual: 0, dwgJoints: new Set(), lines: new Set(),
-                        visualAcc: 0, fitupAcc: 0,
+                        visualAcc: 0, fitupAcc: 0, weldedCompleted: 0,
                         rtPct: 0, rtReq: 0, rtSelect: 0, rtDone: 0,
                         mtPct: 0, mtReq: 0, mtSelect: 0,
-                        hardCount: 0, pmiCount: 0,
+                        hardCount: 0, pmiCount: 0, htDone: 0, pwhtDone: 0, ferriteDone: 0,
                         r1: 0, r2: 0, rs: 0, penTotal: 0,
+                        hydroDone: 0, reinsDone: 0, leakDone: 0,
                         lineStats: {},
                         locations: new Set(), remarks: new Set()
                     };
                 }
                 const g = groups[gk];
-                g.actual++;
+                if (d.weldType && d.weldType.toString().trim()) g.actual++;
                 if (d.mat) g.mats.add(d.mat);
-                if (d.dwg) g.dwgJoints.add(d.joint || d.id);
+                if (d.joint) g.dwgJoints.add(d.joint.toString().trim());
                 if (d.line) g.lines.add(d.line);
+                
+                if (d.fitupAcc === 'ACC') g.fitupAcc++;
+                if (d.wDate) g.weldedCompleted++;
                 if (d.visualRes === 'ACC') g.visualAcc++;
                 if (d.location) g.locations.add(d.location.toString().trim());
                 if (d.jointRem) g.remarks.add(d.jointRem.toString().trim());
@@ -5106,18 +5401,26 @@
 
                 if (d.hardRep && d.hardRep.toString().trim()) g.hardCount++;
                 if (d.pmiRep && d.pmiRep.toString().trim()) g.pmiCount++;
+                if (d.hardnessRep && d.hardnessRep.toString().trim()) g.htDone++;
+                if (d.pwhtRes === 'ACC') g.pwhtDone++;
+                if (d.ferriteRep && d.ferriteRep.toString().trim()) g.ferriteDone++;
 
                 if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') g.r1++;
                 if (d.rtRes === 'RS' || d.pautRes === 'RS') g.rs++;
 
-                if (d.hasPT) g.penTotal++;
+                g.penTotal += d.penalty;
+
+                if (d.hydroRep && d.hydroRep.trim() !== '') g.hydroDone++;
+                if (d.releaseRep && d.releaseRep.trim() !== '') g.reinsDone++;
+                if (d.summaryRep && d.summaryRep.trim() !== '') g.leakDone++;
             });
 
             // Calculate derived fields
             Object.values(groups).forEach(g => {
                 g.matStr = g.mats.size > 0 ? Array.from(g.mats).join(', ') : 'N/A';
-                g.dwgTotal = g.dwgJoints.size || g.actual;
-                g.visualRemain = g.actual - g.visualAcc;
+                g.dwgTotal = g.dwgJoints.size;
+                g.visualRemain = Math.max(0, g.fitupAcc - g.visualAcc);
+                g.weldedBacklog = Math.max(0, g.fitupAcc - g.weldedCompleted);
 
                 // Strict Compliance: Calculate requirements per line and sum them up
                 let linesAllCompliant = true;
@@ -5137,13 +5440,14 @@
 
                 g.rtReq = totalRtReq;
                 g.mtReq = totalMtReq;
+                g.rtRemaining = Math.max(0, g.rtReq - g.rtDone);
                 
                 g.rtCurrent = g.actual > 0 ? (g.rtSelect / g.actual * 100) : 0;
                 g.rtFinal = g.rtReq > 0 ? (g.rtSelect / g.rtReq * 100) : (g.rtPct === 0 ? -1 : 0);
                 g.mtCurrent = g.actual > 0 ? (g.mtSelect / g.actual * 100) : 0;
                 g.mtFinal = g.mtReq > 0 ? (g.mtSelect / g.mtReq * 100) : (g.mtPct === 0 ? -1 : 0);
                 
-                g.hardPct = g.actual > 0 ? (g.hardCount / g.actual * 100) : 0;
+                g.hardPct = g.hardCount > 0 ? (g.htDone / g.hardCount * 100) : 0;
                 g.pmiPct = g.actual > 0 ? (g.pmiCount / g.actual * 100) : 0;
                 g.rwTotal = g.r1 + g.r2 + g.rs;
                 g.lineCount = g.lines.size;
@@ -5156,6 +5460,25 @@
                     g.isCompliant = linesAllCompliant && (g.rtFinal === -1 || g.rtFinal >= 100) && (g.mtFinal === -1 || g.mtFinal >= 100);
                 } else {
                     g.isCompliant = true; // Does not fail the Test Package
+                }
+
+                // Determine Test Package status dynamically
+                if (g.leakDone > 0) {
+                    g.status = 'Leak Tested';
+                } else if (g.reinsDone > 0) {
+                    g.status = 'Reinstated';
+                } else if (g.hydroDone > 0) {
+                    g.status = 'Hydrotested';
+                } else if (g.rtDone >= g.rtReq && g.isCompliant) {
+                    g.status = 'NDT Done';
+                } else if (g.visualAcc === g.actual) {
+                    g.status = 'Visual Acc';
+                } else if (g.weldedCompleted === g.actual) {
+                    g.status = 'Welded';
+                } else if (g.fitupAcc === g.actual) {
+                    g.status = 'Fit-up';
+                } else {
+                    g.status = 'In Progress';
                 }
             });
             return groups;
@@ -5213,18 +5536,35 @@
                     : 'background-color:#e8f5e9 !important;')
                 : '';
 
+            const getStatusBadge = (st) => {
+                if (st === 'Leak Tested') return '<span class="badge bg-success shadow-sm">LEAK TESTED</span>';
+                if (st === 'Reinstated') return '<span class="badge bg-info shadow-sm text-dark">REINSTATED</span>';
+                if (st === 'Hydrotested') return '<span class="badge bg-primary shadow-sm">HYDROTESTED</span>';
+                if (st === 'NDT Done') return '<span class="badge bg-success bg-opacity-75 text-white">NDT DONE</span>';
+                if (st === 'Visual Acc') return '<span class="badge bg-warning text-dark">VISUAL ACC</span>';
+                if (st === 'Welded') return '<span class="badge text-dark" style="background-color:#ffe0b2;">WELDED</span>';
+                if (st === 'Fit-up') return '<span class="badge bg-secondary">FIT-UP</span>';
+                return '<span class="badge bg-light text-dark border">IN PROGRESS</span>';
+            };
+
+            const hardPctDisp = g.hardCount > 0 ? (g.htDone / g.hardCount * 100).toFixed(1) + '%' : '<span class="ndr-na">-</span>';
+            const ferriteDisp = numCell(g.ferriteDone);
+
             return `<tr ${clickAttr} class="${bgClass}" title="${isClickable ? 'Click to view Lines' : ''}" style="${rowStyle}${rowBg}">`+`
                 ${firstCols}
                 <td class="text-center"><span class="badge bg-light text-dark border" style="font-size:0.6rem;min-width:40px;display:inline-block;">${g.wt}</span></td>
                 <td class="fw-bold text-center">${g.actual}</td>
                 <td>${g.dwgTotal}</td>
-                <td>${g.fitupAcc || g.actual}</td>
+                <td>${g.fitupAcc}</td>
+                <td>${g.weldedCompleted}</td>
+                <td>${g.weldedBacklog}</td>
                 ${g.visualAcc > 0 ? `<td class="ndr-ok">${g.visualAcc}</td>` : `<td>${g.visualAcc}</td>`}
                 <td>${g.visualRemain}</td>
                 <td>${g.rtPct > 0 ? g.rtPct.toFixed(2) : '<span class="ndr-na">-</span>'}</td>
                 ${numCell(g.rtReq)}
                 ${numCell(g.rtSelect)}
                 ${numCell(g.rtDone)}
+                ${numCell(g.rtRemaining)}
                 ${rtCurrentDisp}
                 ${rtFinalDisp}
                 <td>${g.mtPct > 0 ? g.mtPct.toFixed(0) + '%' : '<span class="ndr-na">-</span>'}</td>
@@ -5232,15 +5572,19 @@
                 ${numCell(g.mtSelect)}
                 ${mtCurrentDisp}
                 ${mtFinalDisp}
-                <td>${g.hardPct > 0 ? g.hardPct.toFixed(1) + '%' : '<span class="ndr-na">-</span>'}</td>
+                ${numCell(g.htDone)}
+                <td>${hardPctDisp}</td>
                 ${numCell(g.pmiCount)}
                 <td>${g.pmiPct > 0 ? g.pmiPct.toFixed(1) + '%' : '<span class="ndr-na">-</span>'}</td>
+                ${numCell(g.pwhtDone)}
+                ${ferriteDisp}
                 ${numCell(g.r1)}${numCell(g.r2)}${numCell(g.rs)}
                 ${g.rwTotal > 0 ? `<td class="ndr-fail">${g.rwTotal}</td>` : '<td class="ndr-na">-</td>'}
                 ${numCell(g.penTotal)}
                 <td>${g.lineCount}</td>
                 <td title="${(g.locationStr||'-').replace(/"/g,'&quot;')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${g.locationStr || '-'}</td>
                 <td title="${(g.remarkStr||'-').replace(/"/g,'&quot;')}" style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.62rem;">${g.remarkStr || '-'}</td>
+                <td class="text-center">${getStatusBadge(g.status)}</td>
             </tr>`;
         }
 
@@ -5291,10 +5635,24 @@
             const systems = cachedAnalytics.systems || [];
             sysSel.innerHTML = '<option value="">All System</option>' + systems.map(s => `<option value="${s}" ${s === curSys ? 'selected' : ''}>${s}</option>`).join('');
 
+            // Populate subcontractor filter using cached list
+            const subconSel = document.getElementById('ndrFilterSubcon');
+            if (subconSel) {
+                const curSub = subconSel.value;
+                const subcontractors = cachedAnalytics.subcontractors || [];
+                subconSel.innerHTML = '<option value="">All Subcon</option>' + subcontractors.map(s => `<option value="${s}" ${s === curSub ? 'selected' : ''}>${s}</option>`).join('');
+            }
+
             // Apply local filters
             let data = filteredData;
             const fSys = document.getElementById('ndrFilterSys').value;
             if (fSys) data = data.filter(d => d.system === fSys);
+
+            const fSub = document.getElementById('ndrFilterSubcon')?.value;
+            if (fSub) data = data.filter(d => d.isSub === fSub);
+
+            const fWtype = document.getElementById('ndrFilterWtype')?.value;
+            if (fWtype) data = data.filter(d => classifyWeldType(d.weldType) === fWtype);
 
             const groups = buildNdrGroups(data, ndrViewMode);
             let rows = Object.values(groups);
@@ -5390,14 +5748,55 @@
             document.getElementById('ndrTbody').innerHTML = tbodyHtml;
 
             // Render totals
-            const tot = { actual: 0, dwgTotal: 0, visualAcc: 0, visualRemain: 0, rtReq: 0, rtSelect: 0, rtDone: 0, mtReq: 0, mtSelect: 0, hardCount: 0, pmiCount: 0, r1: 0, r2: 0, rs: 0, rwTotal: 0, penTotal: 0, lineCount: new Set() };
+            const tot = { 
+                actual: 0, 
+                dwgTotal: 0, 
+                fitupAcc: 0, 
+                weldedCompleted: 0, 
+                weldedBacklog: 0, 
+                visualAcc: 0, 
+                visualRemain: 0, 
+                rtReq: 0, 
+                rtSelect: 0, 
+                rtDone: 0, 
+                rtRemaining: 0, 
+                mtReq: 0, 
+                mtSelect: 0, 
+                hardCount: 0, 
+                pmiCount: 0, 
+                htDone: 0, 
+                pwhtDone: 0, 
+                ferriteDone: 0, 
+                r1: 0, 
+                r2: 0, 
+                rs: 0, 
+                rwTotal: 0, 
+                penTotal: 0, 
+                lineCount: new Set() 
+            };
             rows.forEach(g => {
-                tot.actual += g.actual; tot.dwgTotal += g.dwgTotal;
-                tot.visualAcc += g.visualAcc; tot.visualRemain += g.visualRemain;
-                tot.rtReq += g.rtReq; tot.rtSelect += g.rtSelect; tot.rtDone += g.rtDone;
-                tot.mtReq += g.mtReq; tot.mtSelect += g.mtSelect;
-                tot.hardCount += g.hardCount; tot.pmiCount += g.pmiCount;
-                tot.r1 += g.r1; tot.r2 += g.r2; tot.rs += g.rs; tot.rwTotal += g.rwTotal;
+                tot.actual += g.actual; 
+                tot.dwgTotal += g.dwgTotal;
+                tot.fitupAcc += g.fitupAcc;
+                tot.weldedCompleted += g.weldedCompleted;
+                tot.weldedBacklog += g.weldedBacklog;
+                tot.visualAcc += g.visualAcc; 
+                tot.visualRemain += g.visualRemain;
+                tot.rtReq += g.rtReq; 
+                tot.rtSelect += g.rtSelect; 
+                tot.rtDone += g.rtDone;
+                tot.rtRemaining += g.rtRemaining;
+                tot.mtReq += g.mtReq; 
+                tot.mtSelect += g.mtSelect;
+                tot.hardCount += g.hardCount; 
+                tot.pmiCount += g.pmiCount;
+                tot.htDone += g.htDone;
+                tot.pwhtDone += g.pwhtDone;
+                tot.ferriteDone += g.ferriteDone;
+                tot.r1 += g.r1; 
+                tot.r2 += g.r2; 
+                tot.rs += g.rs; 
+                tot.rwTotal += g.rwTotal;
                 tot.penTotal += g.penTotal;
                 g.lines.forEach(l => tot.lineCount.add(l));
             });
@@ -5406,18 +5805,45 @@
             const mtCurTot = tot.actual > 0 ? (tot.mtSelect / tot.actual * 100).toFixed(0) + '%' : '-';
             const mtFinTot = tot.mtReq > 0 ? (tot.mtSelect / tot.mtReq * 100).toFixed(0) + '%' : '-';
             const pmiPctTot = tot.actual > 0 ? (tot.pmiCount / tot.actual * 100).toFixed(1) + '%' : '-';
-            const hardPctTot = tot.actual > 0 ? (tot.hardCount / tot.actual * 100).toFixed(1) + '%' : '-';
+            const hardPctTot = tot.hardCount > 0 ? (tot.htDone / tot.hardCount * 100).toFixed(1) + '%' : '-';
 
             document.getElementById('ndrTfoot').innerHTML = `<tr>
-                <td colspan="4" class="text-end fw-bold pe-3">Total</td><td></td><td>${tot.actual}</td><td>${tot.dwgTotal}</td>
-                <td>${tot.actual}</td><td>${tot.visualAcc}</td><td>${tot.visualRemain}</td>
-                <td></td><td>${tot.rtReq}</td><td>${tot.rtSelect}</td><td>${tot.rtDone}</td>
-                <td>${rtCurTot}</td><td>${rtFinTot}</td>
-                <td></td><td>${tot.mtReq}</td><td>${tot.mtSelect}</td><td>${mtCurTot}</td><td>${mtFinTot}</td>
-                <td>${hardPctTot}</td><td>${tot.pmiCount}</td><td>${pmiPctTot}</td>
-                <td>${tot.r1}</td><td>${tot.r2}</td><td>${tot.rs}</td><td>${tot.rwTotal}</td>
-                <td>${tot.penTotal}</td><td>${tot.lineCount.size}</td>
-                <td></td><td></td>
+                <td colspan="4" class="text-end fw-bold pe-3">Total</td>
+                <td></td>
+                <td>${tot.actual}</td>
+                <td>${tot.dwgTotal}</td>
+                <td>${tot.fitupAcc}</td>
+                <td>${tot.weldedCompleted}</td>
+                <td>${tot.weldedBacklog}</td>
+                <td>${tot.visualAcc}</td>
+                <td>${tot.visualRemain}</td>
+                <td></td>
+                <td>${tot.rtReq}</td>
+                <td>${tot.rtSelect}</td>
+                <td>${tot.rtDone}</td>
+                <td>${tot.rtRemaining}</td>
+                <td>${rtCurTot}</td>
+                <td>${rtFinTot}</td>
+                <td></td>
+                <td>${tot.mtReq}</td>
+                <td>${tot.mtSelect}</td>
+                <td>${mtCurTot}</td>
+                <td>${mtFinTot}</td>
+                <td>${tot.htDone}</td>
+                <td>${hardPctTot}</td>
+                <td>${tot.pmiCount}</td>
+                <td>${pmiPctTot}</td>
+                <td>${tot.pwhtDone}</td>
+                <td>${tot.ferriteDone}</td>
+                <td>${tot.r1}</td>
+                <td>${tot.r2}</td>
+                <td>${tot.rs}</td>
+                <td>${tot.rwTotal}</td>
+                <td>${tot.penTotal}</td>
+                <td>${tot.lineCount.size}</td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>`;
 
             // Update KPIs
@@ -5487,29 +5913,102 @@
             document.getElementById('ndrDetailTbody').innerHTML = tbodyHtml;
 
             // Detail totals
-            const tot = { actual: 0, dwgTotal: 0, visualAcc: 0, visualRemain: 0, rtReq: 0, rtSelect: 0, rtDone: 0, mtReq: 0, mtSelect: 0, hardCount: 0, pmiCount: 0, r1: 0, r2: 0, rs: 0, rwTotal: 0, penTotal: 0, lineCount: new Set() };
+            const tot = { 
+                actual: 0, 
+                dwgTotal: 0, 
+                fitupAcc: 0, 
+                weldedCompleted: 0, 
+                weldedBacklog: 0, 
+                visualAcc: 0, 
+                visualRemain: 0, 
+                rtReq: 0, 
+                rtSelect: 0, 
+                rtDone: 0, 
+                rtRemaining: 0, 
+                mtReq: 0, 
+                mtSelect: 0, 
+                hardCount: 0, 
+                pmiCount: 0, 
+                htDone: 0, 
+                pwhtDone: 0, 
+                ferriteDone: 0, 
+                r1: 0, 
+                r2: 0, 
+                rs: 0, 
+                rwTotal: 0, 
+                penTotal: 0, 
+                lineCount: new Set() 
+            };
             rows.forEach(g => {
-                tot.actual += g.actual; tot.dwgTotal += g.dwgTotal; tot.visualAcc += g.visualAcc; tot.visualRemain += g.visualRemain;
-                tot.rtReq += g.rtReq; tot.rtSelect += g.rtSelect; tot.rtDone += g.rtDone;
-                tot.mtReq += g.mtReq; tot.mtSelect += g.mtSelect;
-                tot.hardCount += g.hardCount; tot.pmiCount += g.pmiCount;
-                tot.r1 += g.r1; tot.r2 += g.r2; tot.rs += g.rs; tot.rwTotal += g.rwTotal; tot.penTotal += g.penTotal;
+                tot.actual += g.actual; 
+                tot.dwgTotal += g.dwgTotal;
+                tot.fitupAcc += g.fitupAcc;
+                tot.weldedCompleted += g.weldedCompleted;
+                tot.weldedBacklog += g.weldedBacklog;
+                tot.visualAcc += g.visualAcc; 
+                tot.visualRemain += g.visualRemain;
+                tot.rtReq += g.rtReq; 
+                tot.rtSelect += g.rtSelect; 
+                tot.rtDone += g.rtDone;
+                tot.rtRemaining += g.rtRemaining;
+                tot.mtReq += g.mtReq; 
+                tot.mtSelect += g.mtSelect;
+                tot.hardCount += g.hardCount; 
+                tot.pmiCount += g.pmiCount;
+                tot.htDone += g.htDone;
+                tot.pwhtDone += g.pwhtDone;
+                tot.ferriteDone += g.ferriteDone;
+                tot.r1 += g.r1; 
+                tot.r2 += g.r2; 
+                tot.rs += g.rs; 
+                tot.rwTotal += g.rwTotal;
+                tot.penTotal += g.penTotal;
                 g.lines.forEach(l => tot.lineCount.add(l));
             });
+            const rtCurTot = tot.actual > 0 ? (tot.rtSelect / tot.actual * 100).toFixed(0) + '%' : '-';
+            const rtFinTot = tot.rtReq > 0 ? (tot.rtSelect / tot.rtReq * 100).toFixed(0) + '%' : '-';
+            const mtCurTot = tot.actual > 0 ? (tot.mtSelect / tot.actual * 100).toFixed(0) + '%' : '-';
+            const mtFinTot = tot.mtReq > 0 ? (tot.mtSelect / tot.mtReq * 100).toFixed(0) + '%' : '-';
+            const pmiPctTot = tot.actual > 0 ? (tot.pmiCount / tot.actual * 100).toFixed(1) + '%' : '-';
+            const hardPctTot = tot.hardCount > 0 ? (tot.htDone / tot.hardCount * 100).toFixed(1) + '%' : '-';
+
             document.getElementById('ndrDetailTfoot').innerHTML = `<tr>
-                <td colspan="4" class="text-end fw-bold pe-3">Total</td><td></td><td>${tot.actual}</td><td>${tot.dwgTotal}</td>
-                <td>${tot.actual}</td><td>${tot.visualAcc}</td><td>${tot.visualRemain}</td>
-                <td></td><td>${tot.rtReq}</td><td>${tot.rtSelect}</td><td>${tot.rtDone}</td>
-                <td>${tot.actual > 0 ? (tot.rtSelect/tot.actual*100).toFixed(0)+'%' : '-'}</td>
-                <td>${tot.rtReq > 0 ? (tot.rtSelect/tot.rtReq*100).toFixed(0)+'%' : '-'}</td>
-                <td></td><td>${tot.mtReq}</td><td>${tot.mtSelect}</td>
-                <td>${tot.actual > 0 ? (tot.mtSelect/tot.actual*100).toFixed(0)+'%' : '-'}</td>
-                <td>${tot.mtReq > 0 ? (tot.mtSelect/tot.mtReq*100).toFixed(0)+'%' : '-'}</td>
-                <td>${tot.actual > 0 ? (tot.hardCount/tot.actual*100).toFixed(1)+'%' : '-'}</td>
-                <td>${tot.pmiCount}</td><td>${tot.actual > 0 ? (tot.pmiCount/tot.actual*100).toFixed(1)+'%' : '-'}</td>
-                <td>${tot.r1}</td><td>${tot.r2}</td><td>${tot.rs}</td><td>${tot.rwTotal}</td>
-                <td>${tot.penTotal}</td><td>${tot.lineCount.size}</td>
-                <td></td><td></td>
+                <td colspan="4" class="text-end fw-bold pe-3">Total</td>
+                <td></td>
+                <td>${tot.actual}</td>
+                <td>${tot.dwgTotal}</td>
+                <td>${tot.fitupAcc}</td>
+                <td>${tot.weldedCompleted}</td>
+                <td>${tot.weldedBacklog}</td>
+                <td>${tot.visualAcc}</td>
+                <td>${tot.visualRemain}</td>
+                <td></td>
+                <td>${tot.rtReq}</td>
+                <td>${tot.rtSelect}</td>
+                <td>${tot.rtDone}</td>
+                <td>${tot.rtRemaining}</td>
+                <td>${rtCurTot}</td>
+                <td>${rtFinTot}</td>
+                <td></td>
+                <td>${tot.mtReq}</td>
+                <td>${tot.mtSelect}</td>
+                <td>${mtCurTot}</td>
+                <td>${mtFinTot}</td>
+                <td>${tot.htDone}</td>
+                <td>${hardPctTot}</td>
+                <td>${tot.pmiCount}</td>
+                <td>${pmiPctTot}</td>
+                <td>${tot.pwhtDone}</td>
+                <td>${tot.ferriteDone}</td>
+                <td>${tot.r1}</td>
+                <td>${tot.r2}</td>
+                <td>${tot.rs}</td>
+                <td>${tot.rwTotal}</td>
+                <td>${tot.penTotal}</td>
+                <td>${tot.lineCount.size}</td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>`;
         }
 
@@ -5542,74 +6041,22 @@
                 const needsMT = (rule.mtBw || rule.mtSw || rule.mtFw || 0) > 0;
 
                 const isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT));
-                const isRej  = (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ');
-                const isPend = !isDone && !isRej;
-
-                if (isRej) repair++; else if (isPend) pending++; else done++;
-
-                const rowCls = isRej ? 'table-danger' : (isPend ? 'table-warning' : 'table-success bg-opacity-25');
-                const stBadge = isRej
-                    ? '<span class="badge bg-danger"><i class="fas fa-wrench me-1"></i>REPAIR</span>'
-                    : (isPend ? '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>PENDING</span>'
-                              : '<span class="badge bg-success"><i class="fas fa-check me-1"></i>DONE</span>');
-
-                rows += `<tr class="${rowCls}">
-                    <td class="text-muted">${i+1}</td>
-                    <td class="fw-bold">${d.joint || '-'}</td>
-                    <td>${d.spool || '-'}</td>
-                    <td>${d.weldType || '-'}</td>
-                    <td>${d.size || '-'}</td>
-                    <td>${d.thick || '-'}</td>
-                    <td>${d.mat || '-'}</td>
-                    <td>${badge(d.rtRes)}</td>
-                    <td>${badge(d.pautRes)}</td>
-                    <td>${badge(d.mtRes)}</td>
-                    <td>${badge(d.ptRes)}</td>
-                    <td>${badge(d.pwhtRes)}</td>
-                    <td>${stBadge}</td>
-                    <td title="${(d.location||'-').replace(/"/g,'&quot;')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.location || '-'}</td>
-                    <td title="${(d.jointRem||'-').replace(/"/g,'&quot;')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.75rem;">${d.jointRem || '-'}</td>
-                </tr>`;
-            });
-
-            const total = joints.length;
-            document.getElementById('ndrJointModalBody').innerHTML = `
-                <div class="d-flex gap-3 mb-3 px-1">
-                    <div class="rounded px-3 py-2 bg-success bg-opacity-10 text-success fw-bold">\u2714 Done: ${done}</div>
-                    <div class="rounded px-3 py-2 bg-warning bg-opacity-10 text-warning fw-bold" style="color:#856404!important">\u23F3 Pending: ${pending}</div>
-                    <div class="rounded px-3 py-2 bg-danger bg-opacity-10 text-danger fw-bold">\u26A0 Repair: ${repair}</div>
-                    <div class="rounded px-3 py-2 bg-secondary bg-opacity-10 text-secondary fw-bold">Total: ${total}</div>
-                </div>
-                <div style="max-height:420px;overflow-y:auto;">
-                <table class="table table-sm table-bordered table-hover align-middle mb-0" style="font-size:0.78rem;">
-                    <thead class="table-dark sticky-top">
-                        <tr>
-                            <th>No.</th><th>Joint No.</th><th>Spool</th><th>Weld Type</th>
-                            <th>Size</th><th>Thk</th><th>Material</th>
-                            <th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>PWHT</th><th>Status</th>
-                            <th>Location</th><th>TV</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table></div>`;
-
-            const modalEl = document.getElementById('ndrJointModal');
-            let bsModal = bootstrap.Modal.getInstance(modalEl);
-            if (!bsModal) bsModal = new bootstrap.Modal(modalEl, { size: 'xl' });
-            bsModal.show();
-        }
-
-        async function exportNdtRandomExcel() {
+async function exportNdtRandomExcel() {
             if (filteredData.length === 0) return alert('No data');
             
             let data = filteredData;
             const fSys = document.getElementById('ndrFilterSys').value;
             if (fSys) data = data.filter(d => d.system === fSys);
             
+            const fSub = document.getElementById('ndrFilterSubcon')?.value;
+            if (fSub) data = data.filter(d => d.isSub === fSub);
+
+            const fWtype = document.getElementById('ndrFilterWtype')?.value;
+            if (fWtype) data = data.filter(d => classifyWeldType(d.weldType) === fWtype);
+            
             const groups = buildNdrGroups(data, ndrViewMode);
             let rows = Object.values(groups);
 
-            // Date filters (same as render)
             const fMonthEx = parseInt(document.getElementById('ndrFilterMonth').value);
             const fDayEx   = parseInt(document.getElementById('ndrFilterDay').value);
             if (!isNaN(fMonthEx) || !isNaN(fDayEx)) {
@@ -5656,29 +6103,20 @@
             const hFill = (argb) => ({ type:'pattern', pattern:'solid', fgColor:{argb} });
             const label = ndrViewMode === 'tp' ? 'Test Package No.' : 'Line';
 
-            // ── ROW 1: Group span headers ─────────────────────────────────────
-            ws.addRow(['','','','','','','','','','', 'RT / PAUT','','','','','', 'MT / PT','','','','', 'Hardness & PMI','','', 'Repair / Rework','','','', '','','','','']);
-            for (let c of ['A','B','C','D','E','F','G','H','I','J']) ws.mergeCells(`${c}1:${c}2`);
-            ws.mergeCells('K1:P1'); ws.mergeCells('Q1:U1'); ws.mergeCells('V1:X1'); ws.mergeCells('Y1:AB1');
-            for (let c of ['AC','AD','AE']) ws.mergeCells(`${c}1:${c}2`);
+            ws.addRow(['','','','','','','','','','','','', 'RT / PAUT','','','','','','', 'MT / PT','','','','', 'Hardness & PMI','','','','','', 'Repair / Rework','','','', '','','','','','']);
+            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L']) ws.mergeCells(`${c}1:${c}2`);
+            ws.mergeCells('M1:S1'); ws.mergeCells('T1:X1'); ws.mergeCells('Y1:AD1'); ws.mergeCells('AE1:AH1');
+            for (let c of ['AI','AJ','AK','AL','AM','AN']) ws.mergeCells(`${c}1:${c}2`);
 
-            ws.addRow(['No.', label, 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Visual Acc', 'Visual Remain',
-                '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', '%RT Current', '%RT Final',
+            ws.addRow(['No.', label, 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc', 'Visual Remain',
+                '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final',
                 '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final',
-                '%Hard', 'PMI', '%PMI',
+                'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done',
                 'R1', 'R2', 'RS', 'RW Total',
-                'PEN Total', 'Line Count', 'Location', 'TV', 'Compliance']);
+                'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
 
-            // Header colour by column range
             const HC = (col) => {
-                if (col <= 10) return 'FF263238';
-                if (col <= 16) return 'FF1565C0';
-                if (col <= 21) return 'FF2E7D32';
-                if (col <= 24) return 'FF4A148C';
-                if (col <= 28) return 'FFB71C1C';
-                if (col === 29) return 'FF4A148C';
-                if (col === 31) return 'FF1B5E20';
-                return 'FF263238';
+                if (col <= 12) return 'FF263238'; if (col <= 19) return 'FF1565C0'; if (col <= 24) return 'FF2E7D32'; if (col <= 30) return 'FF4A148C'; if (col <= 34) return 'FFB71C1C'; if (col === 35) return 'FF4A148C'; if (col === 36) return 'FF1B5E20'; return 'FF263238';
             };
             for (let r = 1; r <= 2; r++) {
                 ws.getRow(r).eachCell({includeEmpty:true}, (cell, col) => {
@@ -5690,120 +6128,69 @@
             }
             ws.getRow(1).height = 22; ws.getRow(2).height = 20;
 
-            // ── DATA ROWS — track groups for merge cell application ───────────
             const HEADER_ROWS = 2;
-            const mergeTracker = {}; // key → { startRow, endRow, groupNum }
-            let groupNum = 0;
-            let currentGroupKey = null;
-            const grpBg = ['FFFFFFFF', 'FFF3F8FF']; // alternating per group
+            const mergeTracker = {}; 
+            let groupNum = 0, currentGroupKey = null;
+            const grpBg = ['FFFFFFFF', 'FFF3F8FF'];
 
             rows.forEach((g, i) => {
                 const excelRowNum = HEADER_ROWS + i + 1;
-
                 if (g.key !== currentGroupKey) {
                     currentGroupKey = g.key;
                     groupNum++;
-                    mergeTracker[g.key] = { startRow: excelRowNum, endRow: excelRowNum, groupNum };
+                    mergeTracker[g.key] = { startRow: excelRowNum, endRow: excelRowNum };
                 } else {
                     mergeTracker[g.key].endRow = excelRowNum;
                 }
-
                 const bgArgb = grpBg[groupNum % 2];
                 const rtFinalVal = g.rtFinal === -1 ? 'N/A' : (g.rtFinal >= 0 ? Math.min(g.rtFinal,100).toFixed(1)+'%' : '0%');
                 const mtFinalVal = g.mtFinal === -1 ? 'N/A' : (g.mtFinal >= 0 ? Math.min(g.mtFinal,100).toFixed(1)+'%' : '0%');
-
-                const row = ws.addRow([
-                    groupNum, g.key, g.testDate||'TBA', g.matStr, g.wt,
-                    g.actual, g.dwgTotal, g.fitupAcc||g.actual, g.visualAcc, g.visualRemain,
-                    g.rtPct>0 ? g.rtPct : '', g.rtReq||'', g.rtSelect||'', g.rtDone||'',
-                    g.rtPct>0 ? g.rtCurrent.toFixed(1)+'%' : '', rtFinalVal,
-                    g.mtPct>0 ? g.mtPct+'%' : '', g.mtReq||'', g.mtSelect||'',
-                    g.mtPct>0 ? g.mtCurrent.toFixed(1)+'%' : '', mtFinalVal,
-                    g.hardPct>0 ? g.hardPct.toFixed(1)+'%' : '', g.pmiCount||'',
-                    g.pmiPct>0 ? g.pmiPct.toFixed(1)+'%' : '',
-                    g.r1||'', g.r2||'', g.rs||'', g.rwTotal||'',
-                    g.penTotal||'', g.lineCount,
-                    g.locationStr || '-', g.remarkStr || '-',
-                    g.isCompliant ? 'PASS' : 'FAIL'
-                ]);
-
+                const row = ws.addRow([groupNum, g.key, g.testDate||'TBA', g.matStr, g.wt, g.actual, g.dwgTotal, g.fitupAcc||0, g.weldedCompleted||0, g.weldedBacklog||0, g.visualAcc, g.visualRemain, g.rtPct>0?g.rtPct:'', g.rtReq||'', g.rtSelect||'', g.rtDone||'', g.rtRemaining||0, g.rtPct>0?g.rtCurrent.toFixed(1)+'%':'', rtFinalVal, g.mtPct>0?g.mtPct+'%':'', g.mtReq||'', g.mtSelect||'', g.mtPct>0?g.mtCurrent.toFixed(1)+'%':'', mtFinalVal, g.htDone||0, g.hardPct>0?g.hardPct.toFixed(1)+'%':'', g.pmiCount||'', g.pmiPct>0?g.pmiPct.toFixed(1)+'%':'', g.pwhtDone||0, g.ferriteDone||0, g.r1||'', g.r2||'', g.rs||'', g.rwTotal||'', g.penTotal||'', g.lineCount, g.locationStr||'-', g.remarkStr||'-', g.status||'In Progress', g.isCompliant?'PASS':'FAIL']);
                 row.eachCell({includeEmpty:true}, (cell, col) => {
-                    cell.alignment = { vertical:'middle', horizontal:'center', wrapText: col<=4 };
+                    cell.alignment = { vertical:'middle', horizontal:'center' };
                     cell.border = thinBdr;
                     if (bgArgb !== 'FFFFFFFF') cell.fill = hFill(bgArgb);
-
-                    // %RT Final (16) & %MT Final (21): colour by value
-                    if (col === 16 || col === 21) {
+                    if (col === 19 || col === 24) {
                         const pct = parseFloat(cell.value);
                         if (cell.value === 'N/A') { cell.fill = hFill('FFF5F5F5'); cell.font = {color:{argb:'FFBDBDBD'}}; }
                         else if (!isNaN(pct)) {
                             if (pct >= 100) { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, color:{argb:'FF155724'}}; }
                             else if (pct > 0) { cell.fill = hFill('FFFFF3E0'); cell.font = {bold:true, color:{argb:'FFE65100'}}; }
-                            else             { cell.fill = hFill('FFFFE0E0'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
+                            else { cell.fill = hFill('FFFFE0E0'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
                         }
                     }
-                    // RW Total (28): red highlight
-                    if (col === 28 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
-                    // Compliance (33): PASS/FAIL colour
-                    if (col === 33) {
+                    if (col === 34 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
+                    if (col === 40) {
                         if (cell.value === 'PASS') { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, size:10, color:{argb:'FF155724'}}; }
-                        else                       { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, size:10, color:{argb:'FF842029'}}; }
+                        else { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, size:10, color:{argb:'FF842029'}}; }
                     }
                 });
             });
 
-            // ═══ APPLY MERGE CELLS — mirrors HTML rowspan exactly ════════════
             Object.values(mergeTracker).forEach(m => {
                 if (m.startRow < m.endRow) {
-                    // Merge cols 1–4 (No, Key, TestDate, Material) across same-key rows
                     for (let col = 1; col <= 4; col++) {
                         ws.mergeCells(m.startRow, col, m.endRow, col);
-                        const cell = ws.getCell(m.startRow, col);
-                        cell.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
+                        ws.getCell(m.startRow, col).alignment = { vertical:'middle', horizontal:'center', wrapText:true };
                     }
                 }
-                // Thick bottom border to visually separate groups
-                const lastRowObj = ws.getRow(m.endRow);
-                lastRowObj.eachCell({includeEmpty:true}, (cell) => {
-                    const b = cell.border || {};
-                    cell.border = {
-                        top: b.top || thinBdr.top, left: b.left || thinBdr.left,
-                        right: b.right || thinBdr.right,
-                        bottom: { style:'medium', color:{argb:'FF78909C'} }
-                    };
-                });
             });
-
-            // ── COLUMN WIDTHS ─────────────────────────────────────────────────
-            ws.columns = [
-                {width:5},{width:32},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:8},{width:9},
-                {width:7},{width:9},{width:11},{width:11},{width:12},{width:12},
-                {width:9},{width:10},{width:10},{width:13},{width:12},
-                {width:8},{width:6},{width:8},
-                {width:5},{width:5},{width:5},{width:9},
-                {width:8},{width:8},{width:18},{width:25},{width:11}
-            ];
-
-            // Freeze header rows + 2 key columns
+            ws.columns = [{width:5},{width:32},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},{width:8},{width:9},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},{width:9},{width:10},{width:10},{width:13},{width:12},{width:8},{width:8},{width:8},{width:8},{width:8},{width:8},{width:5},{width:5},{width:5},{width:9},{width:8},{width:8},{width:18},{width:25},{width:12},{width:11}];
             ws.views = [{ state:'frozen', xSplit:2, ySplit:2, topLeftCell:'C3' }];
 
-            // ═══ SHEET 2: Line NDT Detail (per line within each TP) ══════════
             const ws2 = wb.addWorksheet('Line NDT Detail');
             const tpKeys = [...new Set(rows.map(g => g.key))];
-            const thinBdr2 = thinBdr;
+            ws2.addRow(['','','','','','','','','','','','','','', 'RT / PAUT','','','','','','', 'MT / PT','','','','', 'Hardness & PMI','','','','', 'Repair / Rework','','','', '','','','','','']);
+            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L','M']) ws2.mergeCells(`${c}1:${c}2`);
+            ws2.mergeCells('N1:T1'); ws2.mergeCells('U1:Y1'); ws2.mergeCells('Z1:AE1'); ws2.mergeCells('AF1:AI1');
+            for (let c of ['AJ','AK','AL','AM','AN','AO']) ws2.mergeCells(`${c}1:${c}2`);
+            ws2.addRow(['No.', 'Test Package', 'Line', 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc', 'Visual Remain', '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final', '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final', 'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done', 'R1', 'R2', 'RS', 'RW Total', 'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
+            
+            const HC2 = (col) => { if(col<=13) return 'FF263238'; if(col<=20) return 'FF1565C0'; if(col<=25) return 'FF2E7D32'; if(col<=31) return 'FF4A148C'; if(col<=35) return 'FFB71C1C'; if(col===36) return 'FF4A148C'; if(col===37) return 'FF1B5E20'; return 'FF263238'; };
+            for (let r = 1; r <= 2; r++) { ws2.getRow(r).eachCell({includeEmpty:true}, (cell, col) => { cell.font = {bold:true,size:9,color:{argb:'FFE0E0E0'}}; cell.alignment = {vertical:'middle',horizontal:'center',wrapText:true}; cell.fill = hFill(HC2(col)); cell.border = thinBdr; }); }
+            ws2.getRow(1).height = 22; ws2.getRow(2).height = 20;
 
-            // Headers
-            const hd2 = ws2.addRow(['No.','Test Package','Line','Weld Type','Actual Joints','RT%','RT Req','RT Select','%RT Final','MT%','MT Req','MT Select','%MT Final','Location','TV','NDT Status']);
-            hd2.eachCell({includeEmpty:true}, (cell, col) => {
-                cell.font = {bold:true, size:9, color:{argb:'FFE0E0E0'}};
-                cell.alignment = {vertical:'middle', horizontal:'center', wrapText:true};
-                const grpC = col <= 5 ? 'FF263238' : col <= 8 ? 'FF1565C0' : col <= 12 ? 'FF2E7D32' : col <= 15 ? 'FF263238' : 'FF37474F';
-                cell.fill = hFill(grpC);
-                cell.border = thinBdr2;
-            });
-            ws2.getRow(1).height = 22;
-
-            let s2RowNum = 1, s2Idx = 1;
+            let s2RowNum = 2, s2Idx = 1;
             const mergeTracker2 = {};
             tpKeys.forEach(tp => {
                 const tpData = data.filter(d => (d.testPkg || '').toString().trim() === tp);
@@ -5813,25 +6200,12 @@
                 mergeTracker2[tp] = { start: startRow2, end: startRow2 + lineRows.length - 1 };
                 lineRows.forEach((lg, li) => {
                     s2RowNum++;
-                    const rtFv = lg.rtFinal === -1 ? 'N/A' : Math.min(lg.rtFinal, 999).toFixed(1) + '%';
-                    const mtFv = lg.mtFinal === -1 ? 'N/A' : Math.min(lg.mtFinal, 999).toFixed(1) + '%';
-                    const ok = lg.isCompliant;
-                    const lineRow = ws2.addRow([
-                        li === 0 ? s2Idx++ : '',
-                        li === 0 ? tp : '',
-                        lg.key, lg.wt, lg.actual,
-                        lg.rtPct > 0 ? lg.rtPct : '',
-                        lg.rtReq || '', lg.rtSelect || '', rtFv,
-                        lg.mtPct > 0 ? lg.mtPct + '%' : '',
-                        lg.mtReq || '', lg.mtSelect || '', mtFv,
-                        lg.locationStr || '-', lg.remarkStr || '-',
-                        ok ? 'OK' : 'INCOMPLETE'
-                    ]);
+                    const lineRow = ws2.addRow([li===0?s2Idx++:'', li===0?tp:'', lg.key, lg.testDate||'TBA', lg.matStr, lg.wt, lg.actual, lg.dwgTotal, lg.fitupAcc||0, lg.weldedCompleted||0, lg.weldedBacklog||0, lg.visualAcc, lg.visualRemain, lg.rtPct>0?lg.rtPct:'', lg.rtReq||'', lg.rtSelect||'', lg.rtDone||'', lg.rtRemaining||0, lg.rtPct>0?lg.rtCurrent.toFixed(1)+'%':'', lg.rtFinal===-1?'N/A':Math.min(lg.rtFinal,999).toFixed(1)+'%', lg.mtPct>0?lg.mtPct+'%':'', lg.mtReq||'', lg.mtSelect||'', lg.mtCurrent.toFixed(1)+'%', lg.mtFinal===-1?'N/A':Math.min(lg.mtFinal,999).toFixed(1)+'%', lg.htDone||0, lg.hardPct>0?lg.hardPct.toFixed(1)+'%':'', lg.pmiCount||'', lg.pmiPct>0?lg.pmiPct.toFixed(1)+'%':'', lg.pwhtDone||0, lg.ferriteDone||0, lg.r1||'', lg.r2||'', lg.rs||'', lg.rwTotal||'', lg.penTotal||'', lg.lineCount, lg.locationStr||'-', lg.remarkStr||'-', lg.status||'In Progress', lg.isCompliant?'PASS':'FAIL']);
                     lineRow.eachCell({includeEmpty:true}, (cell, col) => {
                         cell.alignment = {vertical:'middle', horizontal:'center'};
-                        cell.border = thinBdr2;
-                        // %RT Final col 9
-                        if (col === 9) {
+                        cell.border = thinBdr;
+                        // %RT Final (20) & %MT Final (25)
+                        if (col === 20 || col === 25) {
                             const pct = parseFloat(cell.value);
                             if (cell.value === 'N/A') { cell.fill = hFill('FFF5F5F5'); cell.font = {color:{argb:'FFBDBDBD'}}; }
                             else if (!isNaN(pct)) {
@@ -5839,19 +6213,12 @@
                                 else            { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
                             }
                         }
-                        // %MT Final col 13
-                        if (col === 13) {
-                            const pct = parseFloat(cell.value);
-                            if (cell.value === 'N/A') { cell.fill = hFill('FFF5F5F5'); cell.font = {color:{argb:'FFBDBDBD'}}; }
-                            else if (!isNaN(pct)) {
-                                if (pct >= 100) { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, color:{argb:'FF155724'}}; }
-                                else            { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
-                            }
-                        }
-                        // Status col 16
-                        if (col === 16) {
-                            if (cell.value === 'OK') { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, color:{argb:'FF155724'}}; }
-                            else { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, color:{argb:'FF842029'}}; }
+                        // RW Total (35)
+                        if (col === 35 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
+                        // Compliance (41)
+                        if (col === 41) {
+                            if (cell.value === 'PASS') { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, color:{argb:'FF155724'}}; }
+                            else                       { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, color:{argb:'FF842029'}}; }
                         }
                     });
                 });
@@ -5867,8 +6234,15 @@
                     });
                 }
             });
-            ws2.columns = [{width:5},{width:30},{width:35},{width:9},{width:10},{width:7},{width:7},{width:9},{width:11},{width:8},{width:7},{width:9},{width:11},{width:18},{width:12},{width:14}];
-            ws2.views = [{ state:'frozen', xSplit:2, ySplit:1, topLeftCell:'C2' }];
+            ws2.columns = [
+                {width:5},{width:30},{width:35},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},
+                {width:8},{width:9},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},
+                {width:9},{width:10},{width:10},{width:13},{width:12},
+                {width:8},{width:8},{width:8},{width:8},{width:8},
+                {width:5},{width:5},{width:5},{width:9},
+                {width:8},{width:8},{width:18},{width:25},{width:12},{width:11}
+            ];
+            ws2.views = [{ state:'frozen', xSplit:2, ySplit:2, topLeftCell:'C3' }];
 
             const buffer = await wb.xlsx.writeBuffer();
             saveAs(new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
