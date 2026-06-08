@@ -6041,6 +6041,63 @@
                 const needsMT = (rule.mtBw || rule.mtSw || rule.mtFw || 0) > 0;
 
                 const isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT));
+                const isRej  = (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ');
+                const isPend = !isDone && !isRej;
+
+                if (isRej) repair++; else if (isPend) pending++; else done++;
+
+                const rowCls = isRej ? 'table-danger' : (isPend ? 'table-warning' : 'table-success bg-opacity-25');
+                const stBadge = isRej
+                    ? '<span class="badge bg-danger"><i class="fas fa-wrench me-1"></i>REPAIR</span>'
+                    : (isPend ? '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>PENDING</span>'
+                              : '<span class="badge bg-success"><i class="fas fa-check me-1"></i>DONE</span>');
+
+                rows += `<tr class="${rowCls}">
+                    <td class="text-muted">${i+1}</td>
+                    <td class="fw-bold">${d.joint || '-'}</td>
+                    <td>${d.spool || '-'}</td>
+                    <td>${d.weldType || '-'}</td>
+                    <td>${d.size || '-'}</td>
+                    <td>${d.thick || '-'}</td>
+                    <td>${d.mat || '-'}</td>
+                    <td>${badge(d.rtRes)}</td>
+                    <td>${badge(d.pautRes)}</td>
+                    <td>${badge(d.mtRes)}</td>
+                    <td>${badge(d.ptRes)}</td>
+                    <td>${badge(d.pwhtRes)}</td>
+                    <td>${stBadge}</td>
+                    <td title="${(d.location||'-').replace(/"/g,'&quot;')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.location || '-'}</td>
+                    <td title="${(d.jointRem||'-').replace(/"/g,'&quot;')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.75rem;">${d.jointRem || '-'}</td>
+                </tr>`;
+            });
+
+            const total = joints.length;
+            document.getElementById('ndrJointModalBody').innerHTML = `
+                <div class="d-flex gap-3 mb-3 px-1">
+                    <div class="rounded px-3 py-2 bg-success bg-opacity-10 text-success fw-bold">\u2714 Done: ${done}</div>
+                    <div class="rounded px-3 py-2 bg-warning bg-opacity-10 text-warning fw-bold" style="color:#856404!important">\u23F3 Pending: ${pending}</div>
+                    <div class="rounded px-3 py-2 bg-danger bg-opacity-10 text-danger fw-bold">\u26A0 Repair: ${repair}</div>
+                    <div class="rounded px-3 py-2 bg-secondary bg-opacity-10 text-secondary fw-bold">Total: ${total}</div>
+                </div>
+                <div style="max-height:420px;overflow-y:auto;">
+                <table class="table table-sm table-bordered table-hover align-middle mb-0" style="font-size:0.78rem;">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>No.</th><th>Joint No.</th><th>Spool</th><th>Weld Type</th>
+                            <th>Size</th><th>Thk</th><th>Material</th>
+                            <th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>PWHT</th><th>Status</th>
+                            <th>Location</th><th>TV</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table></div>`;
+
+            const modalEl = document.getElementById('ndrJointModal');
+            let bsModal = bootstrap.Modal.getInstance(modalEl);
+            if (!bsModal) bsModal = new bootstrap.Modal(modalEl, { size: 'xl' });
+            bsModal.show();
+        }
+
 async function exportNdtRandomExcel() {
             if (filteredData.length === 0) return alert('No data');
             
