@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piping Dashboard V19.2 - AI, Batch & Hydrotest Core</title>
+    <title>Block B1 CPPT© 2026. Piping Fabrication Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231e3a8a'/%3E%3Cpath d='M25 50h50M50 25v50' stroke='%2338bdf8' stroke-width='10' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%23f59e0b'/%3E%3C/svg%3E">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -698,7 +699,14 @@
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div class="d-flex align-items-center">
                 <button class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <h2 class="h5 mb-0 fw-bold">Dashboard V19.6 High Density (Manager AI Edition)</h2>
+                <h2 class="h5 mb-0 fw-bold d-flex align-items-center">
+                    <svg class="me-2" width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 6px;">
+                        <rect width="100" height="100" rx="20" fill="#1e3a8a"/>
+                        <path d="M25 50h50M50 25v50" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>
+                        <circle cx="50" cy="50" r="14" fill="#f59e0b"/>
+                    </svg>
+                    <span>Block B1 CPPT© 2026. Piping Fabrication Dashboard</span>
+                </h2>
             </div>
             <div>
                 <button class="notification-btn me-3 text-warning" onclick="showCalendarModal()" title="Project Calendar"><i class="fas fa-calendar-alt"></i></button>
@@ -1319,6 +1327,12 @@
             </div>
             </div>
 
+        <!-- Footer Copyright -->
+        <footer class="glass-card mt-4 py-3 text-center">
+            <div class="text-muted small fw-semibold">
+                Copied right by CPPT Project Team
+            </div>
+        </footer>
         </div>
     </div>
 
@@ -2087,6 +2101,10 @@
                 });
                 modalBody.innerHTML = html;
             }
+        }
+
+        function showReminders() {
+            new bootstrap.Modal(document.getElementById('reminderModal')).show();
         }
 
         // --- GIẢI PHÁP CHUẨN ĐỌC NGÀY THÁNG EXCEL VÀ CSV ---
