@@ -765,7 +765,7 @@
                             <div>
                                 <div class="flow-value" id="flowWelded">0</div>
                                 <div class="flow-pct" id="flowWeldedPct">0%</div>
-                                <span class="flow-backlog-badge bg-backlog-weld" id="flowWeldBacklog" title="Fit-up Accepted - Welded Completed">Backlog: 0</span>
+                                <span class="flow-backlog-badge bg-backlog-weld" id="flowWeldBacklog" title="Fit-up Accepted - Visual Accepted">Backlog: 0</span>
                             </div>
                         </div>
                         
@@ -3324,7 +3324,7 @@
             updateFlowElement('flowLeak', leakVal, totVal > 0 ? (leakVal / totVal * 100).toFixed(1) + '%' : '0%');
 
             // Backlog badges
-            const weldBacklog = Math.max(0, fitVal - weldVal);
+            const weldBacklog = Math.max(0, fitVal - visVal);
             const visBacklog = Math.max(0, weldVal - visVal);
             const wBEl = document.getElementById('flowWeldBacklog');
             if (wBEl) wBEl.innerText = `Backlog: ${wBEl.title = weldBacklog.toLocaleString()}`;
@@ -5366,6 +5366,25 @@
         // NDT RANDOM INSPECTION MODULE
         // ============================================================
         let ndrViewMode = 'tp'; // 'tp' or 'line'
+        let ndrSortCol = 'key';
+        let ndrSortAsc = true;
+
+        function getSortArrow(colProp) {
+            if (ndrSortCol === colProp) {
+                return ndrSortAsc ? ' <i class="fas fa-sort-up text-primary"></i>' : ' <i class="fas fa-sort-down text-primary"></i>';
+            }
+            return ' <i class="fas fa-sort text-muted" style="opacity:0.3; font-size:0.7rem;"></i>';
+        }
+
+        function setNdrSort(colProp) {
+            if (ndrSortCol === colProp) {
+                ndrSortAsc = !ndrSortAsc;
+            } else {
+                ndrSortCol = colProp;
+                ndrSortAsc = true;
+            }
+            renderNdtRandom();
+        }
 
         function setNdrView(mode) {
             ndrViewMode = mode;
@@ -5392,24 +5411,53 @@
             return 'BW';
         }
 
-        function getNdrHeader(keyLabel) {
+        function getNdrHeader(keyLabel, isDetail = false) {
+            const h = (prop, label, cls = '') => {
+                const classAttr = cls ? `class="${cls}"` : '';
+                if (isDetail) {
+                    return `<th ${classAttr} style="white-space:nowrap;">${label}</th>`;
+                }
+                return `<th ${classAttr} onclick="setNdrSort('${prop}')" style="cursor:pointer; user-select:none; white-space:nowrap;">${label}${getSortArrow(prop)}</th>`;
+            };
             return `<tr>
-                <th>No.</th><th>${keyLabel}</th><th>Test Date</th><th>Material</th><th>Weld Type</th><th>Actual Joint</th>
-                <th>DWG_total Joint</th><th>Fit-up Acc</th><th>Welded Completed</th><th>Welded Backlog</th><th>Visual Acc</th>
-                <th class="ndr-grp-rt">%RT/PAUT</th><th class="ndr-grp-rt">RT/PAUT Required</th>
-                <th class="ndr-grp-rt">RT/PAUT Select</th><th class="ndr-grp-rt">RT/PAUT Done</th><th class="ndr-grp-rt">RT/PAUT Remaining</th>
-                <th class="ndr-grp-rt">%RT/PAUT Current</th><th class="ndr-grp-rt">%RT/PAUT Final</th>
-                <th class="ndr-grp-mt">%MT/PT</th><th class="ndr-grp-mt">MT/PT Required</th>
-                <th class="ndr-grp-mt">MT/PT Select</th><th class="ndr-grp-mt">%MT/PT Current</th><th class="ndr-grp-mt">%MT/PT Final</th>
-                <th class="ndr-grp-other">HT Done</th><th class="ndr-grp-other">%Hard</th><th class="ndr-grp-other">PMI Done</th><th class="ndr-grp-other">%PMI</th>
-                <th class="ndr-grp-other">PWHT Done</th><th class="ndr-grp-other">Ferrite Done</th>
-                <th class="ndr-grp-repair">R1</th><th class="ndr-grp-repair">R2</th>
-                <th class="ndr-grp-repair">RS</th><th class="ndr-grp-repair">RW_ total</th>
-                <th class="ndr-grp-other">PEN_ total</th>
-                <th>Line Count</th>
-                <th>Location</th>
-                <th>TV</th>
-                <th>Status</th>
+                <th>No.</th>
+                ${h('key', keyLabel)}
+                ${h('testDate', 'Test Date')}
+                ${h('matStr', 'Material')}
+                ${h('wt', 'Weld Type')}
+                ${h('actual', 'Actual Joint')}
+                ${h('dwgTotal', 'DWG_total Joint')}
+                ${h('fitupAcc', 'Fit-up Acc')}
+                ${h('weldedCompleted', 'Welded Completed')}
+                ${h('weldedBacklog', 'Welded Backlog')}
+                ${h('visualAcc', 'Visual Acc')}
+                ${h('rtPct', '%RT/PAUT', 'ndr-grp-rt')}
+                ${h('rtReq', 'RT/PAUT Required', 'ndr-grp-rt')}
+                ${h('rtSelect', 'RT/PAUT Select', 'ndr-grp-rt')}
+                ${h('rtDone', 'RT/PAUT Done', 'ndr-grp-rt')}
+                ${h('rtRemaining', 'RT/PAUT Remaining', 'ndr-grp-rt')}
+                ${h('rtCurrent', '%RT/PAUT Current', 'ndr-grp-rt')}
+                ${h('rtFinal', '%RT/PAUT Final', 'ndr-grp-rt')}
+                ${h('mtPct', '%MT/PT', 'ndr-grp-mt')}
+                ${h('mtReq', 'MT/PT Required', 'ndr-grp-mt')}
+                ${h('mtSelect', 'MT/PT Select', 'ndr-grp-mt')}
+                ${h('mtCurrent', '%MT/PT Current', 'ndr-grp-mt')}
+                ${h('mtFinal', '%MT/PT Final', 'ndr-grp-mt')}
+                ${h('htDone', 'HT Done', 'ndr-grp-other')}
+                ${h('hardPct', '%Hard', 'ndr-grp-other')}
+                ${h('pmiCount', 'PMI Done', 'ndr-grp-other')}
+                ${h('pmiPct', '%PMI', 'ndr-grp-other')}
+                ${h('pwhtDone', 'PWHT Done', 'ndr-grp-other')}
+                ${h('ferriteDone', 'Ferrite Done', 'ndr-grp-other')}
+                ${h('r1', 'R1', 'ndr-grp-repair')}
+                ${h('r2', 'R2', 'ndr-grp-repair')}
+                ${h('rs', 'RS', 'ndr-grp-repair')}
+                ${h('rwTotal', 'RW_ total', 'ndr-grp-repair')}
+                ${h('penTotal', 'PEN_ total', 'ndr-grp-other')}
+                ${h('lineCount', 'Line Count')}
+                ${h('locationStr', 'Location')}
+                ${h('remarkStr', 'TV')}
+                ${h('status', 'Status')}
             </tr>`;
         }
 
@@ -5791,15 +5839,58 @@
                 rows = rows.filter(g => compliantPkgs.includes(g.key));
             }
 
-            // Sort by key name
-            // Sort logic: Nếu check "Sort Fail First", đưa các gói !isCompliant lên đầu
+            // Sort by selected column or fallback to key/weldtype
             rows.sort((a, b) => {
                 if (document.getElementById('ndrSortFailFirst').checked) {
                     const aC = compliantPkgs.includes(a.key) ? 1 : 0;
                     const bC = compliantPkgs.includes(b.key) ? 1 : 0;
                     if (aC !== bC) return aC - bC; // 0 (Fail) lên trước 1 (Ok)
                 }
-                return a.key.localeCompare(b.key) || a.wt.localeCompare(b.wt);
+                
+                let valA = a[ndrSortCol];
+                let valB = b[ndrSortCol];
+                
+                if (valA === undefined || valA === null) valA = '';
+                if (valB === undefined || valB === null) valB = '';
+                
+                if (valA instanceof Set) valA = valA.size;
+                if (valB instanceof Set) valB = valB.size;
+                
+                let comparison = 0;
+                if (ndrSortCol === 'testDate') {
+                    const parseDate = (raw) => {
+                        if (!raw || raw === '-' || raw === 'N/A' || raw === 'TBA') return -Infinity;
+                        const s = raw.toString().trim();
+                        if (/\d{4}-\d{2}-\d{2}/.test(s)) {
+                            return new Date(s).getTime();
+                        }
+                        if (/\d{2}\/\d{2}\/\d{4}/.test(s)) {
+                            const [dd, mm, yyyy] = s.split('/');
+                            return new Date(+yyyy, +mm - 1, +dd).getTime();
+                        }
+                        if (/\d{2}-\d{2}-\d{4}/.test(s)) {
+                            const [dd, mm, yyyy] = s.split('-');
+                            return new Date(+yyyy, +mm - 1, +dd).getTime();
+                        }
+                        const parsed = Date.parse(s);
+                        return isNaN(parsed) ? -Infinity : parsed;
+                    };
+                    const timeA = parseDate(valA);
+                    const timeB = parseDate(valB);
+                    comparison = timeA - timeB;
+                } else if (typeof valA === 'number' && typeof valB === 'number') {
+                    comparison = valA - valB;
+                } else if (typeof valA === 'string' && typeof valB === 'string') {
+                    comparison = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+                } else {
+                    comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true });
+                }
+                
+                if (comparison === 0) {
+                    comparison = a.key.localeCompare(b.key) || a.wt.localeCompare(b.wt);
+                }
+                
+                return ndrSortAsc ? comparison : -comparison;
             });
 
             // Render header
@@ -5970,7 +6061,7 @@
             let rows = Object.values(groups);
             rows.sort((a, b) => a.key.localeCompare(b.key) || a.wt.localeCompare(b.wt));
 
-            document.getElementById('ndrDetailThead').innerHTML = getNdrHeader('Line');
+            document.getElementById('ndrDetailThead').innerHTML = getNdrHeader('Line', true);
             let tbodyHtml = '';
             if (rows.length === 0) {
                 tbodyHtml = '<tr><td colspan="30" class="text-center py-4 text-muted">Không có dữ liệu</td></tr>';
