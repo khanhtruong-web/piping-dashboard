@@ -3197,10 +3197,17 @@
                     else { pwhtStats.remaining++; }
                 }
                 
-                if(d.reqRT){ ndtStats.RT.s++; if(d.hasRT) ndtStats.RT.d++; else ndtStats.RT.b++; }
-                if(d.reqPAUT){ ndtStats.PAUT.s++; if(d.hasPAUT) ndtStats.PAUT.d++; else ndtStats.PAUT.b++; }
-                if(d.reqMT){ ndtStats.MT.s++; if(d.hasMT) ndtStats.MT.d++; else ndtStats.MT.b++; }
-                if(d.reqPT){ ndtStats.PT.s++; if(d.hasPT) ndtStats.PT.d++; else ndtStats.PT.b++; }
+                if(d.reqRT) ndtStats.RT.s++;
+                if(d.hasRT) ndtStats.RT.d++;
+                
+                if(d.reqPAUT) ndtStats.PAUT.s++;
+                if(d.hasPAUT) ndtStats.PAUT.d++;
+                
+                if(d.reqMT) ndtStats.MT.s++;
+                if(d.hasMT) ndtStats.MT.d++;
+                
+                if(d.reqPT) ndtStats.PT.s++;
+                if(d.hasPT) ndtStats.PT.d++;
                 
                 if(d.system) systemSet.add(d.system);
                 if(d.isSub) subconSet.add(d.isSub);
@@ -3209,6 +3216,11 @@
                     if(wtc) weldTypeSet.add(wtc);
                 }
             }
+            
+            // Calculate Remaining (Backlog) for each method dynamically
+            ['PAUT','RT','PT','MT'].forEach(m => {
+                ndtStats[m].b = Math.max(0, ndtStats[m].s - ndtStats[m].d);
+            });
             
             cachedAnalytics = { 
                 sum, 

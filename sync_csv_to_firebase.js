@@ -70,7 +70,7 @@ function parseExDate(v) {
 }
 
 async function main() {
-  const originalCsvPath = 'QC 06.Jun.26.csv';
+  const originalCsvPath = 'QC 08.Jun.26.csv';
   const csvPath = 'QC_temp.csv';
   console.log(`Copying ${originalCsvPath} to ${csvPath} to avoid file locks...`);
   fs.copyFileSync(originalCsvPath, csvPath);
