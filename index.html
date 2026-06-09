@@ -70,6 +70,7 @@
         .ndt-method-badge.m-paut { background: linear-gradient(135deg, #1565c0, #42a5f5); }
         .ndt-method-badge.m-mt { background: linear-gradient(135deg, #f57c00, #ffa726); }
         .ndt-method-badge.m-pt { background: linear-gradient(135deg, #7b1fa2, #ab47bc); }
+        .ndt-method-badge.m-total { background: linear-gradient(135deg, #37474f, #78909c); }
         .ndt-method-nums { display: flex; gap: 16px; flex: 1; min-width: 0; }
         .ndt-method-nums .nm-item { text-align: center; min-width: 55px; }
         .ndt-method-nums .nm-label { font-size: 0.6rem; color: #999; font-weight: 600; text-transform: uppercase; }
@@ -706,7 +707,7 @@
             </div>
         </div>
 
-        <div class="row g-3 mb-4">
+        <div class="row g-3 mb-4" style="display:none !important;">
             <!-- ĐÃ THÊM h-100 ĐỂ CÁC KHUNG KHÔNG BỊ TRÀN HAY CO BÓP VÔ LÝ -->
             <div class="col-md-3"><div class="glass-card h-100 text-center py-3 mb-0"><div class="kpi-title">Total Joints</div><div class="kpi-val" id="kpiTotal">0</div><div class="kpi-sub">Filtered Scope</div></div></div>
             <div class="col-md-3"><div class="glass-card h-100 text-center py-3 mb-0"><div class="kpi-title">Total Dia-Inch</div><div class="kpi-val text-primary" id="kpiDiaInch">0"</div><div class="kpi-sub">Productivity Metric</div></div></div>
@@ -777,7 +778,7 @@
                             <div>
                                 <div class="flow-value" id="flowVisual">0</div>
                                 <div class="flow-pct" id="flowVisualPct">0%</div>
-                                <span class="flow-backlog-badge bg-backlog-vis" id="flowVisBacklog" title="Welded Completed - Visual Accepted">Backlog: 0</span>
+                                <span class="flow-backlog-badge bg-backlog-vis" id="flowVisBacklog" title="Welded Completed - Visual Accepted" style="display:none !important;">Backlog: 0</span>
                             </div>
                         </div>
                         
@@ -804,48 +805,12 @@
                                 <div class="flow-pct" id="flowNdtBacklogPct">0%</div>
                             </div>
                         </div>
-                        
-                        <!-- Step 7: Hydrotest -->
-                        <div class="flow-step flow-step-hydro">
-                            <div>
-                                <div class="flow-icon" style="color:#00cbd6;"><i class="fas fa-tint"></i></div>
-                                <div class="flow-title">Hydrotest</div>
-                            </div>
-                            <div>
-                                <div class="flow-value" id="flowHydro">0</div>
-                                <div class="flow-pct" id="flowHydroPct">0%</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Step 8: Reins -->
-                        <div class="flow-step flow-step-reins">
-                            <div>
-                                <div class="flow-icon text-primary"><i class="fas fa-wrench"></i></div>
-                                <div class="flow-title">Reins</div>
-                            </div>
-                            <div>
-                                <div class="flow-value" id="flowReins">0</div>
-                                <div class="flow-pct" id="flowReinsPct">0%</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Step 9: Leak test -->
-                        <div class="flow-step flow-step-leak">
-                            <div>
-                                <div class="flow-icon text-success"><i class="fas fa-check-double"></i></div>
-                                <div class="flow-title">Leak test</div>
-                            </div>
-                            <div>
-                                <div class="flow-value text-success" id="flowLeak">0</div>
-                                <div class="flow-pct" id="flowLeakPct">0%</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
                 <!-- ROW 1: NDT KPI Cards -->
                 <div class="glass-card mb-4">
-                    <div class="chart-header"><span><i class="fas fa-tasks me-2"></i>NDT Status & Backlog</span></div>
+                    <div class="chart-header"><span><i class="fas fa-tasks me-2"></i>NDT Status & Progress</span></div>
                     <div class="ndt-stats-container">
                         <div class="ndt-stat-card st-scope">
                             <div class="d-flex align-items-center gap-2 mb-1">
@@ -858,10 +823,10 @@
                         <div class="ndt-stat-card st-backlog">
                             <div class="d-flex align-items-center gap-2 mb-1">
                                 <div class="st-icon ico-backlog"><i class="fas fa-exclamation-triangle"></i></div>
-                                <div class="stat-label mb-0">Total Backlog</div>
+                                <div class="stat-label mb-0">Total Remaining</div>
                             </div>
                             <div class="stat-value text-danger" id="statBacklog">0</div>
-                            <div class="stat-sub">Awaiting inspection</div>
+                            <div class="stat-sub">Remaining inspections</div>
                         </div>
                         <div class="ndt-stat-card st-critical">
                             <div class="d-flex align-items-center gap-2 mb-1">
@@ -869,7 +834,7 @@
                                 <div class="stat-label mb-0">Critical Method</div>
                             </div>
                             <div class="stat-value text-primary" id="statCritical">-</div>
-                            <div class="stat-sub">Highest outstanding backlog</div>
+                            <div class="stat-sub">Highest remaining count</div>
                         </div>
                         <div class="ndt-stat-card st-progress">
                             <div class="d-flex align-items-center gap-2 mb-1">
@@ -889,7 +854,7 @@
                             <div class="chart-header">
                                 <div class="d-flex align-items-center gap-2">
                                     <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardNdtDoneBacklog')"><i class="fas fa-chevron-left me-1"></i> Back to report</button>
-                                    <span><i class="fas fa-chart-bar me-2"></i>NDT Done vs Backlog</span>
+                                    <span><i class="fas fa-chart-bar me-2"></i>NDT Progress Status</span>
                                 </div>
                                 <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardNdtDoneBacklog')" title="Focus mode"></i>
                             </div>
@@ -919,10 +884,13 @@
                                     <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardBacklogBySize')"><i class="fas fa-chevron-left me-1"></i> Back to report</button>
                                     <span><i class="fas fa-ruler-combined me-2"></i>NDT Backlog by Size</span>
                                 </div>
-                                <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardBacklogBySize')" title="Focus mode"></i>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search size..." style="width: 100px; font-size: 0.72rem; height: 26px;" data-target-table="backlogSizeTable" oninput="applyTableFilter('backlogSizeTable')">
+                                    <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardBacklogBySize')" title="Focus mode"></i>
+                                </div>
                             </div>
                             <div style="max-height:420px; overflow-y:auto;">
-                                <table class="backlog-tbl">
+                                <table class="backlog-tbl" id="backlogSizeTable">
                                     <thead><tr><th>Pipe Size</th><th>RT</th><th>PAUT</th><th>MT/PT</th><th>Total</th></tr></thead>
                                     <tbody id="backlogSizeBody"></tbody>
                                     <tfoot id="backlogSizeFoot"></tfoot>
@@ -943,7 +911,7 @@
                                 <div class="col-md-5">
                                     <div class="pwht-stats-grid" id="pwhtStatsGrid">
                                         <div class="pwht-mini-card"><div class="pm-val text-success" id="pwhtDone">0</div><div class="pm-label">Completed</div></div>
-                                        <div class="pwht-mini-card"><div class="pm-val text-warning" id="pwhtPend">0</div><div class="pm-label">Pending</div></div>
+                                        <div class="pwht-mini-card"><div class="pm-val text-warning" id="pwhtPend">0</div><div class="pm-label">Remaining</div></div>
                                         <div class="pwht-mini-card"><div class="pm-val text-primary" id="pwhtReq">0</div><div class="pm-label">Required</div></div>
                                         <div class="pwht-mini-card"><div class="pm-val" id="pwhtPct" style="color:#e65100;">0%</div><div class="pm-label">Completion</div></div>
                                     </div>
@@ -975,12 +943,13 @@
                             <span class="text-success"><i class="fas fa-check-double me-2"></i>Matrix Compliance Tracker</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search Matrix..." style="width: 150px; font-size: 0.75rem;" data-target-table="complianceTable" oninput="applyTableFilter('complianceTable')">
                             <button class="btn btn-sm btn-success fw-bold" onclick="exportComplianceExcel()"><i class="fas fa-file-excel me-1"></i>Export Excel</button>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardMatrixCompliance')" title="Focus mode"></i>
                         </div>
                     </div>
                     <div class="table-matrix-container" style="max-height: 65vh; height: auto;">
-                        <table class="table table-bordered table-hover small text-center mb-0 align-middle table-matrix">
+                        <table class="table table-bordered table-hover small text-center mb-0 align-middle table-matrix" id="complianceTable">
                             <thead class="table-light">
                                 <tr>
                                     <th rowspan="2" class="align-middle">No.</th>
@@ -1012,13 +981,14 @@
                             <span>Detailed Inspection Data (NDT Status)</span>
                         </div>
                         <div class="d-flex align-items-center gap-3">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search Status..." style="width: 150px; font-size: 0.75rem;" data-target-table="tableStatusTable" oninput="applyTableFilter('tableStatusTable')">
                             <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" onclick="generateRCA()" title="Root Cause Analysis">✨ AI RCA Report</button>
                             <div class="page-ctrl"><button id="btnPrevCompact" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageCompact('prev')"><i class="fas fa-chevron-left"></i></button><span id="pageInfoCompact">Page 1/1</span><button id="btnNextCompact" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageCompact('next')"><i class="fas fa-chevron-right"></i></button></div>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardNdtStatusTable')" title="Focus mode"></i>
                         </div>
                     </div>
                     <div class="table-compact-container sticky-vh-65">
-                        <table class="table-compact">
+                        <table class="table-compact" id="tableStatusTable">
                             <colgroup><col style="width: 3%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 8%;"><col style="width: 8%;"><col style="width: 6%;"><col style="width: 4%;"><col style="width: 3%;"><col style="width: 3%;"><col style="width: 4%;"><col style="width: 3%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 5%;"><col style="width: 5%;"></colgroup>
                             <thead><tr><th>No</th><th>Sub</th><th>Sys</th><th>Drawing</th><th>Line</th><th>Spool</th><th>Joint</th><th>Size</th><th>Thk</th><th>Mat</th><th class="text-primary">Rate</th><th>Visual</th><th>W.Date</th><th>NDT L</th><th>Def L</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>PWHT</th><th>DefectID</th><th>Defect Type</th><th>Stt</th></tr></thead>
                             <tbody id="tableStatusBody"></tbody><tfoot id="tableStatusFoot"></tfoot>
@@ -1033,6 +1003,7 @@
                             <span>Detailed Inspection Data (Full Report - 21 Cols)</span>
                         </div>
                         <div class="d-flex gap-3 align-items-center">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search Full Report..." style="width: 160px; font-size: 0.75rem;" data-target-table="tableFullTable" oninput="applyTableFilter('tableFullTable')">
                             <div class="page-ctrl me-2"><button id="btnPrevFull" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageFull('prev')"><i class="fas fa-chevron-left"></i></button><span id="pageInfoFull">Page 1/1</span><button id="btnNextFull" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageFull('next')"><i class="fas fa-chevron-right"></i></button></div>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -1049,7 +1020,7 @@
                         </div>
                     </div>
                     <div class="table-detail-container sticky-vh-65">
-                        <table class="table-detail">
+                        <table class="table-detail" id="tableFullTable">
                             <thead><tr><th>No</th><th>SubCon</th><th>System</th><th>Drawing No.</th><th>Line No.</th><th>Spool No.</th><th>Welder ID</th><th>Joint No.</th><th>Size</th><th>Thk</th><th>Material</th><th>Weld Type</th><th>Joint Remark</th><th>Test Package No.</th><th>RT Report</th><th>PAUT Report</th><th>MT Report</th><th>PT Report</th><th>PMI Report</th><th>Hardness</th><th>Ferrite</th></tr></thead>
                             <tbody id="tableFullBody"></tbody><tfoot id="tableFullFoot"></tfoot>
                         </table>
@@ -1066,13 +1037,14 @@
                             <span><i class="fas fa-calendar-day me-2"></i>Daily Production Log (Dia-Inch & Joints)</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search Daily Log..." style="width: 150px; font-size: 0.75rem;" data-target-table="dailyLogTable" oninput="applyTableFilter('dailyLogTable')">
                             <button class="btn btn-sm btn-primary text-white fw-bold" onclick="exportDailyLogExcel()"><i class="fas fa-file-excel me-1"></i> Export Daily Log</button>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardDailyLog')" title="Focus mode"></i>
                         </div>
                     </div>
                     <p class="text-muted small">Thống kê năng suất hàn hàng ngày (Total Joints & Dia-Inch) phân tách theo Nhà thầu phụ.</p>
                     <div class="table-detail-container sticky-vh-65">
-                        <table class="table-detail text-center table-bordered">
+                        <table class="table-detail text-center table-bordered" id="dailyLogTable">
                             <thead class="table-light">
                                 <tr>
                                     <th rowspan="2" class="align-middle border-end">Welding Date</th>
@@ -1104,6 +1076,7 @@
                             <span><i class="fas fa-check-double me-2"></i>Hydrotest Clearance Tracker</span>
                         </div>
                         <div class="d-flex align-items-center gap-3">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search Hydro Packages..." style="width: 180px; font-size: 0.75rem;" data-target-table="hydroTable" oninput="applyTableFilter('hydroTable')">
                             <button class="btn btn-sm btn-info text-white fw-bold" onclick="exportHydroExcel()"><i class="fas fa-file-excel me-1"></i> Export Excel</button>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardHydroTracker')" title="Focus mode"></i>
                         </div>
@@ -1130,8 +1103,11 @@
                                 <!-- Cards will be rendered here dynamically -->
                             </div>
                             <div id="vpResultsTable" style="display:none;">
+                                <div class="d-flex justify-content-end mb-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Filter visualizer rows..." style="width: 200px; font-size: 0.75rem;" data-target-table="vpResultsTableElement" oninput="applyTableFilter('vpResultsTableElement')">
+                                </div>
                                 <div class="table-detail-container" style="max-height:50vh;">
-                                    <table class="table-detail">
+                                    <table class="table-detail" id="vpResultsTableElement">
                                         <thead>
                                             <tr>
                                                 <th style="width:40px;">No.</th>
@@ -1159,7 +1135,7 @@
                     </div>
                     <div id="hydroStatsBanner" class="d-flex justify-content-around bg-light p-2 rounded mb-2 border shadow-sm" style="font-size:0.9rem;"></div>
                     <div class="table-detail-container sticky-vh-65">
-                        <table class="table-detail">
+                        <table class="table-detail" id="hydroTable">
                             <thead>
                                 <tr>
                                     <th style="width:35px;">No.</th>
@@ -1207,10 +1183,13 @@
                                     <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardWelderStats')"><i class="fas fa-chevron-left me-1"></i> Back</button>
                                     <span>Welder Statistics (Top 10)</span>
                                 </div>
-                                <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardWelderStats')" title="Focus mode"></i>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search Welder..." style="width: 120px; font-size: 0.72rem; height: 26px;" data-target-table="welderTable" oninput="applyTableFilter('welderTable')">
+                                    <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardWelderStats')" title="Focus mode"></i>
+                                </div>
                             </div>
                             <div class="table-matrix-container" style="max-height: 50vh; height: auto;">
-                                <table class="table table-bordered table-sm text-center small mb-0">
+                                <table class="table table-bordered table-sm text-center small mb-0" id="welderTable">
                                     <thead class="table-light"><tr><th>ID</th><th>Total Joints</th><th>Dia-Inch</th><th>Defect</th><th>Rate %</th><th>AI Review</th></tr></thead>
                                     <tbody id="welderTableBody"></tbody>
                                 </table>
@@ -1227,7 +1206,10 @@
                                     <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardWelderHeatmap')"><i class="fas fa-chevron-left me-1"></i> Back</button>
                                     <span><i class="fas fa-th me-2"></i>Welder Heatmap (Material vs Thickness)</span>
                                 </div>
-                                <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardWelderHeatmap')" title="Focus mode"></i>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search Heatmap..." style="width: 140px; font-size: 0.72rem; height: 26px;" data-target-table="heatmapTable" oninput="applyTableFilter('heatmapTable')">
+                                    <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardWelderHeatmap')" title="Focus mode"></i>
+                                </div>
                             </div>
                             <p class="text-muted small mb-3">Phân tích chuyên sâu: Cột là Loại Vật Tư & Độ Dày, Hàng là ID Thợ Hàn. Chọn thợ hàn xuất sắc dựa trên lịch sử hàn vật tư đó. Ô xanh (0%), Ô đỏ (Lỗi cao).</p>
                             <div class="table-container" style="max-height: 400px; overflow-x: auto;">
@@ -1319,6 +1301,9 @@
 
                     <!-- Overview Table -->
                     <div id="ndrOverviewWrap">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" class="form-control form-control-sm" placeholder="Filter overview rows..." style="width: 180px; font-size: 0.75rem;" data-target-table="ndrTable" oninput="applyTableFilter('ndrTable')">
+                        </div>
                         <div class="ndr-table-wrap">
                             <table class="ndr-table" id="ndrTable">
                                 <thead id="ndrThead"></thead>
@@ -1330,6 +1315,9 @@
 
                     <!-- Detail Table (hidden by default) -->
                     <div id="ndrDetailWrap" style="display:none;">
+                        <div class="d-flex justify-content-end mb-2">
+                            <input type="text" class="form-control form-control-sm" placeholder="Filter detail rows..." style="width: 180px; font-size: 0.75rem;" data-target-table="ndrDetailTable" oninput="applyTableFilter('ndrDetailTable')">
+                        </div>
                         <div class="ndr-table-wrap">
                             <table class="ndr-table" id="ndrDetailTable">
                                 <thead id="ndrDetailThead"></thead>
@@ -2316,7 +2304,7 @@
                     }
 
                     if (savedDataArray.length > 0) {
-                        rawData = savedDataArray;
+                        rawData = migrateRawData(savedDataArray);
                         document.getElementById('activeFileName').innerHTML = `<span class="text-success small fw-bold"><i class="fas fa-database me-1"></i> Data restored from cache</span>`;
                         document.getElementById('dataListContainer').style.display = 'flex';
                         populateWeldTypeDropdown(rawData);
@@ -2673,6 +2661,46 @@
             });
         }
 
+        // Migrate old cached data: fill missing fields added in later versions
+        function migrateRawData(arr) {
+            if (!arr || arr.length === 0) return arr;
+            // Check if migration is needed by sampling first item
+            const sample = arr[0];
+            const needsMigration = sample.fitupAcc === undefined || sample.ndtRequest === undefined || sample.reqPwht === undefined;
+            if (!needsMigration) return arr;
+
+            console.log('Migrating cached data: filling missing fields...');
+            for (let i = 0; i < arr.length; i++) {
+                const d = arr[i];
+                // fitupAcc: if missing, infer from visualRes (joints with visualRes ACC likely had fitup ACC)
+                if (d.fitupAcc === undefined) {
+                    if (d.visualRes === 'ACC' || d.visualRes === 'REJ' || d.wDate) {
+                        d.fitupAcc = 'ACC';
+                    } else {
+                        d.fitupAcc = '';
+                    }
+                }
+                // visualACC: if missing, use visualRes
+                if (d.visualACC === undefined) {
+                    d.visualACC = d.visualRes || '';
+                }
+                // ndtRequest: if missing, infer from reqRT/reqPAUT/reqMT/reqPT
+                if (d.ndtRequest === undefined) {
+                    d.ndtRequest = !!(d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
+                }
+                // reqPwht: if missing, infer from pwhtRes or reqRT/reqPAUT
+                if (d.reqPwht === undefined) {
+                    d.reqPwht = d.pwhtRes === 'ACC' || !!(d.reqRT || d.reqPAUT);
+                }
+                // penalty: ensure it's a number
+                if (d.penalty === undefined) d.penalty = 0;
+                // hardnessRep: ensure exists
+                if (d.hardnessRep === undefined) d.hardnessRep = d.hardRep || '';
+            }
+            console.log(`Migration complete: ${arr.length} rows updated.`);
+            return arr;
+        }
+
         function processData(data, saveToDb = false, fileName = 'Uploaded Data') {
             if (!data || data.length === 0) {
                 alert("Dữ liệu trống hoặc không hợp lệ.");
@@ -2697,10 +2725,10 @@
                 joint: findKey(['Joint No.', 'Joint No', 'Joint_No', 'JointNo', 'Joint', 'Mối hàn']),
                 sub: findKey(['IsSubContractor', 'SubContractor', 'Sub', 'Sub_Contractor', 'Nhà thầu phụ']),
                 sys: findKey(['System', 'Hệ thống']),
-                dwg: findKey(['Drawing No.', 'Drawing No', 'Dwg No', 'Drawing', 'Bản vẽ']),
+                dwg: findKey(['DrawingNo', 'Drawing No.', 'Drawing No', 'Dwg No', 'Drawing', 'Bản vẽ']),
                 line: findKey(['Line', 'Line No', 'Line_No', 'Tuyến']),
                 spool: findKey(['SpoolNo', 'Spool No', 'Spool_No', 'Spool', 'Số Spool']),
-                welder: findKey(['Welder ID', 'Welder', 'WelderNo', 'Thợ hàn']),
+                welder: findKey(['WelderID', 'Welder ID', 'Welder', 'WelderNo', 'Thợ hàn']),
                 size: findKey(['Size', 'Kích thước']),
                 diaIn: findKey(['DiaIn', 'Dia-Inch', 'DiaInch']),
                 thick: findKey(['Thickness', 'Thick', 'Độ dày', 'Thk']),
@@ -2725,7 +2753,8 @@
                 ptRes: findKey(['PT Result', 'PT_Result', 'PTResult']),
                 rtDate: findKey(['RT Report Date', 'RT Date']),
                 pautDate: findKey(['PAUT Report Date', 'PAUT Date']),
-                pwhtRes: findKey(['PWHTResult', 'PWHT Result', 'PWHT']),
+                pwhtRes: findKey(['PWHTResult', 'PWHT Result']),
+                reqPwht: findKey(['PWHT']),
                 lenNDT: findKey(['LengthNDT', 'Length']),
                 lenDefect: findKey(['Defect Length', 'Defect']),
                 jointRem: findKey(['TV', 'Joint Remark', 'Remark', 'Ghi chú']),
@@ -2743,7 +2772,8 @@
                 penalty: findKey(['Penalty', 'PEN']),
                 hydroRep: findKey(['HydroTestReportNo', 'Hydro Test Report No', 'HydroRep']),
                 releaseRep: findKey(['ReleaseNotesReportNo', 'Release Notes Report No', 'ReleaseRep']),
-                summaryRep: findKey(['SummaryReportNo', 'Summary Report No', 'SummaryRep'])
+                summaryRep: findKey(['SummaryReportNo', 'Summary Report No', 'SummaryRep']),
+                ndtRequest: findKey(['NDTRequest', 'NDT Request', 'NDTReq'])
             };
 
             const getVal = (row, field) => { const k = map[field]; return (k && row[k] !== undefined && row[k] !== null) ? row[k] : ""; };
@@ -2806,7 +2836,7 @@
                     pautRes: getStatus(getVal(r, 'pautRes')), 
                     mtRes: getStatus(getVal(r, 'mtRes')), 
                     ptRes: getStatus(getVal(r, 'ptRes')),
-                    reqRT: isReq(getVal(r, 'reqRT')), reqPAUT: isReq(getVal(r, 'reqPAUT')), reqMT: isReq(getVal(r, 'reqMT')), reqPT: isReq(getVal(r, 'reqPT')),
+                    reqRT: isReq(getVal(r, 'reqRT')), reqPAUT: isReq(getVal(r, 'reqPAUT')), reqMT: isReq(getVal(r, 'reqMT')), reqPT: isReq(getVal(r, 'reqPT')), reqPwht: isReq(getVal(r, 'reqPwht')),
                     hasRT: hasRep(getVal(r, 'rtRep')), hasPAUT: hasRep(getVal(r, 'pautRep')), 
                     hasMT: hasRep(getVal(r, 'mtRep')), hasPT: hasRep(getVal(r, 'ptRep')),
                     pwhtRes: getStatus(getVal(r, 'pwhtRes')), 
@@ -2830,7 +2860,8 @@
                     penalty: parseFloat(getVal(r, 'penalty')) || 0,
                     hydroRep: getVal(r, 'hydroRep'),
                     releaseRep: getVal(r, 'releaseRep'),
-                    summaryRep: getVal(r, 'summaryRep')
+                    summaryRep: getVal(r, 'summaryRep'),
+                    ndtRequest: (() => { const v = getVal(r, 'ndtRequest'); return v && v.toString().trim() === '1'; })()
                 });
             }
 
@@ -3063,8 +3094,9 @@
                 if (d.fitupAcc === 'ACC') s.fitupAcc++;
                 if (d.wDate) s.weldedCompleted++;
 
-                const isNdtReq = d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
-                if (isNdtReq) {
+                // NDT Req: use ndtRequest (col BB) if available, fallback for old data
+                const hasNdtReq1 = d.ndtRequest !== undefined ? d.ndtRequest : (d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
+                if (hasNdtReq1) {
                     s.ndtRequested++;
                     const isNdtDone = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
                     if (!isNdtDone) s.ndtBacklog++;
@@ -3107,7 +3139,7 @@
                 leakDone: 0
             };
             const dateMap = {};
-            const pwhtStats = { acc:0, pending:0, required: 0 };
+            const pwhtStats = { acc:0, pending:0, required: 0, remaining: 0 };
             const ndtStats = { PAUT:{s:0,d:0,b:0}, RT:{s:0,d:0,b:0}, MT:{s:0,d:0,b:0}, PT:{s:0,d:0,b:0} };
             const systemSet = new Set();
             const subconSet = new Set();
@@ -3130,8 +3162,9 @@
                 if (d.fitupAcc === 'ACC') sum.fitupAcc++;
                 if (d.wDate) sum.weldedCompleted++;
 
-                const isNdtReq = d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
-                if (isNdtReq) {
+                // NDT Req: use ndtRequest (col BB) if available, fallback for old data
+                const hasNdtReq2 = d.ndtRequest !== undefined ? d.ndtRequest : (d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
+                if (hasNdtReq2) {
                     sum.ndtRequested++;
                     const isNdtDone = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
                     if (!isNdtDone) sum.ndtBacklog++;
@@ -3149,9 +3182,13 @@
                     if(d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ') dateMap[k].rejC++;
                 }
                 
-                const needsPwht = (d.pwhtRes === 'ACC' || d.pwhtRes === '' || d.pwhtRes === 'REJ') && (d.rtRes === 'ACC' || d.pautRes === 'ACC' || d.reqRT || d.reqPAUT);
-                if(d.pwhtRes==='ACC') { pwhtStats.acc++; pwhtStats.required++; }
-                else if(needsPwht) { pwhtStats.pending++; pwhtStats.required++; }
+                // PWHT: use reqPwht (col BJ) if available, fallback for old data
+                const hasPwhtReq = d.reqPwht !== undefined ? d.reqPwht : (d.reqRT || d.reqPAUT);
+                if(hasPwhtReq) {
+                    pwhtStats.required++;
+                    if(d.pwhtRes==='ACC') { pwhtStats.acc++; }
+                    else { pwhtStats.remaining++; }
+                }
                 
                 if(d.reqRT){ ndtStats.RT.s++; if(d.hasRT) ndtStats.RT.d++; else ndtStats.RT.b++; }
                 if(d.reqPAUT){ ndtStats.PAUT.s++; if(d.hasPAUT) ndtStats.PAUT.d++; else ndtStats.PAUT.b++; }
@@ -3178,7 +3215,7 @@
             currentSummary = sum;
         }
 
-        // Utility: Debounce
+""        // Utility: Debounce
         function debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -3187,6 +3224,42 @@
             };
         }
         const debouncedRenderNdtRandom = debounce(() => renderNdtRandom(), 300);
+
+        // Global Client-side Table Filter functions
+        window.applyTableFilter = function(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const filterInput = document.querySelector(`input[data-target-table="${tableId}"]`);
+            const query = filterInput ? filterInput.value.toLowerCase().trim() : '';
+            table.dataset.filterQuery = query;
+            
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                if (row.cells.length === 1 && (row.innerText.includes('Không') || row.innerText.includes('Chưa') || row.innerText.includes('Vui lòng') || row.innerText.includes('nợ NDT') || row.innerText.includes('Lỗi hệ thống'))) {
+                    return;
+                }
+                const text = row.innerText.toLowerCase();
+                if (query === '' || text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        };
+
+        window.reapplyTableFilter = function(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const query = table.dataset.filterQuery || '';
+            const filterInput = document.querySelector(`input[data-target-table="${tableId}"]`);
+            if (filterInput && filterInput.value !== query) {
+                filterInput.value = query;
+            }
+            window.applyTableFilter(tableId);
+        };
 
         // Utility: CountUp Animation
         function animateValue(id, start, end, duration) {
@@ -3254,7 +3327,7 @@
             updateFlowElement('flowTotal', totVal, '100% Scope');
             updateFlowElement('flowFitup', fitVal, totVal > 0 ? (fitVal / totVal * 100).toFixed(1) + '%' : '0%');
             updateFlowElement('flowWelded', weldVal, fitVal > 0 ? (weldVal / fitVal * 100).toFixed(1) + '%' : '0%');
-            updateFlowElement('flowVisual', visVal, weldVal > 0 ? (visVal / weldVal * 100).toFixed(1) + '%' : '0%');
+            updateFlowElement('flowVisual', visVal, fitVal > 0 ? (100 - ((fitVal - visVal) / fitVal * 100)).toFixed(1) + '%' : '0%');
             updateFlowElement('flowNdtReq', ndtReqVal, totVal > 0 ? (ndtReqVal / totVal * 100).toFixed(1) + '%' : '0%');
             updateFlowElement('flowNdtBacklog', ndtBackVal, ndtReqVal > 0 ? (ndtBackVal / ndtReqVal * 100).toFixed(1) + '%' : '0%');
             updateFlowElement('flowHydro', hydroVal, totVal > 0 ? (hydroVal / totVal * 100).toFixed(1) + '%' : '0%');
@@ -3338,6 +3411,7 @@
                 <th class="text-danger fs-5">${t_pos_j + t_ptsc_j + t_south_j}</th>
                 <th class="text-danger fs-5">${(t_pos_di + t_ptsc_di + t_south_di).toFixed(1)}"</th>
             </tr>`;
+            reapplyTableFilter('dailyLogTable');
         }
 
         function exportDailyLogExcel() {
@@ -3637,6 +3711,7 @@
                 console.error(e);
                 tbody.innerHTML = `<tr><td colspan="16" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
             }
+            reapplyTableFilter('hydroTable');
         }
 
         // Helper: Cuộn tới Visualizer và thực hiện visualize
@@ -3845,6 +3920,7 @@
             if(tfoot && sizeArr.length > 0) {
                 tfoot.innerHTML = `<tr><td>TOTAL</td><td>${tRt}</td><td>${tPaut}</td><td>${tMtpt}</td><td>${tTotal}</td></tr>`;
             }
+            reapplyTableFilter('backlogSizeTable');
         }
 
         function renderCompliance() {
@@ -3911,6 +3987,7 @@
                     <td class="bg-light">${fwMtPtRes.reqStr}</td><td class="fw-bold text-info">${fwMtPtRes.actStr}</td><td>${fwMtPtRes.sttStr}</td>
                 </tr>`; 
             });
+            reapplyTableFilter('complianceTable');
         }
 
         function updateWelderAnalysis() {
@@ -3998,6 +4075,8 @@
                 });
             }
             document.getElementById('heatmapBody').innerHTML = bodyHtml;
+            reapplyTableFilter('welderTable');
+            reapplyTableFilter('heatmapTable');
         }
 
         function exportPDF() {
@@ -4040,7 +4119,7 @@
             const pwhtReqEl = document.getElementById('pwhtReq');
             const pwhtPctEl = document.getElementById('pwhtPct');
             if(pwhtDoneEl) pwhtDoneEl.innerText = pwhtStats.acc.toLocaleString();
-            if(pwhtPendEl) pwhtPendEl.innerText = pwhtStats.pending.toLocaleString();
+            if(pwhtPendEl) pwhtPendEl.innerText = pwhtStats.remaining.toLocaleString();
             if(pwhtReqEl) pwhtReqEl.innerText = pwhtStats.required.toLocaleString();
             const pwhtPctVal = pwhtStats.required > 0 ? Math.round(pwhtStats.acc / pwhtStats.required * 100) : 0;
             if(pwhtPctEl) { pwhtPctEl.innerText = pwhtPctVal + '%'; pwhtPctEl.style.color = pwhtPctVal >= 95 ? '#2e7d32' : (pwhtPctVal >= 70 ? '#e65100' : '#c62828'); }
@@ -4065,7 +4144,7 @@
             if(chartInstances.pwht) chartInstances.pwht.destroy();
             chartInstances.pwht = new Chart(document.getElementById('pwhtChart'), { 
                 type:'doughnut', 
-                data:{ labels:['Completed', 'Pending'], datasets:[{data:[pwhtStats.acc, pwhtStats.pending],backgroundColor:['#43a047','#ff9800'],borderWidth:0,hoverOffset:4}] }, 
+                data:{ labels:['Completed', 'Remaining'], datasets:[{data:[pwhtStats.acc, pwhtStats.remaining],backgroundColor:['#43a047','#ff9800'],borderWidth:0,hoverOffset:4}] }, 
                 options:{maintainAspectRatio:false,cutout:'75%',plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true,font:{size:11}}},datalabels:{display:false}}},
                 plugins: [pwhtCenterTextPlugin]
             });
@@ -4086,12 +4165,11 @@
             document.getElementById('statNdtProgressSub').innerText = `${totalDone.toLocaleString()} / ${totalScope.toLocaleString()} completed`;
 
             if(chartInstances.ndtBacklog) chartInstances.ndtBacklog.destroy();
-            chartInstances.ndtBacklog=new Chart(document.getElementById('ndtBacklogChart'),{type:'bar',data:{labels:['PAUT','RT','PT','MT'],datasets:[{label:'Done',data:[md.PAUT.d,md.RT.d,md.PT.d,md.MT.d],backgroundColor:['rgba(21,101,192,0.75)','rgba(67,160,71,0.75)','rgba(123,31,162,0.75)','rgba(245,124,0,0.75)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00'],borderWidth:1,borderRadius:4},{label:'Backlog',data:[md.PAUT.b,md.RT.b,md.PT.b,md.MT.b],backgroundColor:['rgba(21,101,192,0.2)','rgba(67,160,71,0.2)','rgba(123,31,162,0.2)','rgba(245,124,0,0.2)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00'],borderWidth:1,borderRadius:4,borderDash:[3,3]}]},options:{maintainAspectRatio:false,plugins:{datalabels:{color:'#333',font:{weight:'bold',size:11},anchor:'end',align:'top',formatter:v=>v>0?v.toLocaleString():''},legend:{labels:{usePointStyle:true,padding:14}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}}}}});
+            chartInstances.ndtBacklog=new Chart(document.getElementById('ndtBacklogChart'),{type:'bar',data:{labels:['PAUT','RT','PT','MT'],datasets:[{label:'Done',data:[md.PAUT.d,md.RT.d,md.PT.d,md.MT.d],backgroundColor:['rgba(21,101,192,0.75)','rgba(67,160,71,0.75)','rgba(123,31,162,0.75)','rgba(245,124,0,0.75)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00'],borderWidth:1,borderRadius:4},{label:'Remaining',data:[md.PAUT.b,md.RT.b,md.PT.b,md.MT.b],backgroundColor:['rgba(21,101,192,0.2)','rgba(67,160,71,0.2)','rgba(123,31,162,0.2)','rgba(245,124,0,0.2)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00'],borderWidth:1,borderRadius:4,borderDash:[3,3]}]},options:{maintainAspectRatio:false,plugins:{datalabels:{color:'#333',font:{weight:'bold',size:11},anchor:'end',align:'top',formatter:v=>v>0?v.toLocaleString():''},legend:{labels:{usePointStyle:true,padding:14}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}}}}});
             
             // New method breakdown rendering
             const methodBreakdown = document.getElementById('ndtMethodBreakdown');
             const methodColors = {PAUT:'m-paut', RT:'m-rt', MT:'m-mt', PT:'m-pt'};
-            const methodGradients = {PAUT:'#1565c0', RT:'#43a047', MT:'#f57c00', PT:'#7b1fa2'};
             let breakdownHtml = '';
             ['PAUT','RT','PT','MT'].forEach(m => {
                 const d = md[m];
@@ -4101,9 +4179,9 @@
                 <div class="ndt-method-row">
                     <div class="ndt-method-badge ${methodColors[m]}">${m}</div>
                     <div class="ndt-method-nums">
-                        <div class="nm-item"><div class="nm-label">Request</div><div class="nm-val text-dark">${d.s.toLocaleString()}</div></div>
+                        <div class="nm-item"><div class="nm-label">Required</div><div class="nm-val text-dark">${d.s.toLocaleString()}</div></div>
                         <div class="nm-item"><div class="nm-label">Done</div><div class="nm-val text-success">${d.d.toLocaleString()}</div></div>
-                        <div class="nm-item"><div class="nm-label">Backlog</div><div class="nm-val text-danger">${d.b.toLocaleString()}</div></div>
+                        <div class="nm-item"><div class="nm-label">Remaining</div><div class="nm-val text-danger">${d.b.toLocaleString()}</div></div>
                     </div>
                     <div class="ndt-progress-wrap">
                         <div class="ndt-progress-bar"><div class="fill" style="width:${p}%; background:${barColor};"></div></div>
@@ -4111,6 +4189,23 @@
                     </div>
                 </div>`;
             });
+
+            // Append Grand Total Row
+            const totBarColor = ndtPct >= 95 ? '#2e7d32' : (ndtPct >= 80 ? '#e65100' : '#c62828');
+            breakdownHtml += `
+            <div class="ndt-method-row mt-2" style="border-top: 2px solid #cfd8dc; background: rgba(120, 144, 156, 0.08); font-weight: bold; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); margin-top: 10px;">
+                <div class="ndt-method-badge m-total">TOTAL</div>
+                <div class="ndt-method-nums">
+                    <div class="nm-item"><div class="nm-label" style="font-weight:700;">Required</div><div class="nm-val text-dark">${totalScope.toLocaleString()}</div></div>
+                    <div class="nm-item"><div class="nm-label" style="font-weight:700;">Done</div><div class="nm-val text-success">${totalDone.toLocaleString()}</div></div>
+                    <div class="nm-item"><div class="nm-label" style="font-weight:700;">Remaining</div><div class="nm-val text-danger">${totalBacklog.toLocaleString()}</div></div>
+                </div>
+                <div class="ndt-progress-wrap">
+                    <div class="ndt-progress-bar" style="background:#cfd8dc;"><div class="fill" style="width:${ndtPct}%; background:${totBarColor};"></div></div>
+                    <div class="ndt-progress-pct" style="color:${totBarColor};">${ndtPct}%</div>
+                </div>
+            </div>`;
+
             methodBreakdown.innerHTML = breakdownHtml;
         }
 
@@ -4130,6 +4225,7 @@
 
             const s = currentSummary || getSummary();
             document.getElementById('tableStatusFoot').innerHTML = `<tr><th colspan="11">TOTAL SCOPE (Dia-Inch: ${s.diaInch.toFixed(1)}")</th><th>Vis:${s.vis}</th><th></th><th>${s.ndtL.toFixed(1)}</th><th>${s.defL.toFixed(1)}</th><th>A:${s.rtA} R:${s.rtR}</th><th></th><th>A:${s.mtA} R:${s.mtR}</th><th>A:${s.ptA} R:${s.ptR}</th><th>A:${s.pwhtA} R:${s.pwhtR}</th><th></th><th></th><th>Count: ${s.total}</th></tr>`;
+            if (window.reapplyTableFilter) window.reapplyTableFilter('tableStatusTable');
         }
 
         function renderFullReportTable() {
@@ -4142,6 +4238,7 @@
             document.getElementById('btnPrevFull').disabled = (pageFull===1); document.getElementById('btnNextFull').disabled = (pageFull===max);
             const s = currentSummary || getSummary();
             document.getElementById('tableFullFoot').innerHTML = `<tr><th colspan="21">TOTAL SUMMARY: ${s.total} Joints | Dia-Inch: ${s.diaInch.toFixed(1)}" | NDT Len: ${s.ndtL.toFixed(1)} | Defect Len: ${s.defL.toFixed(1)} | RT/PAUT (A:${s.rtA}/R:${s.rtR}) | MT (A:${s.mtA}/R:${s.mtR})</th></tr>`;
+            if (window.reapplyTableFilter) window.reapplyTableFilter('tableFullTable');
         }
 
         // resetFilters defined below (canonical version)
@@ -4273,24 +4370,24 @@
             const rows = Object.values(ndrGroups).sort((a,b)=> a.key.localeCompare(b.key));
             
             const aoa = [
-                ["NDT RANDOM COMPLIANCE REPORT (Progressive Examination)", "", "", "", "", "", "", "", "", "", "", "RADIOGRAPHIC TEST (RT)", "", "", "", "", "MT / PT TEST", "", "", "", "", "HARDNESS", "PMI", "", "REPAIR STATS", "", "", "", "", "", "", ""],
-                ["STT", "Test Package / Line", "Test Date", "Material", "Weld", "Total", "DWG", "Fitup", "Visual", "Visual", "%RT", "RT", "RT", "RT", "%RT", "%RT", "MT/PT", "MT/PT", "MT/PT", "%MT", "%MT", "%HARD", "PMI", "%PMI", "R1", "R2", "RS", "RW", "PEN", "Line", "Location", "TV"],
-                ["", "", "", "", "Type", "Joint", "Joint", "Acc", "Acc", "Rem", "Req", "Req", "Sel", "Done", "Cur", "Fin", "Req", "Req", "Sel", "Cur", "Fin", "Fin", "Done", "Fin", "", "", "", "Total", "Total", "Cnt", "", ""]
+                ["NDT RANDOM COMPLIANCE REPORT (Progressive Examination)", "", "", "", "", "", "", "", "", "", "RADIOGRAPHIC TEST (RT)", "", "", "", "", "MT / PT TEST", "", "", "", "", "HARDNESS", "PMI", "", "REPAIR STATS", "", "", "", "", "", "", ""],
+                ["STT", "Test Package / Line", "Test Date", "Material", "Weld", "Total", "DWG", "Fitup", "Visual", "%RT", "RT", "RT", "RT", "%RT", "%RT", "MT/PT", "MT/PT", "MT/PT", "%MT", "%MT", "%HARD", "PMI", "%PMI", "R1", "R2", "RS", "RW", "PEN", "Line", "Location", "TV"],
+                ["", "", "", "", "Type", "Joint", "Joint", "Acc", "Acc", "Req", "Req", "Sel", "Done", "Cur", "Fin", "Req", "Req", "Sel", "Cur", "Fin", "Fin", "Done", "Fin", "", "", "", "Total", "Total", "Cnt", "", ""]
             ];
 
             const wsNdr = XLSX.utils.aoa_to_sheet(aoa);
             wsNdr['!merges'] = [
-                { s: {r:0, c:0}, e: {r:0, c:10} }, { s: {r:0, c:11}, e: {r:0, c:15} }, { s: {r:0, c:16}, e: {r:0, c:20} },
+                { s: {r:0, c:0}, e: {r:0, c:9} }, { s: {r:0, c:10}, e: {r:0, c:14} }, { s: {r:0, c:15}, e: {r:0, c:19} },
                 { s: {r:1, c:0}, e: {r:2, c:0} }, { s: {r:1, c:1}, e: {r:2, c:1} }, { s: {r:1, c:2}, e: {r:2, c:2} },
-                { s: {r:1, c:3}, e: {r:2, c:3} }, { s: {r:1, c:11}, e: {r:2, c:11} }, { s: {r:1, c:28}, e: {r:2, c:28} }, { s: {r:1, c:29}, e: {r:2, c:29} }
+                { s: {r:1, c:3}, e: {r:2, c:3} }, { s: {r:1, c:10}, e: {r:2, c:10} }, { s: {r:1, c:27}, e: {r:2, c:27} }, { s: {r:1, c:28}, e: {r:2, c:28} }
             ];
 
-            for(let c=0; c<=31; c++) { for(let r=0; r<=2; r++) { const cell = wsNdr[XLSX.utils.encode_cell({r, c})]; if(cell) cell.s = sHead; } }
+            for(let c=0; c<=30; c++) { for(let r=0; r<=2; r++) { const cell = wsNdr[XLSX.utils.encode_cell({r, c})]; if(cell) cell.s = sHead; } }
 
             rows.forEach((g, idx) => {
                 const rIdx = aoa.length;
                 const row = [
-                    idx + 1, g.key, g.testDate || '-', g.matStr, g.wt, g.actual, g.dwgTotal, g.actual, g.visualAcc, g.visualRemain,
+                    idx + 1, g.key, g.testDate || '-', g.matStr, g.wt, g.actual, g.dwgTotal, g.fitupAcc, g.visualAcc,
                     g.rtPct > 0 ? (g.rtPct/100) : 0, g.rtReq, g.rtSelect, g.rtDone, g.rtCurrent/100, g.rtFinal === -1 ? -1 : g.rtFinal/100,
                     g.mtPct > 0 ? (g.mtPct/100) : 0, g.mtReq, g.mtSelect, g.mtCurrent/100, g.mtFinal === -1 ? -1 : g.mtFinal/100,
                     g.hardPct/100, g.pmiCount, g.pmiPct/100, g.r1, g.r2, g.rs, g.rwTotal, g.penTotal, g.lineCount,
@@ -4298,22 +4395,22 @@
                 ];
                 aoa.push(row);
                 XLSX.utils.sheet_add_aoa(wsNdr, [row], { origin: rIdx });
-                for(let c=0; c<=31; c++) {
+                for(let c=0; c<=30; c++) {
                     const cell = wsNdr[XLSX.utils.encode_cell({r: rIdx, c: c})];
                     if(!cell) continue;
                     cell.s = JSON.parse(JSON.stringify(sBorder));
-                    if([10, 14, 15, 19, 20, 21, 23].includes(c)) {
+                    if([9, 13, 14, 18, 19, 20, 22].includes(c)) {
                         cell.z = "0%";
                         if(cell.v === -1) { cell.v = "-"; cell.s = sNA; }
                         else if(cell.v >= 1) cell.s = sOK;
                         else if(cell.v > 0) cell.s = sWarn;
                     }
                     if(c === 8 && g.visualAcc > 0) cell.s = sOK;
-                    if(c === 27 && g.rwTotal > 0) cell.s = sFail;
+                    if(c === 26 && g.rwTotal > 0) cell.s = sFail;
                 }
             });
 
-            wsNdr['!cols'] = [{wch:6},{wch:30},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:18},{wch:12}];
+            wsNdr['!cols'] = [{wch:6},{wch:30},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:8},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:6},{wch:18},{wch:12}];
             XLSX.utils.book_append_sheet(workbook, wsNdr, "Random Inspection Control");
 
             XLSX.writeFile(workbook, `Piping_Styled_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -4419,6 +4516,7 @@
             });
             
             tbody.innerHTML = rows.join('');
+            reapplyTableFilter('vpResultsTableElement');
         }
 
         function renderHydroFiltered(searchTerms) {
@@ -4479,6 +4577,7 @@
 
             // Hiện banner filter
             banner.style.cssText = 'display:flex !important';
+            reapplyTableFilter('hydroTable');
         }
 
         function visualizePack(silent = false) {
@@ -4773,7 +4872,7 @@
                                 
                                 let hasUpdated = false;
                                 if (parsedRaw && parsedRaw.length > 0) {
-                                    rawData = parsedRaw;
+                                    rawData = migrateRawData(parsedRaw);
                                     idb.save('currentRawData', { fileName: `Cloud Sync (${syncTimeStr})`, data: rawData });
                                     const activeFileEl = document.getElementById('activeFileName');
                                     if (activeFileEl) {
@@ -5185,7 +5284,7 @@
                 if(valueRanges && valueRanges[0].values) {
                     const parsedRaw = aoaToJson(valueRanges[0].values);
                     if(parsedRaw.length > 0) {
-                        rawData = parsedRaw;
+                        rawData = migrateRawData(parsedRaw);
                         idb.save('currentRawData', { fileName: `Cloud Sync`, data: rawData });
                         document.getElementById('activeFileName').innerHTML = `<span class="text-success small fw-bold"><i class="fas fa-cloud-check me-1"></i> Master Data: Updated from Cloud</span>`;
                         populateWeldTypeDropdown(rawData);
@@ -5307,7 +5406,7 @@
         function getNdrHeader(keyLabel) {
             return `<tr>
                 <th>No.</th><th>${keyLabel}</th><th>Test Date</th><th>Material</th><th>Weld Type</th><th>Actual Joint</th>
-                <th>DWG_total Joint</th><th>Fit-up Acc</th><th>Welded Completed</th><th>Welded Backlog</th><th>Visual Acc</th><th>Visual Remain</th>
+                <th>DWG_total Joint</th><th>Fit-up Acc</th><th>Welded Completed</th><th>Welded Backlog</th><th>Visual Acc</th>
                 <th class="ndr-grp-rt">%RT/PAUT</th><th class="ndr-grp-rt">RT/PAUT Required</th>
                 <th class="ndr-grp-rt">RT/PAUT Select</th><th class="ndr-grp-rt">RT/PAUT Done</th><th class="ndr-grp-rt">RT/PAUT Remaining</th>
                 <th class="ndr-grp-rt">%RT/PAUT Current</th><th class="ndr-grp-rt">%RT/PAUT Final</th>
@@ -5361,7 +5460,7 @@
                 }
                 const g = groups[gk];
                 if (d.weldType && d.weldType.toString().trim()) g.actual++;
-                if (d.weldType && d.weldType.toString().trim().toUpperCase() !== 'DEL') g.dwgTotal++;
+                if ((d.weldType || '').toString().trim().toUpperCase() !== 'DEL') g.dwgTotal++;
                 if (d.mat) g.mats.add(d.mat);
                 if (d.joint && wtClass !== 'DEL') g.dwgJoints.add(d.joint.toString().trim());
                 if (d.line) g.lines.add(d.line);
@@ -5409,7 +5508,7 @@
                 if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') g.r1++;
                 if (d.rtRes === 'RS' || d.pautRes === 'RS') g.rs++;
 
-                g.penTotal += (Number(d.penalty) || 0);
+                if (parseFloat(d.penalty) > 0) g.penTotal++;
 
                 if (d.hydroRep && d.hydroRep.toString().trim() !== '') g.hydroDone++;
                 if (d.releaseRep && d.releaseRep.toString().trim() !== '') g.reinsDone++;
@@ -5559,7 +5658,6 @@
                 <td>${g.weldedCompleted}</td>
                 <td>${g.weldedBacklog}</td>
                 ${g.visualAcc > 0 ? `<td class="ndr-ok">${g.visualAcc}</td>` : `<td>${g.visualAcc}</td>`}
-                <td>${g.visualRemain}</td>
                 <td>${g.rtPct > 0 ? g.rtPct.toFixed(2) : '<span class="ndr-na">-</span>'}</td>
                 ${numCell(g.rtReq)}
                 ${numCell(g.rtSelect)}
@@ -5755,7 +5853,6 @@
                 weldedCompleted: 0, 
                 weldedBacklog: 0, 
                 visualAcc: 0, 
-                visualRemain: 0, 
                 rtReq: 0, 
                 rtSelect: 0, 
                 rtDone: 0, 
@@ -5780,8 +5877,7 @@
                 tot.fitupAcc += g.fitupAcc;
                 tot.weldedCompleted += g.weldedCompleted;
                 tot.weldedBacklog += g.weldedBacklog;
-                tot.visualAcc += g.visualAcc; 
-                tot.visualRemain += g.visualRemain;
+                tot.visualAcc += g.visualAcc;
                 tot.rtReq += g.rtReq; 
                 tot.rtSelect += g.rtSelect; 
                 tot.rtDone += g.rtDone;
@@ -5816,7 +5912,6 @@
                 <td>${tot.weldedCompleted}</td>
                 <td>${tot.weldedBacklog}</td>
                 <td>${tot.visualAcc}</td>
-                <td>${tot.visualRemain}</td>
                 <td></td>
                 <td>${tot.rtReq}</td>
                 <td>${tot.rtSelect}</td>
@@ -5861,6 +5956,7 @@
                 console.error("NDT Random Render Error:", e);
                 document.getElementById('ndrTbody').innerHTML = `<tr><td colspan="30" class="text-danger text-center">Lỗi hệ thống khi tải NDT Random: ${e.message}</td></tr>`;
             }
+            reapplyTableFilter('ndrTable');
         }
 
         function ndrDrillDown(tpKey) {
@@ -5920,7 +6016,6 @@
                 weldedCompleted: 0, 
                 weldedBacklog: 0, 
                 visualAcc: 0, 
-                visualRemain: 0, 
                 rtReq: 0, 
                 rtSelect: 0, 
                 rtDone: 0, 
@@ -5945,8 +6040,7 @@
                 tot.fitupAcc += g.fitupAcc;
                 tot.weldedCompleted += g.weldedCompleted;
                 tot.weldedBacklog += g.weldedBacklog;
-                tot.visualAcc += g.visualAcc; 
-                tot.visualRemain += g.visualRemain;
+                tot.visualAcc += g.visualAcc;
                 tot.rtReq += g.rtReq; 
                 tot.rtSelect += g.rtSelect; 
                 tot.rtDone += g.rtDone;
@@ -5981,7 +6075,6 @@
                 <td>${tot.weldedCompleted}</td>
                 <td>${tot.weldedBacklog}</td>
                 <td>${tot.visualAcc}</td>
-                <td>${tot.visualRemain}</td>
                 <td></td>
                 <td>${tot.rtReq}</td>
                 <td>${tot.rtSelect}</td>
@@ -6010,6 +6103,7 @@
                 <td></td>
                 <td></td>
             </tr>`;
+            reapplyTableFilter('ndrDetailTable');
         }
 
         // ================================================================
@@ -6160,12 +6254,12 @@ async function exportNdtRandomExcel() {
             const hFill = (argb) => ({ type:'pattern', pattern:'solid', fgColor:{argb} });
             const label = ndrViewMode === 'tp' ? 'Test Package No.' : 'Line';
 
-            ws.addRow(['','','','','','','','','','','','', 'RT / PAUT','','','','','','', 'MT / PT','','','','', 'Hardness & PMI','','','','','', 'Repair / Rework','','','', '','','','','','']);
-            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L']) ws.mergeCells(`${c}1:${c}2`);
-            ws.mergeCells('M1:S1'); ws.mergeCells('T1:X1'); ws.mergeCells('Y1:AD1'); ws.mergeCells('AE1:AH1');
-            for (let c of ['AI','AJ','AK','AL','AM','AN']) ws.mergeCells(`${c}1:${c}2`);
+            ws.addRow([...Array(11).fill(''), 'RT / PAUT', ...Array(6).fill(''), 'MT / PT', ...Array(4).fill(''), 'Hardness & PMI', ...Array(5).fill(''), 'Repair / Rework', ...Array(9).fill('')]);
+            for (let c of ['A','B','C','D','E','F','G','H','I','J','K']) ws.mergeCells(`${c}1:${c}2`);
+            ws.mergeCells('L1:R1'); ws.mergeCells('S1:W1'); ws.mergeCells('X1:AC1'); ws.mergeCells('AD1:AG1');
+            for (let c of ['AH','AI','AJ','AK','AL','AM']) ws.mergeCells(`${c}1:${c}2`);
 
-            ws.addRow(['No.', label, 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc', 'Visual Remain',
+            ws.addRow(['No.', label, 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc',
                 '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final',
                 '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final',
                 'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done',
@@ -6173,7 +6267,7 @@ async function exportNdtRandomExcel() {
                 'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
 
             const HC = (col) => {
-                if (col <= 12) return 'FF263238'; if (col <= 19) return 'FF1565C0'; if (col <= 24) return 'FF2E7D32'; if (col <= 30) return 'FF4A148C'; if (col <= 34) return 'FFB71C1C'; if (col === 35) return 'FF4A148C'; if (col === 36) return 'FF1B5E20'; return 'FF263238';
+                if (col <= 11) return 'FF263238'; if (col <= 18) return 'FF1565C0'; if (col <= 23) return 'FF2E7D32'; if (col <= 29) return 'FF4A148C'; if (col <= 33) return 'FFB71C1C'; if (col === 34) return 'FF4A148C'; if (col === 35) return 'FF1B5E20'; return 'FF263238';
             };
             for (let r = 1; r <= 2; r++) {
                 ws.getRow(r).eachCell({includeEmpty:true}, (cell, col) => {
@@ -6202,12 +6296,12 @@ async function exportNdtRandomExcel() {
                 const bgArgb = grpBg[groupNum % 2];
                 const rtFinalVal = g.rtFinal === -1 ? 'N/A' : (g.rtFinal >= 0 ? Math.min(g.rtFinal,100).toFixed(1)+'%' : '0%');
                 const mtFinalVal = g.mtFinal === -1 ? 'N/A' : (g.mtFinal >= 0 ? Math.min(g.mtFinal,100).toFixed(1)+'%' : '0%');
-                const row = ws.addRow([groupNum, g.key, g.testDate||'TBA', g.matStr, g.wt, g.actual, g.dwgTotal, g.fitupAcc||0, g.weldedCompleted||0, g.weldedBacklog||0, g.visualAcc, g.visualRemain, g.rtPct>0?g.rtPct:'', g.rtReq||'', g.rtSelect||'', g.rtDone||'', g.rtRemaining||0, g.rtPct>0?g.rtCurrent.toFixed(1)+'%':'', rtFinalVal, g.mtPct>0?g.mtPct+'%':'', g.mtReq||'', g.mtSelect||'', g.mtPct>0?g.mtCurrent.toFixed(1)+'%':'', mtFinalVal, g.htDone||0, g.hardPct>0?g.hardPct.toFixed(1)+'%':'', g.pmiCount||'', g.pmiPct>0?g.pmiPct.toFixed(1)+'%':'', g.pwhtDone||0, g.ferriteDone||0, g.r1||'', g.r2||'', g.rs||'', g.rwTotal||'', g.penTotal||'', g.lineCount, g.locationStr||'-', g.remarkStr||'-', g.status||'In Progress', g.isCompliant?'PASS':'FAIL']);
+                const row = ws.addRow([groupNum, g.key, g.testDate||'TBA', g.matStr, g.wt, g.actual, g.dwgTotal, g.fitupAcc||0, g.weldedCompleted||0, g.weldedBacklog||0, g.visualAcc, g.rtPct>0?g.rtPct:'', g.rtReq||'', g.rtSelect||'', g.rtDone||'', g.rtRemaining||0, g.rtPct>0?g.rtCurrent.toFixed(1)+'%':'', rtFinalVal, g.mtPct>0?g.mtPct+'%':'', g.mtReq||'', g.mtSelect||'', g.mtPct>0?g.mtCurrent.toFixed(1)+'%':'', mtFinalVal, g.htDone||0, g.hardPct>0?g.hardPct.toFixed(1)+'%':'', g.pmiCount||'', g.pmiPct>0?g.pmiPct.toFixed(1)+'%':'', g.pwhtDone||0, g.ferriteDone||0, g.r1||'', g.r2||'', g.rs||'', g.rwTotal||'', g.penTotal||'', g.lineCount, g.locationStr||'-', g.remarkStr||'-', g.status||'In Progress', g.isCompliant?'PASS':'FAIL']);
                 row.eachCell({includeEmpty:true}, (cell, col) => {
                     cell.alignment = { vertical:'middle', horizontal:'center' };
                     cell.border = thinBdr;
                     if (bgArgb !== 'FFFFFFFF') cell.fill = hFill(bgArgb);
-                    if (col === 19 || col === 24) {
+                    if (col === 18 || col === 23) {
                         const pct = parseFloat(cell.value);
                         if (cell.value === 'N/A') { cell.fill = hFill('FFF5F5F5'); cell.font = {color:{argb:'FFBDBDBD'}}; }
                         else if (!isNaN(pct)) {
@@ -6216,8 +6310,8 @@ async function exportNdtRandomExcel() {
                             else { cell.fill = hFill('FFFFE0E0'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
                         }
                     }
-                    if (col === 34 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
-                    if (col === 40) {
+                    if (col === 33 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
+                    if (col === 39) {
                         if (cell.value === 'PASS') { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, size:10, color:{argb:'FF155724'}}; }
                         else { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, size:10, color:{argb:'FF842029'}}; }
                     }
@@ -6232,18 +6326,18 @@ async function exportNdtRandomExcel() {
                     }
                 }
             });
-            ws.columns = [{width:5},{width:32},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},{width:8},{width:9},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},{width:9},{width:10},{width:10},{width:13},{width:12},{width:8},{width:8},{width:8},{width:8},{width:8},{width:8},{width:5},{width:5},{width:5},{width:9},{width:8},{width:8},{width:18},{width:25},{width:12},{width:11}];
+            ws.columns = [{width:5},{width:32},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},{width:8},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},{width:9},{width:10},{width:10},{width:13},{width:12},{width:8},{width:8},{width:8},{width:8},{width:8},{width:8},{width:5},{width:5},{width:5},{width:9},{width:8},{width:8},{width:18},{width:25},{width:12},{width:11}];
             ws.views = [{ state:'frozen', xSplit:2, ySplit:2, topLeftCell:'C3' }];
 
             const ws2 = wb.addWorksheet('Line NDT Detail');
             const tpKeys = [...new Set(rows.map(g => g.key))];
-            ws2.addRow(['','','','','','','','','','','','','','', 'RT / PAUT','','','','','','', 'MT / PT','','','','', 'Hardness & PMI','','','','', 'Repair / Rework','','','', '','','','','','']);
-            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L','M']) ws2.mergeCells(`${c}1:${c}2`);
-            ws2.mergeCells('N1:T1'); ws2.mergeCells('U1:Y1'); ws2.mergeCells('Z1:AE1'); ws2.mergeCells('AF1:AI1');
-            for (let c of ['AJ','AK','AL','AM','AN','AO']) ws2.mergeCells(`${c}1:${c}2`);
-            ws2.addRow(['No.', 'Test Package', 'Line', 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc', 'Visual Remain', '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final', '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final', 'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done', 'R1', 'R2', 'RS', 'RW Total', 'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
+            ws2.addRow([...Array(12).fill(''), 'RT / PAUT', ...Array(6).fill(''), 'MT / PT', ...Array(4).fill(''), 'Hardness & PMI', ...Array(5).fill(''), 'Repair / Rework', ...Array(9).fill('')]);
+            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L']) ws2.mergeCells(`${c}1:${c}2`);
+            ws2.mergeCells('M1:S1'); ws2.mergeCells('T1:X1'); ws2.mergeCells('Y1:AD1'); ws2.mergeCells('AE1:AH1');
+            for (let c of ['AI','AJ','AK','AL','AM','AN']) ws2.mergeCells(`${c}1:${c}2`);
+            ws2.addRow(['No.', 'Test Package', 'Line', 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc', '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final', '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final', 'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done', 'R1', 'R2', 'RS', 'RW Total', 'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
             
-            const HC2 = (col) => { if(col<=13) return 'FF263238'; if(col<=20) return 'FF1565C0'; if(col<=25) return 'FF2E7D32'; if(col<=31) return 'FF4A148C'; if(col<=35) return 'FFB71C1C'; if(col===36) return 'FF4A148C'; if(col===37) return 'FF1B5E20'; return 'FF263238'; };
+            const HC2 = (col) => { if(col<=12) return 'FF263238'; if(col<=19) return 'FF1565C0'; if(col<=24) return 'FF2E7D32'; if(col<=30) return 'FF4A148C'; if(col<=34) return 'FFB71C1C'; if(col===35) return 'FF4A148C'; if(col===36) return 'FF1B5E20'; return 'FF263238'; };
             for (let r = 1; r <= 2; r++) { ws2.getRow(r).eachCell({includeEmpty:true}, (cell, col) => { cell.font = {bold:true,size:9,color:{argb:'FFE0E0E0'}}; cell.alignment = {vertical:'middle',horizontal:'center',wrapText:true}; cell.fill = hFill(HC2(col)); cell.border = thinBdr; }); }
             ws2.getRow(1).height = 22; ws2.getRow(2).height = 20;
 
@@ -6257,12 +6351,12 @@ async function exportNdtRandomExcel() {
                 mergeTracker2[tp] = { start: startRow2, end: startRow2 + lineRows.length - 1 };
                 lineRows.forEach((lg, li) => {
                     s2RowNum++;
-                    const lineRow = ws2.addRow([li===0?s2Idx++:'', li===0?tp:'', lg.key, lg.testDate||'TBA', lg.matStr, lg.wt, lg.actual, lg.dwgTotal, lg.fitupAcc||0, lg.weldedCompleted||0, lg.weldedBacklog||0, lg.visualAcc, lg.visualRemain, lg.rtPct>0?lg.rtPct:'', lg.rtReq||'', lg.rtSelect||'', lg.rtDone||'', lg.rtRemaining||0, lg.rtPct>0?lg.rtCurrent.toFixed(1)+'%':'', lg.rtFinal===-1?'N/A':Math.min(lg.rtFinal,999).toFixed(1)+'%', lg.mtPct>0?lg.mtPct+'%':'', lg.mtReq||'', lg.mtSelect||'', lg.mtCurrent.toFixed(1)+'%', lg.mtFinal===-1?'N/A':Math.min(lg.mtFinal,999).toFixed(1)+'%', lg.htDone||0, lg.hardPct>0?lg.hardPct.toFixed(1)+'%':'', lg.pmiCount||'', lg.pmiPct>0?lg.pmiPct.toFixed(1)+'%':'', lg.pwhtDone||0, lg.ferriteDone||0, lg.r1||'', lg.r2||'', lg.rs||'', lg.rwTotal||'', lg.penTotal||'', lg.lineCount, lg.locationStr||'-', lg.remarkStr||'-', lg.status||'In Progress', lg.isCompliant?'PASS':'FAIL']);
+                    const lineRow = ws2.addRow([li===0?s2Idx++:'', li===0?tp:'', lg.key, lg.testDate||'TBA', lg.matStr, lg.wt, lg.actual, lg.dwgTotal, lg.fitupAcc||0, lg.weldedCompleted||0, lg.weldedBacklog||0, lg.visualAcc, lg.rtPct>0?lg.rtPct:'', lg.rtReq||'', lg.rtSelect||'', lg.rtDone||'', lg.rtRemaining||0, lg.rtPct>0?lg.rtCurrent.toFixed(1)+'%':'', lg.rtFinal===-1?'N/A':Math.min(lg.rtFinal,999).toFixed(1)+'%', lg.mtPct>0?lg.mtPct+'%':'', lg.mtReq||'', lg.mtSelect||'', lg.mtCurrent.toFixed(1)+'%', lg.mtFinal===-1?'N/A':Math.min(lg.mtFinal,999).toFixed(1)+'%', lg.htDone||0, lg.hardPct>0?lg.hardPct.toFixed(1)+'%':'', lg.pmiCount||'', lg.pmiPct>0?lg.pmiPct.toFixed(1)+'%':'', lg.pwhtDone||0, lg.ferriteDone||0, lg.r1||'', lg.r2||'', lg.rs||'', lg.rwTotal||'', lg.penTotal||'', lg.lineCount, lg.locationStr||'-', lg.remarkStr||'-', lg.status||'In Progress', lg.isCompliant?'PASS':'FAIL']);
                     lineRow.eachCell({includeEmpty:true}, (cell, col) => {
                         cell.alignment = {vertical:'middle', horizontal:'center'};
                         cell.border = thinBdr;
-                        // %RT Final (20) & %MT Final (25)
-                        if (col === 20 || col === 25) {
+                        // %RT Final (19) & %MT Final (24)
+                        if (col === 19 || col === 24) {
                             const pct = parseFloat(cell.value);
                             if (cell.value === 'N/A') { cell.fill = hFill('FFF5F5F5'); cell.font = {color:{argb:'FFBDBDBD'}}; }
                             else if (!isNaN(pct)) {
@@ -6270,10 +6364,10 @@ async function exportNdtRandomExcel() {
                                 else            { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
                             }
                         }
-                        // RW Total (35)
-                        if (col === 35 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
-                        // Compliance (41)
-                        if (col === 41) {
+                        // RW Total (34)
+                        if (col === 34 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
+                        // Compliance (40)
+                        if (col === 40) {
                             if (cell.value === 'PASS') { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, color:{argb:'FF155724'}}; }
                             else                       { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, color:{argb:'FF842029'}}; }
                         }
@@ -6293,7 +6387,7 @@ async function exportNdtRandomExcel() {
             });
             ws2.columns = [
                 {width:5},{width:30},{width:35},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},
-                {width:8},{width:9},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},
+                {width:8},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},
                 {width:9},{width:10},{width:10},{width:13},{width:12},
                 {width:8},{width:8},{width:8},{width:8},{width:8},
                 {width:5},{width:5},{width:5},{width:9},
