@@ -2979,23 +2979,23 @@
                         if (fSTT !== currentStt) return false;
                     }
 
-                    if(sSys && !d.system.toLowerCase().includes(sSys)) return false;
-                    if(sJoint && !d.joint.toLowerCase().includes(sJoint)) return false;
+                    if(sSys && !(d.system || '').toString().toLowerCase().includes(sSys)) return false;
+                    if(sJoint && !(d.joint || '').toString().toLowerCase().includes(sJoint)) return false;
 
                     if (dwgArray.length > 0) {
-                        const dDwg = (d.dwg || '').toLowerCase();
+                        const dDwg = (d.dwg || '').toString().toLowerCase();
                         if (!dwgArray.some(dw => dDwg.includes(dw))) return false;
                     }
                     if (testPkgArray.length > 0) {
-                        const dPkg = d.testPkg.toLowerCase();
+                        const dPkg = (d.testPkg || '').toString().toLowerCase();
                         if (!testPkgArray.some(p => dPkg.includes(p))) return false;
                     }
                     if (lineArray.length > 0) {
-                        const dLine = d.line.toLowerCase();
+                        const dLine = (d.line || '').toString().toLowerCase();
                         if (!lineArray.some(l => dLine.includes(l))) return false;
                     }
                     if (spoolArray.length > 0) {
-                        const dSpool = d.spool.toLowerCase();
+                        const dSpool = (d.spool || '').toString().toLowerCase();
                         if (!spoolArray.some(s => dSpool.includes(s))) return false;
                     }
                     return true;
@@ -5409,11 +5409,11 @@
                 if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') g.r1++;
                 if (d.rtRes === 'RS' || d.pautRes === 'RS') g.rs++;
 
-                g.penTotal += d.penalty;
+                g.penTotal += (Number(d.penalty) || 0);
 
-                if (d.hydroRep && d.hydroRep.trim() !== '') g.hydroDone++;
-                if (d.releaseRep && d.releaseRep.trim() !== '') g.reinsDone++;
-                if (d.summaryRep && d.summaryRep.trim() !== '') g.leakDone++;
+                if (d.hydroRep && d.hydroRep.toString().trim() !== '') g.hydroDone++;
+                if (d.releaseRep && d.releaseRep.toString().trim() !== '') g.reinsDone++;
+                if (d.summaryRep && d.summaryRep.toString().trim() !== '') g.leakDone++;
             });
 
             // Calculate derived fields
