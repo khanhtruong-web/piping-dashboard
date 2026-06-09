@@ -2762,6 +2762,7 @@
                 pautDate: findKey(['PAUT Report Date', 'PAUT Date']),
                 pwhtRes: findKey(['PWHTResult', 'PWHT Result']),
                 reqPwht: findKey(['PWHT']),
+                reqPmi: findKey(['PMI']),
                 lenNDT: findKey(['LengthNDT', 'Length']),
                 lenDefect: findKey(['Defect Length', 'Defect']),
                 jointRem: findKey(['TV', 'Joint Remark', 'Remark', 'Ghi chú']),
@@ -2843,7 +2844,7 @@
                     pautRes: getStatus(getVal(r, 'pautRes')), 
                     mtRes: getStatus(getVal(r, 'mtRes')), 
                     ptRes: getStatus(getVal(r, 'ptRes')),
-                    reqRT: isReq(getVal(r, 'reqRT')), reqPAUT: isReq(getVal(r, 'reqPAUT')), reqMT: isReq(getVal(r, 'reqMT')), reqPT: isReq(getVal(r, 'reqPT')), reqPwht: isReq(getVal(r, 'reqPwht')),
+                    reqRT: isReq(getVal(r, 'reqRT')), reqPAUT: isReq(getVal(r, 'reqPAUT')), reqMT: isReq(getVal(r, 'reqMT')), reqPT: isReq(getVal(r, 'reqPT')), reqPwht: isReq(getVal(r, 'reqPwht')), reqPmi: isReq(getVal(r, 'reqPmi')),
                     hasRT: hasRep(getVal(r, 'rtRep')), hasPAUT: hasRep(getVal(r, 'pautRep')), 
                     hasMT: hasRep(getVal(r, 'mtRep')), hasPT: hasRep(getVal(r, 'ptRep')),
                     pwhtRes: getStatus(getVal(r, 'pwhtRes')), 
@@ -5519,6 +5520,7 @@
                         rtPct: 0, rtReq: 0, rtSelect: 0, rtDone: 0,
                         mtPct: 0, mtReq: 0, mtSelect: 0,
                         hardCount: 0, pmiCount: 0, htDone: 0, pwhtDone: 0, ferriteDone: 0,
+                        pwhtReq: 0, pmiReq: 0,
                         r1: 0, r2: 0, rs: 0, penTotal: 0,
                         hydroDone: 0, reinsDone: 0, leakDone: 0,
                         lineStats: {},
@@ -5571,6 +5573,8 @@
                 if (d.hardnessRep && d.hardnessRep.toString().trim()) g.htDone++;
                 if (d.pwhtRes === 'ACC') g.pwhtDone++;
                 if (d.ferriteRep && d.ferriteRep.toString().trim()) g.ferriteDone++;
+                if (d.reqPwht) g.pwhtReq++;
+                if (d.reqPmi) g.pmiReq++;
 
                 if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') g.r1++;
                 if (d.rtRes === 'RS' || d.pautRes === 'RS') g.rs++;
@@ -5629,22 +5633,24 @@
                 }
 
                 // Determine Test Package status dynamically
-                if (g.leakDone > 0) {
-                    g.status = 'Leak Tested';
-                } else if (g.reinsDone > 0) {
-                    g.status = 'Reinstated';
-                } else if (g.hydroDone > 0) {
+                const isNdtDone = g.rtDone >= g.rtReq && g.isCompliant;
+                const isHtDone = g.hardCount === 0 || g.htDone >= g.hardCount;
+                const isPmiDone = (g.pmiReq || 0) === 0 || g.pmiCount >= g.pmiReq;
+                const isPwhtDone = (g.pwhtReq || 0) === 0 || g.pwhtDone >= g.pwhtReq;
+                const isReadyForHydro = isNdtDone && isHtDone && isPmiDone && isPwhtDone;
+
+                if (g.hydroDone > 0) {
                     g.status = 'Hydrotested';
-                } else if (g.rtDone >= g.rtReq && g.isCompliant) {
+                } else if (isReadyForHydro) {
+                    g.status = 'Ready for Hydrotest';
+                } else if (isNdtDone) {
                     g.status = 'NDT Done';
                 } else if (g.visualAcc === g.actual) {
-                    g.status = 'Visual Acc';
-                } else if (g.weldedCompleted === g.actual) {
-                    g.status = 'Welded';
-                } else if (g.fitupAcc === g.actual) {
-                    g.status = 'Fit-up';
-                } else {
                     g.status = 'In Progress';
+                } else if (g.fitupAcc === g.actual) {
+                    g.status = 'Being Welding';
+                } else {
+                    g.status = 'Fit-up';
                 }
             });
             return groups;
@@ -5703,14 +5709,26 @@
                 : '';
 
             const getStatusBadge = (st) => {
-                if (st === 'Leak Tested') return '<span class="badge bg-success shadow-sm">LEAK TESTED</span>';
-                if (st === 'Reinstated') return '<span class="badge bg-info shadow-sm text-dark">REINSTATED</span>';
-                if (st === 'Hydrotested') return '<span class="badge bg-primary shadow-sm">HYDROTESTED</span>';
-                if (st === 'NDT Done') return '<span class="badge bg-success bg-opacity-75 text-white">NDT DONE</span>';
-                if (st === 'Visual Acc') return '<span class="badge bg-warning text-dark">VISUAL ACC</span>';
-                if (st === 'Welded') return '<span class="badge text-dark" style="background-color:#ffe0b2;">WELDED</span>';
-                if (st === 'Fit-up') return '<span class="badge bg-secondary">FIT-UP</span>';
-                return '<span class="badge bg-light text-dark border">IN PROGRESS</span>';
+                const baseStyle = 'display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.15); box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 110px; text-align: center; text-transform: uppercase; white-space: nowrap;';
+                if (st === 'Hydrotested') {
+                    return `<span style="${baseStyle} background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);"><i class="fas fa-water me-1"></i>Hydrotested</span>`;
+                }
+                if (st === 'Ready for Hydrotest') {
+                    return `<span style="${baseStyle} background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); box-shadow: 0 0 10px rgba(56, 239, 125, 0.4);"><i class="fas fa-check-double me-1"></i>Ready Hydro</span>`;
+                }
+                if (st === 'NDT Done') {
+                    return `<span style="${baseStyle} background: linear-gradient(135deg, #02aab0 0%, #00cdac 100%);"><i class="fas fa-clipboard-check me-1"></i>NDT Done</span>`;
+                }
+                if (st === 'In Progress') {
+                    return `<span style="${baseStyle} background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i class="fas fa-spinner fa-spin me-1" style="animation-duration: 2s;"></i>In Progress</span>`;
+                }
+                if (st === 'Being Welding') {
+                    return `<span style="${baseStyle} background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);"><i class="fas fa-fire me-1"></i>Being Welding</span>`;
+                }
+                if (st === 'Fit-up') {
+                    return `<span style="${baseStyle} background: linear-gradient(135deg, #606c88 0%, #3f5efb 100%);"><i class="fas fa-tools me-1"></i>Fit-up</span>`;
+                }
+                return `<span style="${baseStyle} background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);">${st}</span>`;
             };
 
             const hardPctDisp = g.hardCount > 0 ? (g.htDone / g.hardCount * 100).toFixed(1) + '%' : '<span class="ndr-na">-</span>';
