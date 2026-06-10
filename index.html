@@ -1660,7 +1660,7 @@
         
         let rawData = [], filteredData = [], hydroPlanData =[];
         let appNotes = []; // Scheduled Notes
-        let GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/189xNkXF5aBnyR3yLNvTUsf___5ps4uh/edit?gid=210321955#gid=210321955";
+        let GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/189xNkXF5aBnyR3yLNvT-Usf___5ps4uh/edit?usp=sharing&ouid=100767624997239062723&rtpof=true&sd=true";
         let sheetHydroDates = new Map();
         let chartInstances = {};
         
@@ -5524,7 +5524,12 @@
                 if (!idMatch) return null;
                 const id = idMatch[1];
                 const gidMatch = urlStr.match(/[?&]gid=([0-9]+)/);
-                const gid = gidMatch ? gidMatch[1] : '0';
+                let gid = '0';
+                if (gidMatch) {
+                    gid = gidMatch[1];
+                } else if (id.includes('189xNkXF5aBnyR3yLNvT')) {
+                    gid = '210321955';
+                }
                 return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`;
             } catch (e) {
                 console.error("Error parsing Google Sheet URL:", e);
