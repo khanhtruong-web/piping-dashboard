@@ -320,25 +320,25 @@
         /* === NDR Sticky Frozen Columns === */
         .ndr-table thead th.ndr-sticky-col { position: sticky; z-index: 15; border-right: 2px solid rgba(255,255,255,0.3); }
         .ndr-table thead th.ndr-sticky-col-0 { left: 0; min-width: 40px; width: 40px; }
-        .ndr-table thead th.ndr-sticky-col-1 { left: 40px; min-width: 150px; width: 150px; }
-        .ndr-table thead th.ndr-sticky-col-2 { left: 190px; min-width: 100px; width: 100px; }
-        .ndr-table thead th.ndr-sticky-col-3 { left: 290px; min-width: 80px; width: 80px; }
-        .ndr-table thead th.ndr-sticky-col-4 { left: 370px; min-width: 80px; width: 80px; border-right: 3px solid rgba(255,255,255,0.5); }
+        .ndr-table thead th.ndr-sticky-col-1 { left: 40px; min-width: 180px; width: 180px; }
+        .ndr-table thead th.ndr-sticky-col-2 { left: 220px; min-width: 100px; width: 100px; }
+        .ndr-table thead th.ndr-sticky-col-3 { left: 320px; min-width: 80px; width: 80px; }
+        .ndr-table thead th.ndr-sticky-col-4 { left: 400px; min-width: 90px; width: 90px; border-right: 3px solid rgba(255,255,255,0.5); }
         .ndr-table tbody td.ndr-sticky-col { position: sticky; z-index: 3; background-color: #fff; border-right: 2px solid #e0e0e0; }
         .ndr-table tbody tr:nth-child(even) td.ndr-sticky-col { background-color: #fafafa; }
         .ndr-table tbody tr:hover td.ndr-sticky-col { background: #e8f5e9 !important; }
         .ndr-table tbody tr.ndr-row-tp:hover td.ndr-sticky-col { background: #e3f2fd !important; }
         .ndr-table tbody td.ndr-sticky-col-0 { left: 0; min-width: 40px; }
-        .ndr-table tbody td.ndr-sticky-col-1 { left: 40px; min-width: 150px; }
-        .ndr-table tbody td.ndr-sticky-col-2 { left: 190px; min-width: 100px; }
-        .ndr-table tbody td.ndr-sticky-col-3 { left: 290px; min-width: 80px; }
-        .ndr-table tbody td.ndr-sticky-col-4 { left: 370px; min-width: 80px; border-right: 3px solid #c8e6c9; }
+        .ndr-table tbody td.ndr-sticky-col-1 { left: 40px; min-width: 180px; }
+        .ndr-table tbody td.ndr-sticky-col-2 { left: 220px; min-width: 100px; }
+        .ndr-table tbody td.ndr-sticky-col-3 { left: 320px; min-width: 80px; }
+        .ndr-table tbody td.ndr-sticky-col-4 { left: 400px; min-width: 90px; border-right: 3px solid #c8e6c9; }
         .ndr-table tfoot td.ndr-sticky-col { position: sticky; z-index: 10; background: #fff3e0; border-right: 2px solid #e0e0e0; }
         .ndr-table tfoot td.ndr-sticky-col-0 { left: 0; }
         .ndr-table tfoot td.ndr-sticky-col-1 { left: 40px; }
-        .ndr-table tfoot td.ndr-sticky-col-2 { left: 190px; }
-        .ndr-table tfoot td.ndr-sticky-col-3 { left: 290px; }
-        .ndr-table tfoot td.ndr-sticky-col-4 { left: 370px; border-right: 3px solid #c8e6c9; }
+        .ndr-table tfoot td.ndr-sticky-col-2 { left: 220px; }
+        .ndr-table tfoot td.ndr-sticky-col-3 { left: 320px; }
+        .ndr-table tfoot td.ndr-sticky-col-4 { left: 400px; border-right: 3px solid #c8e6c9; }
         /* Detail view sticky columns inherit row colors */
         #ndrDetailTable tbody tr.ndr-line-incomplete td.ndr-sticky-col { background: #ffebee !important; color: #b71c1c !important; }
         #ndrDetailTable tbody tr.ndr-line-incomplete:hover td.ndr-sticky-col { background: #ffcdd2 !important; }
@@ -5961,15 +5961,19 @@
         function getNdrHeader(keyLabel, isDetail = false) {
             const h = (prop, label, cls = '') => {
                 const classAttr = cls ? `class="${cls}"` : '';
-                const styleAttr = prop === 'testDate' ? 'style="min-width:100px; cursor:pointer; user-select:none;"' : 'style="cursor:pointer; user-select:none; white-space:nowrap;"';
+                let widthStyle = 'white-space:nowrap;';
+                if (prop === 'key') widthStyle = 'width:180px; min-width:180px;';
+                else if (prop === 'testDate') widthStyle = 'width:100px; min-width:100px;';
+                else if (prop === 'matStr') widthStyle = 'width:80px; min-width:80px;';
+                else if (prop === 'sys') widthStyle = 'width:90px; min-width:90px;';
+                
                 if (isDetail) {
-                    const dStyleAttr = prop === 'testDate' ? 'style="min-width:100px;"' : 'style="white-space:nowrap;"';
-                    return `<th ${classAttr} ${dStyleAttr}>${label}</th>`;
+                    return `<th ${classAttr} style="${widthStyle}">${label}</th>`;
                 }
-                return `<th ${classAttr} onclick="setNdrSort('${prop}')" ${styleAttr}>${label}${getSortArrow(prop)}</th>`;
+                return `<th ${classAttr} onclick="setNdrSort('${prop}')" style="${widthStyle} cursor:pointer; user-select:none;">${label}${getSortArrow(prop)}</th>`;
             };
             return `<tr>
-                <th class="ndr-sticky-col ndr-sticky-col-0">No.</th>
+                <th class="ndr-sticky-col ndr-sticky-col-0" style="width:40px; min-width:40px;">No.</th>
                 ${h('key', keyLabel, 'ndr-sticky-col ndr-sticky-col-1')}
                 ${h('testDate', 'Test Date', 'ndr-sticky-col ndr-sticky-col-2')}
                 ${h('matStr', 'Material', 'ndr-sticky-col ndr-sticky-col-3')}
@@ -6332,13 +6336,13 @@
             let firstCols = '';
             if (isFirstRow) {
                 firstCols = `
-                <td rowspan="${rowspan}" class="text-center fw-bold text-muted align-middle border-end ndr-sticky-col ndr-sticky-col-0" style="background-color:inherit;">${groupIdx}</td>
-                <td rowspan="${rowspan}" class="align-middle border-end ndr-sticky-col ndr-sticky-col-1" style="background-color:inherit;" title="${encHtml(g.key)}">
+                <td rowspan="${rowspan}" class="text-center fw-bold text-muted align-middle border-end ndr-sticky-col ndr-sticky-col-0" style="background-color:inherit; width:40px; min-width:40px;">${groupIdx}</td>
+                <td rowspan="${rowspan}" class="align-middle border-end ndr-sticky-col ndr-sticky-col-1" style="background-color:inherit; width:180px; min-width:180px;" title="${encHtml(g.key)}">
                     <span class="fw-bold">${g.key}</span>${compBadge}${eyeBtn}
                 </td>
-                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-2" style="background-color:inherit;">${g.testDate || '-'}</td>
-                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-3" style="background-color:inherit;">${g.matStr}</td>
-                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-4" style="background-color:inherit;">${g.sys || '-'}</td>`;
+                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-2" style="background-color:inherit; width:100px; min-width:100px;">${g.testDate || '-'}</td>
+                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-3" style="background-color:inherit; width:80px; min-width:80px;">${g.matStr}</td>
+                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-4" style="background-color:inherit; width:90px; min-width:90px;">${g.sys || '-'}</td>`;
             }
 
             const rowStyle = isLastRow ? 'border-bottom: 2px solid #ced4da !important;' : '';
@@ -6662,7 +6666,7 @@
             const hardPctTot = tot.hardCount > 0 ? (tot.htDone / tot.hardCount * 100).toFixed(1) + '%' : '-';
 
             document.getElementById('ndrTfoot').innerHTML = `<tr>
-                <td colspan="5" class="text-end fw-bold pe-3 ndr-sticky-col ndr-sticky-col-0" style="left:0; min-width:450px;">Total</td>
+                <td colspan="5" class="text-end fw-bold pe-3 ndr-sticky-col ndr-sticky-col-0" style="left:0; min-width:490px;">Total</td>
                 <td></td>
                 <td>${tot.actual}</td>
                 <td>${tot.dwgTotal}</td>
@@ -6825,7 +6829,7 @@
             const hardPctTot = tot.hardCount > 0 ? (tot.htDone / tot.hardCount * 100).toFixed(1) + '%' : '-';
 
             document.getElementById('ndrDetailTfoot').innerHTML = `<tr>
-                <td colspan="5" class="text-end fw-bold pe-3 ndr-sticky-col ndr-sticky-col-0" style="left:0; min-width:450px;">Total</td>
+                <td colspan="5" class="text-end fw-bold pe-3 ndr-sticky-col ndr-sticky-col-0" style="left:0; min-width:490px;">Total</td>
                 <td></td>
                 <td>${tot.actual}</td>
                 <td>${tot.dwgTotal}</td>
