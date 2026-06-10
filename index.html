@@ -2763,7 +2763,7 @@
                 welder: findKey(['WelderID', 'Welder ID', 'Welder', 'WelderNo', 'Thợ hàn']),
                 size: findKey(['Size', 'Kích thước']),
                 diaIn: findKey(['DiaIn', 'Dia-Inch', 'DiaInch']),
-                thick: findKey(['Thickness', 'Thick', 'Độ dày', 'Thk']),
+                thick: findKey(['RevForJointNo', 'Thickness', 'Thick', 'Độ dày', 'Thk']),
                 mat: findKey(['Material', 'Mat', 'Vật liệu']),
                 wDate: findKey(['WeldingCompletedDate', 'Welding Completed Date', 'Weld Date', 'Welding Date', 'Ngày hàn']),
                 weldType: findKey(['Weld Type', 'WeldType', 'Loại mối hàn']),
@@ -2799,7 +2799,7 @@
                 defectLenInfo: findKey(['DefectLengthInfo', 'Defect Length Info']),
                 typeOfDefect: findKey(['TypeOfDefect', 'Type Of Defect', 'Defect Type']),
                 fitupAcc: findKey(['FitUpACC', 'FitUp ACC', 'Fit-Up ACC']),
-                hardnessRep: findKey(['HardnessTestReportNo', 'Hardness Report No', 'HardnessRep']),
+                hardnessRep: findKey(['HardnessTestReportDate', 'HardnessTestReportNo', 'Hardness Report No', 'HardnessRep']),
                 ferriteRep: findKey(['FerriteTestReportNo', 'Ferrite Report No', 'FerriteRep']),
                 hardRep: findKey(['Hardness', 'HardnessReq']),
                 penalty: findKey(['Penalty', 'PEN']),
@@ -6424,6 +6424,9 @@
                     <td>${badge(d.mtRes)}</td>
                     <td>${badge(d.ptRes)}</td>
                     <td>${badge(d.pwhtRes)}</td>
+                    <td>${badge(d.pmiRep ? 'ACC' : '')}</td>
+                    <td>${badge(d.hardnessRep ? 'ACC' : '')}</td>
+                    <td>${badge(d.ferriteRep ? 'ACC' : '')}</td>
                     <td>${stBadge}</td>
                     <td title="${(d.location||'-').replace(/"/g,'&quot;')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.location || '-'}</td>
                     <td title="${(d.jointRem||'-').replace(/"/g,'&quot;')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.75rem;">${d.jointRem || '-'}</td>
@@ -6444,7 +6447,7 @@
                         <tr>
                             <th>No.</th><th>Joint No.</th><th>Spool</th><th>Weld Type</th>
                             <th>Size</th><th>Thk</th><th>Material</th>
-                            <th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>PWHT</th><th>Status</th>
+                            <th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>PWHT</th><th>PMI</th><th>Hardness</th><th>Ferrite</th><th>Status</th>
                             <th>Location</th><th>TV</th>
                         </tr>
                     </thead>
