@@ -217,6 +217,7 @@
         .reminder-item { border-left: 4px solid #ddd; padding: 10px; margin-bottom: 10px; background: #fff; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .reminder-urgent { border-left-color: #d32f2f; }
         .reminder-warning { border-left-color: #f57c00; }
+        .reminder-info { border-left-color: #17a2b8; }
         .reminder-date { font-size: 0.75rem; color: #888; display: block; margin-top: 4px; }
         .reminder-title { font-weight: 600; font-size: 0.9rem; color: #333; }
 
@@ -1080,8 +1081,13 @@
                             <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardHydroTracker')"><i class="fas fa-chevron-left me-1"></i> Back to report</button>
                             <span><i class="fas fa-check-double me-2"></i>Hydrotest Clearance Tracker</span>
                         </div>
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="text" class="form-control form-control-sm" placeholder="Search Hydro Packages..." style="width: 180px; font-size: 0.75rem;" data-target-table="hydroTable" oninput="applyTableFilter('hydroTable')">
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="small fw-bold text-muted">Test Plan Date:</span>
+                                <input type="date" id="hydroDate" class="form-control form-control-sm" style="width: 150px;" onchange="renderHydro()">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearHydroFilters()" title="Clear Filters"><i class="fas fa-times me-1"></i>Clear</button>
+                            </div>
+                            <input type="text" id="hydroSearchInput" class="form-control form-control-sm" placeholder="Search Hydro Packages..." style="width: 180px; font-size: 0.75rem;" data-target-table="hydroTable" oninput="applyTableFilter('hydroTable')">
                             <button class="btn btn-sm btn-info text-white fw-bold" onclick="exportHydroExcel()"><i class="fas fa-file-excel me-1"></i> Export Excel</button>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardHydroTracker')" title="Focus mode"></i>
                         </div>
@@ -1297,18 +1303,10 @@
                             <option value="FW">FW</option>
                             <option value="DEL">DEL</option>
                         </select>
-                        <!-- Month filter -->
-                        <select class="form-select-sm" id="ndrFilterMonth" onchange="renderNdtRandom()" title="Filter by Test Date Month" style="min-width:115px;">
-                            <option value="">All Month</option>
-                            <option value="1">Jan (01)</option><option value="2">Feb (02)</option>
-                            <option value="3">Mar (03)</option><option value="4">Apr (04)</option>
-                            <option value="5">May (05)</option><option value="6">Jun (06)</option>
-                            <option value="7">Jul (07)</option><option value="8">Aug (08)</option>
-                            <option value="9">Sep (09)</option><option value="10">Oct (10)</option>
-                            <option value="11">Nov (11)</option><option value="12">Dec (12)</option>
-                        </select>
-                        <!-- Day filter -->
-                        <input type="number" class="form-control-sm" id="ndrFilterDay" min="1" max="31" placeholder="Day (1-31)" onchange="renderNdtRandom()" oninput="renderNdtRandom()" title="Filter by Test Date Day" style="min-width:100px; max-width:105px;">
+                        <!-- Date filter -->
+                        <span class="small fw-bold text-muted ms-1">Test Date:</span>
+                        <input type="date" id="ndrDate" class="form-control-sm" style="width: 150px;" onchange="renderNdtRandom()">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearNdrFilters()" title="Clear Filters"><i class="fas fa-times me-1"></i>Clear</button>
                         <!-- Multi-TP search -->
                         <input type="text" class="form-control-sm" id="ndrSearch" placeholder="Search TP/Line (multi: A,B,C)" onkeyup="debouncedRenderNdtRandom(); syncNdtAndHydroSearch('ndr')" style="min-width:185px;" title="Tìm kiếm nhiều gói: nhập tên cách nhau bởi dấu , ; hoặc xuống dòng">
                         <label class="small fw-bold ms-2 text-success" style="font-size:0.72rem;"><input type="checkbox" id="ndrShowCompliant" onchange="if(this.checked) document.getElementById('ndrShowNonCompliant').checked = false; renderNdtRandom()" class="me-1">Compliant Only</label>
@@ -2084,9 +2082,8 @@
             triggerAiFeature(prompt, getDashboardContext());
         }
 
-        // --- BỔ SUNG LẠI HÀM CALCULATE REMINDERS ---
         function calculateReminders() {
-            let reminders =[]; 
+            let reminders = []; 
             const now = new Date().getTime(); 
             const todayStr = new Date().toISOString().split('T')[0];
             const dayMs = 24 * 60 * 60 * 1000;
@@ -2112,6 +2109,50 @@
                 }
             });
 
+            // Xử lý Tentative Date reminders cho các gói Hydrotest
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const todayTs = today.getTime();
+            const hydroReminders = [];
+
+            Object.values(hMap).forEach(h => {
+                if (!h.dateTs) return;
+                
+                const pDate = new Date(h.dateTs);
+                pDate.setHours(0,0,0,0);
+                const pDateTs = pDate.getTime();
+                
+                // Chỉ hiển thị nhắc nhở nếu chưa hydrotested
+                if (h.status === 'Hydrotested') return;
+
+                const diffDays = Math.round((pDateTs - todayTs) / dayMs);
+                let type = '';
+                let title = '';
+                
+                if (diffDays === 0) {
+                    type = 'warning';
+                    title = `Today: Test Package <strong>${h.testPack || h.line}</strong> is scheduled for hydrotest today!`;
+                } else if (diffDays > 0 && diffDays <= 7) {
+                    type = 'info';
+                    title = `Upcoming (in ${diffDays} days): Test Package <strong>${h.testPack || h.line}</strong> scheduled on ${h.dateStr}`;
+                }
+
+                if (type) {
+                    hydroReminders.push({
+                        type: type,
+                        title: title,
+                        date: `Plan Date: ${h.dateStr}`,
+                        sys: true,
+                        category: 'hydro',
+                        dateTs: pDateTs
+                    });
+                }
+            });
+
+            // Sắp xếp nhắc nhở Hydrotest theo thời gian tăng dần
+            hydroReminders.sort((a, b) => a.dateTs - b.dateTs);
+            reminders = reminders.concat(hydroReminders);
+
             reminderCount = reminders.length; 
             const badge = document.getElementById('notiBadge');
             if(reminderCount > 0) { 
@@ -2127,9 +2168,16 @@
             } else {
                 let html = '';
                 reminders.forEach(r => {
-                    const cls = r.type === 'urgent' ? 'reminder-urgent' : 'reminder-warning';
-                    let icon = r.type === 'urgent' ? '<i class="fas fa-exclamation-circle text-danger me-2"></i>' : '<i class="fas fa-exclamation-triangle text-warning me-2"></i>';
-                    if (!r.sys) icon = '<i class="fas fa-calendar-check text-primary me-2"></i>'; // Icon riêng cho Personal Note
+                    const cls = r.type === 'urgent' ? 'reminder-urgent' : (r.type === 'warning' ? 'reminder-warning' : 'reminder-info');
+                    let icon = '';
+                    if (r.category === 'hydro') {
+                        icon = '<i class="fas fa-tint text-info me-2" title="Hydrotest Plan"></i>';
+                    } else if (r.type === 'urgent') {
+                        icon = '<i class="fas fa-exclamation-circle text-danger me-2"></i>';
+                    } else {
+                        icon = '<i class="fas fa-exclamation-triangle text-warning me-2"></i>';
+                    }
+                    if (!r.sys) icon = '<i class="fas fa-calendar-check text-primary me-2"></i>'; 
                     html += `<div class="reminder-item ${cls}"><div class="reminder-title">${icon}${r.title}</div><span class="reminder-date">${r.date} ${!r.sys ? ' (Personal Note)' : ''}</span></div>`;
                 });
                 modalBody.innerHTML = html;
@@ -3879,6 +3927,22 @@
                 return 'style="text-align: center;"';
             };
 
+            const pctColor = h.progress === 100 ? 'bg-success' : (h.progress >= 50 ? 'bg-warning text-dark' : 'bg-danger');
+            const progressHtml = `
+                <div class="d-flex align-items-center justify-content-center gap-2" style="min-width: 90px; margin: 0 auto;">
+                    <div class="progress flex-grow-1" style="height: 12px; border-radius: 6px; background-color: rgba(0,0,0,0.05); overflow: hidden; border: 1px solid rgba(0,0,0,0.08); margin: 0;">
+                        <div class="progress-bar ${pctColor}" 
+                             role="progressbar" 
+                             style="width: ${h.progress}%; height: 100%;" 
+                             aria-valuenow="${h.progress}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <span class="fw-bold small" style="min-width: 32px; text-align: right;">${h.progress.toFixed(0)}%</span>
+                </div>
+            `;
+
             const notCompStyle = h.jointNotComplete > 0 ? 'style="background-color: #ffcb9e; color: #7f2d0f; font-weight: bold; text-align: center;"' : 'style="text-align: center;"';
 
             return `<tr class="${isUrg?'table-danger animate__animated animate__flash':''} clickable-row" 
@@ -3897,7 +3961,7 @@
                 
                 <td class="text-center">${h.weldingJoints}</td>
                 <td class="text-center">${h.welded}</td>
-                <td class="text-center fw-bold">${h.progress.toFixed(0)}%</td>
+                <td class="align-middle">${progressHtml}</td>
                 <td class="text-center">${h.jointComplete}</td>
                 <td ${notCompStyle}>${h.jointNotComplete}</td>
                 <td class="text-center">${h.rtRequired}</td>
@@ -3952,7 +4016,22 @@
                 totals.pautAcc += h.pautAcc || 0;
             });
 
-            const totalProgress = totals.joints > 0 ? (totals.welded / totals.joints * 100).toFixed(0) + '%' : '0%';
+            const totalProgressVal = totals.joints > 0 ? (totals.welded / totals.joints * 100) : 0;
+            const totalProgressColor = totalProgressVal === 100 ? 'bg-success' : (totalProgressVal >= 50 ? 'bg-warning text-dark' : 'bg-danger');
+            const totalProgressHtml = `
+                <div class="d-flex align-items-center justify-content-center gap-2" style="min-width: 90px; margin: 0 auto;">
+                    <div class="progress flex-grow-1" style="height: 12px; border-radius: 6px; background-color: rgba(0,0,0,0.05); overflow: hidden; border: 1px solid rgba(0,0,0,0.08); margin: 0;">
+                        <div class="progress-bar ${totalProgressColor}" 
+                             role="progressbar" 
+                             style="width: ${totalProgressVal}%; height: 100%;" 
+                             aria-valuenow="${totalProgressVal}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <span class="fw-bold small" style="min-width: 32px; text-align: right;">${totalProgressVal.toFixed(0)}%</span>
+                </div>
+            `;
             const notCompStyle = totals.notCompleted > 0 ? 'style="background-color: #ffcb9e; color: #7f2d0f; font-weight: bold; text-align: center;"' : 'style="text-align: center;"';
 
             tfoot.innerHTML = `<tr class="fw-bold bg-light" style="border-top: 2px solid #6c757d;">
@@ -3962,7 +4041,7 @@
                 <td class="text-center"><span class="badge bg-light text-dark border">${totals.spools}</span></td>
                 <td class="text-center">${totals.joints}</td>
                 <td class="text-center">${totals.welded}</td>
-                <td class="text-center fw-bold">${totalProgress}</td>
+                <td class="align-middle">${totalProgressHtml}</td>
                 <td class="text-center">${totals.completed}</td>
                 <td ${notCompStyle}>${totals.notCompleted}</td>
                 <td class="text-center">${totals.rtReq}</td>
@@ -3988,6 +4067,9 @@
             const lineArray = getArray(document.getElementById('sLine').value);
             const testPkgArray = getArray(document.getElementById('sTestPkg').value);
 
+            const hydroDateVal = document.getElementById('hydroDate').value;
+            let filterTs = hydroDateVal ? new Date(hydroDateVal + 'T00:00:00').getTime() : null;
+
             let sorted = Object.values(hMap).filter(h => {
                 if (sSys && !h.sys.toLowerCase().includes(sSys)) return false;
                 if (testPkgArray.length > 0) {
@@ -3997,6 +4079,12 @@
                 if (lineArray.length > 0) {
                     const hl = (h.line || '').toLowerCase();
                     if (!lineArray.some(l => hl.includes(l))) return false;
+                }
+                if (filterTs !== null) {
+                    if (!h.dateTs) return false;
+                    const d = new Date(h.dateTs);
+                    d.setHours(0,0,0,0);
+                    if (d.getTime() !== filterTs) return false;
                 }
                 return true;
             });
@@ -4839,6 +4927,37 @@
             vpActiveSearchTerms = [];
             // Restore full Hydrotest table
             renderHydro();
+        }
+
+        function clearHydroFilters() {
+            const hDate = document.getElementById('hydroDate');
+            if (hDate) hDate.value = '';
+            const searchInput = document.getElementById('hydroSearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                applyTableFilter('hydroTable');
+            }
+            clearVisualizer();
+        }
+
+        function clearNdrFilters() {
+            const nDate = document.getElementById('ndrDate');
+            if (nDate) nDate.value = '';
+            const filterSys = document.getElementById('ndrFilterSys');
+            if (filterSys) filterSys.value = '';
+            const filterSubcon = document.getElementById('ndrFilterSubcon');
+            if (filterSubcon) filterSubcon.value = '';
+            const filterWtype = document.getElementById('ndrFilterWtype');
+            if (filterWtype) filterWtype.value = '';
+            const search = document.getElementById('ndrSearch');
+            if (search) search.value = '';
+            const showCompliant = document.getElementById('ndrShowCompliant');
+            if (showCompliant) showCompliant.checked = false;
+            const showNonCompliant = document.getElementById('ndrShowNonCompliant');
+            if (showNonCompliant) showNonCompliant.checked = false;
+            const sortFailFirst = document.getElementById('ndrSortFailFirst');
+            if (sortFailFirst) sortFailFirst.checked = true;
+            renderNdtRandom();
         }
 
         // Tính NDT stats cho 1 nhóm joints
@@ -6312,30 +6431,17 @@
             const groups = buildNdrGroups(data, ndrViewMode);
             let rows = Object.values(groups);
 
-            // Date filters: Month & Day (applied on testDate of each group row)
-            const fMonth = parseInt(document.getElementById('ndrFilterMonth').value);
-            const fDay   = parseInt(document.getElementById('ndrFilterDay').value);
-            if (!isNaN(fMonth) || !isNaN(fDay)) {
+            // Date filter: Test Date (applied on testDate of each group row)
+            const ndrDateVal = document.getElementById('ndrDate').value;
+            let ndrFilterTs = ndrDateVal ? new Date(ndrDateVal + 'T00:00:00').getTime() : null;
+
+            if (ndrFilterTs !== null) {
                 rows = rows.filter(g => {
                     if (!g.testDate || g.testDate === '-') return false;
-                    // Parse testDate: supports DD/MM/YYYY, YYYY-MM-DD, DD-MM-YYYY
-                    const raw = g.testDate.toString().trim();
-                    let d;
-                    if (/\d{4}-\d{2}-\d{2}/.test(raw)) { d = new Date(raw); }
-                    else if (/\d{2}\/\d{2}\/\d{4}/.test(raw)) {
-                        const [dd, mm, yyyy] = raw.split('/');
-                        d = new Date(+yyyy, +mm - 1, +dd);
-                    } else if (/\d{2}-\d{2}-\d{4}/.test(raw)) {
-                        const [dd, mm, yyyy] = raw.split('-');
-                        d = new Date(+yyyy, +mm - 1, +dd);
-                    } else {
-                        d = new Date(raw);
-                    }
+                    const d = parseExDate(g.testDate);
                     if (!d || isNaN(d.getTime())) return false;
-                    if (isNaN(d)) return false;
-                    if (!isNaN(fMonth) && (d.getMonth() + 1) !== fMonth) return false;
-                    if (!isNaN(fDay)   && d.getDate() !== fDay)           return false;
-                    return true;
+                    d.setHours(0,0,0,0);
+                    return d.getTime() === ndrFilterTs;
                 });
             }
 
