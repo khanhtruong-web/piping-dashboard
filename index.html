@@ -3716,8 +3716,9 @@
                     if (d.hardnessRep) hardDoneCount++;
                     if (d.ferriteRep) ferriteDoneCount++;
 
-                    if (!jointStatusMap[base] || jointStatusMap[base].rev < rev) {
-                        jointStatusMap[base] = {
+                    const jKey = (d.line || '') + '|' + (d.dwg || '') + '|' + base;
+                    if (!jointStatusMap[jKey] || jointStatusMap[jKey].rev < rev) {
+                        jointStatusMap[jKey] = {
                             rev: rev,
                             rt: d.rtRes,
                             paut: d.pautRes,
