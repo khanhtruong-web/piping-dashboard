@@ -20,6 +20,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 
     <style>
+        @keyframes glowingDot {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+        .glowing-dot-active {
+            animation: glowingDot 1.5s infinite;
+        }
         /* CSS CHUẨN GIỮ NGUYÊN TỪ V35/V36 */
         :root { --bg-color: #f1f8e9; --glass-bg: rgba(255, 255, 255, 0.95); --glass-border: 1px solid rgba(255, 255, 255, 0.6); --text-primary: #1b5e20; --text-secondary: #388e3c; --accent-color: #43a047; --sidebar-width: 290px; }
         body { background-color: var(--bg-color); background-image: radial-gradient(circle at 10% 20%, #e8f5e9 0%, #ffffff 90%); font-family: 'Inter', sans-serif; color: #333; overflow-x: hidden; transition: all 0.3s ease; }
@@ -1293,6 +1301,10 @@
                         <label class="small fw-bold ms-2 text-success" style="font-size:0.72rem;"><input type="checkbox" id="ndrShowCompliant" onchange="if(this.checked) document.getElementById('ndrShowNonCompliant').checked = false; renderNdtRandom()" class="me-1">Compliant Only</label>
                         <label class="small fw-bold ms-2 text-danger" style="font-size:0.72rem;"><input type="checkbox" id="ndrShowNonCompliant" onchange="if(this.checked) document.getElementById('ndrShowCompliant').checked = false; renderNdtRandom()" class="me-1">Non-Compliant Only</label>
                         <label class="small fw-bold ms-2 text-primary" style="font-size:0.72rem;"><input type="checkbox" id="ndrSortFailFirst" onchange="renderNdtRandom()" class="me-1" checked>Sort Fail First</label>
+                        <div class="ms-2 d-flex align-items-center gap-1 border-start ps-2" id="sheetSyncIndicator" style="font-size:0.72rem; font-weight:700; color:#6c757d;" title="Chưa đồng bộ Google Sheet">
+                            <span id="sheetSyncDot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:#6c757d; transition: all 0.3s ease;"></span>
+                            <span id="sheetSyncText">Sheet Sync: Off</span>
+                        </div>
                         <button class="btn btn-sm btn-outline-success ms-auto fw-bold" onclick="exportNdtRandomExcel()" style="font-size:0.72rem;"><i class="fas fa-file-excel me-1"></i>Export</button>
                     </div>
 
@@ -1648,6 +1660,8 @@
         
         let rawData = [], filteredData = [], hydroPlanData =[];
         let appNotes = []; // Scheduled Notes
+        let GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/189xNkXF5aBnyR3yLNvTUsf___5ps4uh/edit?gid=210321955#gid=210321955";
+        let sheetHydroDates = new Map();
         let chartInstances = {};
         
         // ... Variables
@@ -2290,6 +2304,17 @@
             try {
                 await idb.init();
                 
+                // Fetch Google Sheet data asynchronously
+                fetchGoogleSheetHydroData().then(() => {
+                    if (rawData.length > 0) renderNdtRandom();
+                });
+                
+                // Start background sync interval (every 3 minutes)
+                setInterval(async () => {
+                    await fetchGoogleSheetHydroData();
+                    if (rawData.length > 0) renderNdtRandom();
+                }, 180000);
+
                 // TẢI CUSTOM NDT MATRIX NẾU CÓ TRONG LƯU TRỮ
                 const savedMatrix = await idb.load('customMatrix');
                 if (savedMatrix && savedMatrix.data) {
@@ -5492,6 +5517,107 @@
             </tr>`;
         }
 
+        function getGoogleSheetExportUrl(urlStr) {
+            try {
+                if (!urlStr) return null;
+                const idMatch = urlStr.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                if (!idMatch) return null;
+                const id = idMatch[1];
+                const gidMatch = urlStr.match(/[?&]gid=([0-9]+)/);
+                const gid = gidMatch ? gidMatch[1] : '0';
+                return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`;
+            } catch (e) {
+                console.error("Error parsing Google Sheet URL:", e);
+                return null;
+            }
+        }
+
+        async function fetchGoogleSheetHydroData() {
+            const url = getGoogleSheetExportUrl(GOOGLE_SHEET_URL);
+            if (!url) {
+                updateSheetSyncIndicator(false, "Invalid URL config");
+                return;
+            }
+            try {
+                console.log("Fetching real-time hydrotest data from Google Sheet...");
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+                const csvText = await res.text();
+                
+                if (typeof Papa === 'undefined') {
+                    console.error("PapaParse library is not loaded.");
+                    updateSheetSyncIndicator(false, "PapaParse missing");
+                    return;
+                }
+                const parsed = Papa.parse(csvText, { skipEmptyLines: true });
+                const rows = parsed.data;
+                if (!rows || rows.length <= 1) {
+                    updateSheetSyncIndicator(false, "Empty Sheet Data");
+                    return;
+                }
+                
+                const headers = rows[0].map(h => (h || '').toString().trim().toLowerCase());
+                let tpIdx = headers.findIndex(h => h.includes('test package') || h.includes('testpackage') || h.includes('testpack') || h === 'tp');
+                let hydroIdx = headers.findIndex(h => h.includes('hydro test') || h.includes('hydrotest') || h.includes('hydro date'));
+                
+                if (tpIdx === -1) tpIdx = 0;
+                if (hydroIdx === -1) {
+                    hydroIdx = rows[0].length > 25 ? 25 : -1;
+                }
+                
+                if (hydroIdx === -1) {
+                    updateSheetSyncIndicator(false, "Col Z / Hydro column not found");
+                    return;
+                }
+                
+                const newMap = new Map();
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    const tp = (row[tpIdx] || '').toString().trim().toUpperCase();
+                    const dateStr = (row[hydroIdx] || '').toString().trim();
+                    
+                    const hasRep = (val) => {
+                        if (!val) return false;
+                        const s = val.toString().trim().toUpperCase();
+                        return s.length > 0 && s !== '(BLANK)' && s !== 'PENDING' && s !== 'TBA' && s !== 'WAIT' && s !== 'N/A' && s !== '-' && s !== 'NULL';
+                    };
+                    
+                    if (tp && hasRep(dateStr)) {
+                        newMap.set(tp, dateStr);
+                    }
+                }
+                sheetHydroDates = newMap;
+                console.log(`Successfully parsed ${sheetHydroDates.size} hydrotested packages from Google Sheet.`);
+                updateSheetSyncIndicator(true);
+            } catch (err) {
+                console.error("Error fetching Google Sheet hydrotest data:", err);
+                updateSheetSyncIndicator(false, err.message);
+            }
+        }
+
+        function updateSheetSyncIndicator(success, errorMsg = '') {
+            const dot = document.getElementById('sheetSyncDot');
+            const txt = document.getElementById('sheetSyncText');
+            const ind = document.getElementById('sheetSyncIndicator');
+            if (!dot || !txt || !ind) return;
+            
+            if (success) {
+                dot.style.backgroundColor = '#198754';
+                dot.style.boxShadow = '0 0 8px #198754';
+                dot.className = 'glowing-dot-active';
+                txt.textContent = 'Sheet Sync: Live';
+                ind.style.color = '#198754';
+                ind.title = `Sync thành công lúc ${new Date().toLocaleTimeString()} - Đã nạp ${sheetHydroDates.size} Test Package`;
+            } else {
+                dot.style.backgroundColor = '#dc3545';
+                dot.style.boxShadow = '0 0 8px #dc3545';
+                dot.className = '';
+                txt.textContent = 'Sheet Sync: Off';
+                ind.style.color = '#dc3545';
+                ind.title = `Lỗi đồng bộ hoặc link không công khai. Chi tiết: ${errorMsg}`;
+            }
+        }
+
         function buildNdrGroups(data, groupBy) {
             const groups = {};
             const hpMap = new Map();
@@ -5634,17 +5760,16 @@
 
                 // Determine Test Package status dynamically
                 const isNdtDone = g.rtDone >= g.rtReq && g.isCompliant;
-                const isHtDone = g.hardCount === 0 || g.htDone >= g.hardCount;
-                const isPmiDone = (g.pmiReq || 0) === 0 || g.pmiCount >= g.pmiReq;
-                const isPwhtDone = (g.pwhtReq || 0) === 0 || g.pwhtDone >= g.pwhtReq;
-                const isReadyForHydro = isNdtDone && isHtDone && isPmiDone && isPwhtDone;
+                const isReadyForHydro = isNdtDone;
 
-                if (g.hydroDone > 0) {
+                const sheetHydroDate = sheetHydroDates.get(g.key.toUpperCase());
+                const isHydrotested = g.hydroDone > 0 || !!sheetHydroDate;
+
+                if (isHydrotested) {
                     g.status = 'Hydrotested';
-                } else if (isReadyForHydro) {
+                    if (sheetHydroDate) g.testDate = sheetHydroDate;
+                } else if (isReadyForHydro && g.visualAcc === g.actual) {
                     g.status = 'Ready for Hydrotest';
-                } else if (isNdtDone) {
-                    g.status = 'NDT Done';
                 } else if (g.visualAcc === g.actual) {
                     g.status = 'In Progress';
                 } else if (g.fitupAcc === g.actual) {
