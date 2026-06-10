@@ -1167,13 +1167,14 @@
                                     <th style="width:60px; text-align: center;">FE</th>
                                     <th style="width:60px; text-align: center;">HT</th>
                                     <th style="width:60px; text-align: center;">PWHT</th>
-                                    <th style="min-width:220px;">Pending/Repair Detail</th>
+                                    <th style="min-width:220px;">Actual Status</th>
                                     <th style="width:120px;">Location</th>
                                     <th style="min-width:120px;">TV</th>
                                     <th style="width:120px; text-align: center;">Hydrotest Status</th>
                                 </tr>
                             </thead>
                             <tbody id="hydroBody"><tr><td colspan="28" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
+                            <tfoot id="hydroTfoot"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -1683,6 +1684,12 @@
         let hydroSortAsc = true;
         
         const encHtml = (s) => (s||'').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        
+        const hasRep = (val) => {
+            if (!val) return false;
+            const s = val.toString().trim().toUpperCase();
+            return s.length > 0 && s !== '(BLANK)' && s !== 'PENDING' && s !== 'TBA' && s !== 'WAIT' && s !== 'N/A' && s !== '-' && s !== 'NULL';
+        };
         
         // --- AI ATTACHMENT VARIABLES ---
         let aiAttachedImageData = null;
@@ -3783,8 +3790,31 @@
                 h.ferriteStatus = getMaterialStatus(ferriteReqCount, ferriteDoneCount, ferritePending);
 
                 const pkgName = (h.testPack || h.line || '').toString().trim().toUpperCase();
-                const sheetHydroDate = sheetHydroDates.get(pkgName);
-                const isHydrotested = hydroDoneCount > 0 || !!sheetHydroDate;
+                const sheetData = sheetHydroDates.get(pkgName);
+                
+                if (sheetData) {
+                    if (sheetData.testPlanDate && sheetData.testPlanDate !== '-' && sheetData.testPlanDate !== '') {
+                        h.dateStr = sheetData.testPlanDate;
+                    }
+                    if (sheetData.skylineDate && sheetData.skylineDate !== '-' && sheetData.skylineDate !== '') {
+                        h.skylineDateStr = sheetData.skylineDate;
+                    }
+                    h.actualStatus = sheetData.statusFab || '';
+                } else {
+                    h.actualStatus = '';
+                }
+
+                if (!h.actualStatus) {
+                    const detailParts = [];
+                    const repairJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
+                    const pendJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
+                    if (repairJoints.length > 0) detailParts.push('<span class="text-danger" style="font-size:0.65rem;"><b>REJ:</b> ' + repairJoints.slice(0, 10).map(s => s.trim()).join('; ') + (repairJoints.length > 10 ? ' ...(+' + (repairJoints.length-10) + ')' : '') + '</span>');
+                    if (pendJoints.length > 0) detailParts.push('<span class="text-warning" style="font-size:0.65rem;"><b>PEND:</b> ' + pendJoints.slice(0, 15).map(s => s.trim()).join('; ') + (pendJoints.length > 15 ? ' ...(+' + (pendJoints.length-15) + ')' : '') + '</span>');
+                    if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detailParts.push('<span class="text-info" style="font-size:0.65rem;"><b>NDT Random:</b> Thiếu %RT/MT</span>');
+                    h.actualStatus = detailParts.length > 0 ? detailParts.join('<br>') : '<span class="text-success" style="font-size:0.65rem;">✅ All Clear</span>';
+                }
+
+                const isHydrotested = hydroDoneCount > 0 || (sheetData && hasRep(sheetData.hydroDate));
 
                 if (isHydrotested) {
                     h.status = 'Hydrotested';
@@ -3883,10 +3913,63 @@
                 <td ${getColStyle(h.hardnessStatus)}>${h.hardnessStatus}</td>
                 <td ${getColStyle(h.pwhtStatus)}>${h.pwhtStatus}</td>
 
-                <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${detailHtml}</td>
+                <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${h.actualStatus}</td>
                 <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
                 <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
                 <td class="text-center align-middle">${getHydroStatusBadge(h.status)}</td>
+            </tr>`;
+        }
+
+        function renderHydroTfoot(displayedItems) {
+            const tfoot = document.getElementById('hydroTfoot');
+            if (!tfoot) return;
+            if (!displayedItems || displayedItems.length === 0) {
+                tfoot.innerHTML = '';
+                return;
+            }
+
+            const totals = {
+                spools: 0,
+                joints: 0,
+                welded: 0,
+                completed: 0,
+                notCompleted: 0,
+                rtReq: 0,
+                rtAcc: 0,
+                pautReq: 0,
+                pautAcc: 0
+            };
+
+            displayedItems.forEach(h => {
+                totals.spools += Array.from(h.spools).length;
+                totals.joints += h.weldingJoints || 0;
+                totals.welded += h.welded || 0;
+                totals.completed += h.jointComplete || 0;
+                totals.notCompleted += h.jointNotComplete || 0;
+                totals.rtReq += h.rtRequired || 0;
+                totals.rtAcc += h.rtAcc || 0;
+                totals.pautReq += h.pautRequired || 0;
+                totals.pautAcc += h.pautAcc || 0;
+            });
+
+            const totalProgress = totals.joints > 0 ? (totals.welded / totals.joints * 100).toFixed(0) + '%' : '0%';
+            const notCompStyle = totals.notCompleted > 0 ? 'style="background-color: #ffcb9e; color: #7f2d0f; font-weight: bold; text-align: center;"' : 'style="text-align: center;"';
+
+            tfoot.innerHTML = `<tr class="fw-bold bg-light" style="border-top: 2px solid #6c757d;">
+                <td colspan="4" class="text-end fw-bold pe-3">Grand Total</td>
+                <td class="text-primary fw-bold text-center">Total: ${displayedItems.length}</td>
+                <td></td>
+                <td class="text-center"><span class="badge bg-light text-dark border">${totals.spools}</span></td>
+                <td class="text-center">${totals.joints}</td>
+                <td class="text-center">${totals.welded}</td>
+                <td class="text-center fw-bold">${totalProgress}</td>
+                <td class="text-center">${totals.completed}</td>
+                <td ${notCompStyle}>${totals.notCompleted}</td>
+                <td class="text-center">${totals.rtReq}</td>
+                <td class="text-center">${totals.rtAcc}</td>
+                <td class="text-center">${totals.pautReq}</td>
+                <td class="text-center">${totals.pautAcc}</td>
+                <td colspan="12"></td>
             </tr>`;
         }
 
@@ -3941,6 +4024,7 @@
                 return hydroSortAsc ? (valA - valB) : (valB - valA);
             });
 
+            const displayed = [];
             const finalHtml = sorted.map((h, i) => {
                 // Filter by STT if selected
                 if (fSTT) {
@@ -3950,10 +4034,12 @@
                     else if (fSTT === 'DONE' && (h.status === 'Hydrotested' || h.status === 'Ready for Hydrotest')) match = true;
                     if (!match) return '';
                 }
+                displayed.push(h);
                 return generateHydroRowHtml(h, i, true);
             }).join('');
 
             tbody.innerHTML = (sorted.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
+            renderHydroTfoot(displayed);
             } catch(e) {
                 console.error(e);
                 tbody.innerHTML = `<tr><td colspan="28" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
@@ -4001,7 +4087,7 @@
                 'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
                 'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
                 'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
-                'Pending/Repair Detail', 'Location', 'TV', 'Hydrotest Status'
+                'Actual Status', 'Location', 'TV', 'Hydrotest Status'
             ]);
 
             // Style group header row colors
@@ -4025,12 +4111,19 @@
 
             sorted.forEach((h, i) => {
                 const lineList = Array.from(h.lines).join(', ') || h.line || '-';
-                const repairJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
-                const pendJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
                 let detail = '';
-                if (repairJoints.length > 0) detail += 'REJ: ' + repairJoints.map(s => s.trim()).join('; ') + '\n';
-                if (pendJoints.length > 0) detail += 'PEND: ' + pendJoints.map(s => s.trim()).join('; ') + '\n';
-                if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detail += 'NDT Random: Thiếu %RT/MT';
+                const pkgName = (h.testPack || h.line || '').toString().trim().toUpperCase();
+                const sheetData = sheetHydroDates.get(pkgName);
+                if (sheetData && sheetData.statusFab) {
+                    detail = sheetData.statusFab;
+                } else {
+                    const rJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
+                    const pJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
+                    if (rJoints.length > 0) detail += 'REJ: ' + rJoints.map(s => s.trim()).join('; ') + '\n';
+                    if (pJoints.length > 0) detail += 'PEND: ' + pJoints.map(s => s.trim()).join('; ') + '\n';
+                    if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detail += 'NDT Random: Thiếu %RT/MT';
+                    detail = detail.trim() || 'All Clear';
+                }
 
                 const locStr = h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-';
                 const remStr = h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-';
@@ -4040,7 +4133,7 @@
                     h.weldingJoints, h.welded, h.progress/100, h.jointComplete, h.jointNotComplete,
                     h.rtRequired, h.rtAcc, h.pautRequired, h.pautAcc,
                     h.rtStatus, h.pautStatus, h.mtStatus, h.ptStatus, h.pmiStatus, h.ferriteStatus, h.hardnessStatus, h.pwhtStatus,
-                    detail.trim()||'All Clear', locStr, remStr, h.status
+                    detail, locStr, remStr, h.status
                 ]);
 
                 row.eachCell({includeEmpty:true}, (cell, col) => {
@@ -4072,10 +4165,19 @@
                     }
 
                     // Detail column (25) - light background for non-clear
-                    const hasDetail = detail.trim().length > 0;
+                    const hasDetail = detail.trim().length > 0 && detail !== 'All Clear';
                     if (col===25 && hasDetail) {
-                        cell.fill = hFill(h.r>0?'FFF8D7DA':'FFFFF3CD');
-                        cell.font = { size:9, color:{argb:h.r>0?'FF842029':'FF664D03'} };
+                        const lowVal = detail.toLowerCase();
+                        if (lowVal.includes('done') || lowVal.includes('complete') || lowVal.includes('ready')) {
+                            cell.fill = hFill('FFD4EDDA');
+                            cell.font = { size:9, color:{argb:'FF0F5132'} };
+                        } else if (lowVal.includes('repair') || lowVal.includes('rej') || lowVal.includes('fail')) {
+                            cell.fill = hFill('FFF8D7DA');
+                            cell.font = { size:9, color:{argb:'FF842029'} };
+                        } else {
+                            cell.fill = hFill('FFFFF3CD');
+                            cell.font = { size:9, color:{argb:'FF664D03'} };
+                        }
                     }
 
                     // Hydrotest Status column (28)
@@ -4840,6 +4942,8 @@
                 : filtered.map((h, i) => {
                     return generateHydroRowHtml(h, i, false);
                 }).join('');
+
+            renderHydroTfoot(filtered);
 
             // Hiện banner filter
             banner.style.cssText = 'display:flex !important';
@@ -5691,10 +5795,12 @@
         function getNdrHeader(keyLabel, isDetail = false) {
             const h = (prop, label, cls = '') => {
                 const classAttr = cls ? `class="${cls}"` : '';
+                const styleAttr = prop === 'testDate' ? 'style="min-width:125px; cursor:pointer; user-select:none;"' : 'style="cursor:pointer; user-select:none; white-space:nowrap;"';
                 if (isDetail) {
-                    return `<th ${classAttr} style="white-space:nowrap;">${label}</th>`;
+                    const dStyleAttr = prop === 'testDate' ? 'style="min-width:125px;"' : 'style="white-space:nowrap;"';
+                    return `<th ${classAttr} ${dStyleAttr}>${label}</th>`;
                 }
-                return `<th ${classAttr} onclick="setNdrSort('${prop}')" style="cursor:pointer; user-select:none; white-space:nowrap;">${label}${getSortArrow(prop)}</th>`;
+                return `<th ${classAttr} onclick="setNdrSort('${prop}')" ${styleAttr}>${label}${getSortArrow(prop)}</th>`;
             };
             return `<tr>
                 <th>No.</th>
@@ -5784,36 +5890,39 @@
                 
                 const headers = rows[0].map(h => (h || '').toString().trim().toLowerCase());
                 let tpIdx = headers.findIndex(h => h.includes('test package') || h.includes('testpackage') || h.includes('testpack') || h === 'tp');
+                let skylineIdx = headers.findIndex(h => h.includes('skyline'));
+                let testPlanIdx = headers.findIndex(h => h.includes('test plan'));
+                let statusFabIdx = headers.findIndex(h => h.includes('actual status'));
                 let hydroIdx = headers.findIndex(h => h.includes('hydro test') || h.includes('hydrotest') || h.includes('hydro date'));
-                
+
                 if (tpIdx === -1) tpIdx = 0;
+                if (skylineIdx === -1) skylineIdx = 13;
+                if (testPlanIdx === -1) testPlanIdx = 15;
+                if (statusFabIdx === -1) statusFabIdx = 18;
                 if (hydroIdx === -1) {
                     hydroIdx = rows[0].length > 25 ? 25 : -1;
                 }
-                
-                if (hydroIdx === -1) {
-                    updateSheetSyncIndicator(false, "Col Z / Hydro column not found");
-                    return;
-                }
-                
+
                 const newMap = new Map();
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i];
                     const tp = (row[tpIdx] || '').toString().trim().toUpperCase();
-                    const dateStr = (row[hydroIdx] || '').toString().trim();
-                    
-                    const hasRep = (val) => {
-                        if (!val) return false;
-                        const s = val.toString().trim().toUpperCase();
-                        return s.length > 0 && s !== '(BLANK)' && s !== 'PENDING' && s !== 'TBA' && s !== 'WAIT' && s !== 'N/A' && s !== '-' && s !== 'NULL';
-                    };
-                    
-                    if (tp && hasRep(dateStr)) {
-                        newMap.set(tp, dateStr);
-                    }
+                    if (!tp) continue;
+
+                    const skylineDate = (row[skylineIdx] || '').toString().trim();
+                    const testPlanDate = (row[testPlanIdx] || '').toString().trim();
+                    const statusFab = (row[statusFabIdx] || '').toString().trim();
+                    const hydroDate = (row[hydroIdx] || '').toString().trim();
+
+                    newMap.set(tp, {
+                        skylineDate,
+                        testPlanDate,
+                        statusFab,
+                        hydroDate
+                    });
                 }
                 sheetHydroDates = newMap;
-                console.log(`Successfully parsed ${sheetHydroDates.size} hydrotested packages from Google Sheet.`);
+                console.log(`Successfully parsed ${sheetHydroDates.size} packages from Google Sheet.`);
                 updateSheetSyncIndicator(true);
             } catch (err) {
                 console.error("Error fetching Google Sheet hydrotest data:", err);
@@ -5866,7 +5975,7 @@
                 if (!groups[gk]) {
                     groups[gk] = {
                         key, wt: wtClass, wtClass: wtClass, sys: d.system || '', spec: d.spec || '',
-                        testDate: hpMap.get(key.toUpperCase()) || '', mats: new Set(),
+                        testDate: (sheetHydroDates.get(key.toUpperCase())?.testPlanDate) || hpMap.get(key.toUpperCase()) || '', mats: new Set(),
                         actual: 0, dwgTotal: 0, dwgJoints: new Set(), lines: new Set(),
                         visualAcc: 0, fitupAcc: 0, weldedCompleted: 0,
                         rtPct: 0, rtReq: 0, rtSelect: 0, rtDone: 0,
@@ -5995,12 +6104,11 @@
 
             Object.values(groups).forEach(g => {
                 const isPkgCompliant = !nonCompliantKeys.has(g.key.toUpperCase());
-                const sheetHydroDate = sheetHydroDates.get(g.key.toUpperCase());
-                const isHydrotested = g.hydroDone > 0 || !!sheetHydroDate;
+                const sheetData = sheetHydroDates.get(g.key.toUpperCase());
+                const isHydrotested = g.hydroDone > 0 || (sheetData && hasRep(sheetData.hydroDate));
 
                 if (isHydrotested) {
                     g.status = 'Hydrotested';
-                    if (sheetHydroDate) g.testDate = sheetHydroDate;
                 } else if (isPkgCompliant) {
                     g.status = 'Ready for Hydrotest';
                 } else if (g.visualAcc === g.actual) {
@@ -6009,6 +6117,12 @@
                     g.status = 'Being Welding';
                 } else {
                     g.status = 'Fit-up';
+                }
+
+                if (sheetData && sheetData.testPlanDate) {
+                    g.testDate = sheetData.testPlanDate;
+                } else if (hpMap.has(g.key.toUpperCase())) {
+                    g.testDate = hpMap.get(g.key.toUpperCase());
                 }
             });
             return groups;
@@ -6214,7 +6328,10 @@
                     } else if (/\d{2}-\d{2}-\d{4}/.test(raw)) {
                         const [dd, mm, yyyy] = raw.split('-');
                         d = new Date(+yyyy, +mm - 1, +dd);
-                    } else { return false; }
+                    } else {
+                        d = new Date(raw);
+                    }
+                    if (!d || isNaN(d.getTime())) return false;
                     if (isNaN(d)) return false;
                     if (!isNaN(fMonth) && (d.getMonth() + 1) !== fMonth) return false;
                     if (!isNaN(fDay)   && d.getDate() !== fDay)           return false;
@@ -6707,7 +6824,10 @@ async function exportNdtRandomExcel() {
                     if (/\d{4}-\d{2}-\d{2}/.test(raw)) { d = new Date(raw); }
                     else if (/\d{2}\/\d{2}\/\d{4}/.test(raw)) { const [dd,mm,yyyy]=raw.split('/'); d=new Date(+yyyy,+mm-1,+dd); }
                     else if (/\d{2}-\d{2}-\d{4}/.test(raw)) { const [dd,mm,yyyy]=raw.split('-'); d=new Date(+yyyy,+mm-1,+dd); }
-                    else return false;
+                    else {
+                        d = new Date(raw);
+                    }
+                    if (!d || isNaN(d.getTime())) return false;
                     if (isNaN(d)) return false;
                     if (!isNaN(fMonthEx) && (d.getMonth()+1) !== fMonthEx) return false;
                     if (!isNaN(fDayEx)   && d.getDate() !== fDayEx) return false;
