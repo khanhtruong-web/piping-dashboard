@@ -1143,55 +1143,37 @@
                         <table class="table-detail" id="hydroTable">
                             <thead>
                                 <tr>
-                                    <th rowspan="2" style="width:35px;">No.</th>
-                                    <th rowspan="2" class="sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:90px;">Hydro Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
-                                    <th rowspan="2" style="width:90px;">Skyline Date</th>
-                                    <th rowspan="2" style="width:50px;">System</th>
-                                    <th rowspan="2">Test Package</th>
-                                    <th rowspan="2">Line No.</th>
-                                    <th rowspan="2" style="width:55px;">Spools</th>
-                                    <th style="width:55px;">1</th>
-                                    <th style="width:55px;">2</th>
-                                    <th style="width:55px;">3</th>
-                                    <th style="width:55px;">4</th>
-                                    <th style="width:55px; color: red;">5</th>
-                                    <th style="width:55px;">6</th>
-                                    <th style="width:55px;">7</th>
-                                    <th style="width:55px;">8</th>
-                                    <th style="width:55px;">9</th>
-                                    <th style="width:55px;">10</th>
-                                    <th style="width:55px;">11</th>
-                                    <th style="width:55px;">12</th>
-                                    <th style="width:55px;">13</th>
-                                    <th style="width:55px;">14</th>
-                                    <th style="width:55px;">15</th>
-                                    <th style="width:55px;">16</th>
-                                    <th style="width:55px;">17</th>
-                                    <th rowspan="2" style="min-width:200px;">Pending/Repair Detail</th>
-                                    <th rowspan="2" style="width:100px;">Location</th>
-                                    <th rowspan="2" style="min-width:120px;">TV</th>
-                                </tr>
-                                <tr>
-                                    <th>Welding joint</th>
-                                    <th>Welded</th>
-                                    <th>Progress</th>
-                                    <th>Joint complete</th>
-                                    <th style="color: red;">Joint Not complete</th>
-                                    <th>RT required</th>
-                                    <th>RT ACC</th>
-                                    <th>PAUT required</th>
-                                    <th>PAUT ACC</th>
-                                    <th>RT</th>
-                                    <th>PAUT</th>
-                                    <th>MT</th>
-                                    <th>PT</th>
-                                    <th>PMI</th>
-                                    <th>FE</th>
-                                    <th>HT</th>
-                                    <th>PWHT</th>
+                                    <th style="width:40px;">No.</th>
+                                    <th class="sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:100px;">Hydro Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
+                                    <th style="width:100px;">Skyline Date</th>
+                                    <th style="width:70px;">System</th>
+                                    <th style="min-width:180px;">Test Package</th>
+                                    <th style="min-width:220px;">Line No.</th>
+                                    <th style="width:65px; text-align: center;">Spools</th>
+                                    <th style="width:90px; text-align: center;">Welding joint</th>
+                                    <th style="width:75px; text-align: center;">Welded</th>
+                                    <th style="width:75px; text-align: center;">Progress</th>
+                                    <th style="width:100px; text-align: center;">Joint complete</th>
+                                    <th style="width:120px; text-align: center; color: red;">Joint Not complete</th>
+                                    <th style="width:95px; text-align: center;">RT required</th>
+                                    <th style="width:75px; text-align: center;">RT ACC</th>
+                                    <th style="width:105px; text-align: center;">PAUT required</th>
+                                    <th style="width:80px; text-align: center;">PAUT ACC</th>
+                                    <th style="width:60px; text-align: center;">RT</th>
+                                    <th style="width:60px; text-align: center;">PAUT</th>
+                                    <th style="width:60px; text-align: center;">MT</th>
+                                    <th style="width:60px; text-align: center;">PT</th>
+                                    <th style="width:60px; text-align: center;">PMI</th>
+                                    <th style="width:60px; text-align: center;">FE</th>
+                                    <th style="width:60px; text-align: center;">HT</th>
+                                    <th style="width:60px; text-align: center;">PWHT</th>
+                                    <th style="min-width:220px;">Pending/Repair Detail</th>
+                                    <th style="width:120px;">Location</th>
+                                    <th style="min-width:120px;">TV</th>
+                                    <th style="width:120px; text-align: center;">Hydrotest Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="hydroBody"><tr><td colspan="27" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
+                            <tbody id="hydroBody"><tr><td colspan="28" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -3643,10 +3625,14 @@
                 let hardDoneCount = 0;
                 let ferriteDoneCount = 0;
 
+                let hydroDoneCount = 0;
                 const jointStatusMap = {};
 
                 joints.forEach(j => {
                     const d = j.data;
+                    if (d.hydroRep && d.hydroRep.toString().trim() !== '') {
+                        hydroDoneCount++;
+                    }
                     const base = j.base;
                     const rev = j.rev;
                     const isFW = (j.wtClass === 'FW');
@@ -3795,10 +3781,38 @@
                 h.pmiStatus = getMaterialStatus(pmiReqCount, pmiDoneCount, pmiPending);
                 h.hardnessStatus = getMaterialStatus(hardReqCount, hardDoneCount, hardPending);
                 h.ferriteStatus = getMaterialStatus(ferriteReqCount, ferriteDoneCount, ferritePending);
+
+                const pkgName = (h.testPack || h.line || '').toString().trim().toUpperCase();
+                const sheetHydroDate = sheetHydroDates.get(pkgName);
+                const isHydrotested = hydroDoneCount > 0 || !!sheetHydroDate;
+
+                if (isHydrotested) {
+                    h.status = 'Hydrotested';
+                } else if (h.isNdtRandomCompliant) {
+                    h.status = 'Ready for Hydrotest';
+                } else if (h.r > 0) {
+                    h.status = 'REPAIR';
+                } else {
+                    h.status = 'PENDING';
+                }
             });
 
             return Object.values(hMap);
         }
+
+        const getHydroStatusBadge = (st) => {
+            const baseStyle = 'display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.15); box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-width: 100px; text-align: center; text-transform: uppercase; white-space: nowrap;';
+            if (st === 'Hydrotested') {
+                return `<span style="${baseStyle} background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);"><i class="fas fa-water me-1"></i>Hydrotested</span>`;
+            }
+            if (st === 'Ready for Hydrotest') {
+                return `<span style="${baseStyle} background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); box-shadow: 0 0 10px rgba(56, 239, 125, 0.4);"><i class="fas fa-check-double me-1"></i>Ready Hydro</span>`;
+            }
+            if (st === 'REPAIR') {
+                return `<span style="${baseStyle} background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);"><i class="fas fa-wrench me-1"></i>REPAIR</span>`;
+            }
+            return `<span style="${baseStyle} background: linear-gradient(135deg, #f7b733 0%, #fc4a1a 100%);"><i class="fas fa-clock me-1"></i>PENDING</span>`;
+        };
 
         function generateHydroRowHtml(h, i, isEditable) {
             const pkgKey = (h.testPack || h.line || '').toString().toUpperCase();
@@ -3872,6 +3886,7 @@
                 <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${detailHtml}</td>
                 <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
                 <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
+                <td class="text-center align-middle">${getHydroStatusBadge(h.status)}</td>
             </tr>`;
         }
 
@@ -3879,7 +3894,7 @@
             const tbody = document.getElementById('hydroBody');
             try {
             if(hydroPlanData.length === 0 && filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="27" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="28" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
                 return;
             }
 
@@ -3906,8 +3921,8 @@
             let tPkg=0, tClr=0, tPnd=0, tRep=0;
             sorted.forEach(h => {
                 tPkg++;
-                if (h.r > 0) tRep++;
-                else if (h.p > 0) tPnd++;
+                if (h.status === 'REPAIR') tRep++;
+                else if (h.status === 'PENDING') tPnd++;
                 else tClr++;
             });
             const banner = document.getElementById('hydroStatsBanner');
@@ -3929,16 +3944,19 @@
             const finalHtml = sorted.map((h, i) => {
                 // Filter by STT if selected
                 if (fSTT) {
-                    const currentStt = (h.r > 0) ? 'REPAIR' : ((h.p > 0 || !h.isNdtRandomCompliant) ? 'PENDING' : 'DONE');
-                    if (fSTT !== currentStt) return '';
+                    let match = false;
+                    if (fSTT === 'REPAIR' && h.status === 'REPAIR') match = true;
+                    else if (fSTT === 'PENDING' && h.status === 'PENDING') match = true;
+                    else if (fSTT === 'DONE' && (h.status === 'Hydrotested' || h.status === 'Ready for Hydrotest')) match = true;
+                    if (!match) return '';
                 }
                 return generateHydroRowHtml(h, i, true);
             }).join('');
 
-            tbody.innerHTML = (sorted.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="27" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
+            tbody.innerHTML = (sorted.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
             } catch(e) {
                 console.error(e);
-                tbody.innerHTML = `<tr><td colspan="27" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="28" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
             }
             reapplyTableFilter('hydroTable');
         }
@@ -3977,30 +3995,13 @@
             const thinBdr = { top:{style:'thin',color:{argb:'FFDDDDDD'}}, bottom:{style:'thin',color:{argb:'FFDDDDDD'}}, left:{style:'thin',color:{argb:'FFDDDDDD'}}, right:{style:'thin',color:{argb:'FFDDDDDD'}} };
             const hFill = (argb) => ({ type:'pattern', pattern:'solid', fgColor:{argb} });
 
-            // Row 1: Header row with numbers 1 to 17 for the NDT columns
-            ws.addRow([
-                '','','','','','','',
-                '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17',
-                '','',''
-            ]);
-            ws.mergeCells('A1:A2');
-            ws.mergeCells('B1:B2');
-            ws.mergeCells('C1:C2');
-            ws.mergeCells('D1:D2');
-            ws.mergeCells('E1:E2');
-            ws.mergeCells('F1:F2');
-            ws.mergeCells('G1:G2');
-            ws.mergeCells('Y1:Y2');
-            ws.mergeCells('Z1:Z2');
-            ws.mergeCells('AA1:AA2');
-
-            // Row 2: Detail headers
+            // Header row
             ws.addRow([
                 'No.','Hydro Date','Skyline Date','System','Test Package','Line No.','Spools',
                 'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
                 'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
                 'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
-                'Pending/Repair Detail', 'Location', 'TV'
+                'Pending/Repair Detail', 'Location', 'TV', 'Hydrotest Status'
             ]);
 
             // Style group header row colors
@@ -4012,16 +4013,15 @@
             hdrClr[25] = 'FF455A64';
             hdrClr[26] = 'FF37474F';
             hdrClr[27] = 'FF37474F';
+            hdrClr[28] = 'FF2A365F'; // custom color for Hydrotest Status
 
-            for (let r = 1; r <= 2; r++) {
-                ws.getRow(r).eachCell({includeEmpty:true}, (cell, col) => {
-                    cell.font = { bold:true, size:10, color:{argb:'FFFFFFFF'} };
-                    cell.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
-                    cell.fill = hFill(hdrClr[col] || 'FF0097A7');
-                    cell.border = thinBdr;
-                });
-            }
-            ws.getRow(1).height = 22; ws.getRow(2).height = 22;
+            ws.getRow(1).eachCell({includeEmpty:true}, (cell, col) => {
+                cell.font = { bold:true, size:10, color:{argb:'FFFFFFFF'} };
+                cell.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
+                cell.fill = hFill(hdrClr[col] || 'FF0097A7');
+                cell.border = thinBdr;
+            });
+            ws.getRow(1).height = 25;
 
             sorted.forEach((h, i) => {
                 const lineList = Array.from(h.lines).join(', ') || h.line || '-';
@@ -4040,7 +4040,7 @@
                     h.weldingJoints, h.welded, h.progress/100, h.jointComplete, h.jointNotComplete,
                     h.rtRequired, h.rtAcc, h.pautRequired, h.pautAcc,
                     h.rtStatus, h.pautStatus, h.mtStatus, h.ptStatus, h.pmiStatus, h.ferriteStatus, h.hardnessStatus, h.pwhtStatus,
-                    detail.trim()||'All Clear', locStr, remStr
+                    detail.trim()||'All Clear', locStr, remStr, h.status
                 ]);
 
                 row.eachCell({includeEmpty:true}, (cell, col) => {
@@ -4077,6 +4077,24 @@
                         cell.fill = hFill(h.r>0?'FFF8D7DA':'FFFFF3CD');
                         cell.font = { size:9, color:{argb:h.r>0?'FF842029':'FF664D03'} };
                     }
+
+                    // Hydrotest Status column (28)
+                    if (col === 28) {
+                        const val = cell.value;
+                        if (val === 'Hydrotested') {
+                            cell.fill = hFill('FFE2EAFC');
+                            cell.font = { bold:true, color:{argb:'FF1A365D'} };
+                        } else if (val === 'Ready for Hydrotest') {
+                            cell.fill = hFill('FFD4EDDA');
+                            cell.font = { bold:true, color:{argb:'FF0F5132'} };
+                        } else if (val === 'REPAIR') {
+                            cell.fill = hFill('FFF8D7DA');
+                            cell.font = { bold:true, color:{argb:'FF842029'} };
+                        } else {
+                            cell.fill = hFill('FFFFF3CD');
+                            cell.font = { bold:true, color:{argb:'FF664D03'} };
+                        }
+                    }
                 });
             });
 
@@ -4086,7 +4104,7 @@
                 {width:13}, {width:8}, {width:10}, {width:14}, {width:16},
                 {width:11}, {width:8}, {width:13}, {width:10},
                 {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8},
-                {width:50}, {width:18}, {width:25}
+                {width:50}, {width:18}, {width:25}, {width:20}
             ];
 
             const buffer = await wb.xlsx.writeBuffer();
@@ -4818,7 +4836,7 @@
             });
 
             tbody.innerHTML = filtered.length === 0 
-                ? '<tr><td colspan="27" class="text-center py-4 text-muted small">Không tìm thấy Test Package / Line matching trong dữ liệu</td></tr>'
+                ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không tìm thấy Test Package / Line matching trong dữ liệu</td></tr>'
                 : filtered.map((h, i) => {
                     return generateHydroRowHtml(h, i, false);
                 }).join('');
