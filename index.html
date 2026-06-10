@@ -1143,25 +1143,55 @@
                         <table class="table-detail" id="hydroTable">
                             <thead>
                                 <tr>
-                                    <th style="width:35px;">No.</th>
-                                    <th class="sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:90px;">Hydro Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
-                                    <th style="width:90px;">Skyline Date</th>
-                                    <th style="width:50px;">System</th>
-                                    <th>Test Package</th>
-                                    <th>Line No.</th>
-                                    <th style="width:55px;">Spools</th>
-                                    <th style="width:55px;">Joints</th>
-                                    <th style="width:130px;">Progress</th>
-                                    <th style="width:50px;">Done</th>
-                                    <th style="width:50px;">Pend</th>
-                                    <th style="width:50px;">Repair</th>
-                                    <th style="width:75px;">Status</th>
-                                    <th style="min-width:200px;">Pending/Repair Detail</th>
-                                    <th style="width:100px;">Location</th>
-                                    <th style="min-width:120px;">TV</th>
+                                    <th rowspan="2" style="width:35px;">No.</th>
+                                    <th rowspan="2" class="sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:90px;">Hydro Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
+                                    <th rowspan="2" style="width:90px;">Skyline Date</th>
+                                    <th rowspan="2" style="width:50px;">System</th>
+                                    <th rowspan="2">Test Package</th>
+                                    <th rowspan="2">Line No.</th>
+                                    <th rowspan="2" style="width:55px;">Spools</th>
+                                    <th style="width:55px;">1</th>
+                                    <th style="width:55px;">2</th>
+                                    <th style="width:55px;">3</th>
+                                    <th style="width:55px;">4</th>
+                                    <th style="width:55px; color: red;">5</th>
+                                    <th style="width:55px;">6</th>
+                                    <th style="width:55px;">7</th>
+                                    <th style="width:55px;">8</th>
+                                    <th style="width:55px;">9</th>
+                                    <th style="width:55px;">10</th>
+                                    <th style="width:55px;">11</th>
+                                    <th style="width:55px;">12</th>
+                                    <th style="width:55px;">13</th>
+                                    <th style="width:55px;">14</th>
+                                    <th style="width:55px;">15</th>
+                                    <th style="width:55px;">16</th>
+                                    <th style="width:55px;">17</th>
+                                    <th rowspan="2" style="min-width:200px;">Pending/Repair Detail</th>
+                                    <th rowspan="2" style="width:100px;">Location</th>
+                                    <th rowspan="2" style="min-width:120px;">TV</th>
+                                </tr>
+                                <tr>
+                                    <th>Welding joint</th>
+                                    <th>Welded</th>
+                                    <th>Progress</th>
+                                    <th>Joint complete</th>
+                                    <th style="color: red;">Joint Not complete</th>
+                                    <th>RT required</th>
+                                    <th>RT ACC</th>
+                                    <th>PAUT required</th>
+                                    <th>PAUT ACC</th>
+                                    <th>RT</th>
+                                    <th>PAUT</th>
+                                    <th>MT</th>
+                                    <th>PT</th>
+                                    <th>PMI</th>
+                                    <th>FE</th>
+                                    <th>HT</th>
+                                    <th>PWHT</th>
                                 </tr>
                             </thead>
-                            <tbody id="hydroBody"><tr><td colspan="16" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
+                            <tbody id="hydroBody"><tr><td colspan="27" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -2806,7 +2836,8 @@
                 hydroRep: findKey(['HydroTestReportNo', 'Hydro Test Report No', 'HydroRep']),
                 releaseRep: findKey(['ReleaseNotesReportNo', 'Release Notes Report No', 'ReleaseRep']),
                 summaryRep: findKey(['SummaryReportNo', 'Summary Report No', 'SummaryRep']),
-                ndtRequest: findKey(['NDTRequest', 'NDT Request', 'NDTReq'])
+                ndtRequest: findKey(['NDTRequest', 'NDT Request', 'NDTReq']),
+                statusCol: findKey(['Status'])
             };
 
             const getVal = (row, field) => { const k = map[field]; return (k && row[k] !== undefined && row[k] !== null) ? row[k] : ""; };
@@ -2894,7 +2925,8 @@
                     hydroRep: getVal(r, 'hydroRep'),
                     releaseRep: getVal(r, 'releaseRep'),
                     summaryRep: getVal(r, 'summaryRep'),
-                    ndtRequest: (() => { const v = getVal(r, 'ndtRequest'); return v && v.toString().trim() === '1'; })()
+                    ndtRequest: (() => { const v = getVal(r, 'ndtRequest'); return v && v.toString().trim() === '1'; })(),
+                    statusCol: getVal(r, 'statusCol') || ''
                 });
             }
 
@@ -3585,19 +3617,45 @@
 
                 const rtFinal = totalRtReq > 0 ? (totalRtSelect / totalRtReq * 100) : (h.rtPct === 0 ? -1 : 0);
                 const mtFinal = totalMtReq > 0 ? (totalMtSelect / totalMtReq * 100) : (h.mtPct === 0 ? -1 : 0);
-                
-                // Package is compliant if percentage rules met AND no hard rejects
                 h.isNdtRandomCompliant = linesAllCompliant && (rtFinal === -1 || rtFinal >= 100) && (mtFinal === -1 || mtFinal >= 100);
+
+                let weldedCount = 0;
+                let completeCount = 0;
+                let rtReqCount = 0;
+                let rtAccCount = 0;
+                let pautReqCount = 0;
+                let pautAccCount = 0;
+
+                let rtPending = 0;
+                let pautPending = 0;
+                let mtPending = 0;
+                let ptPending = 0;
+                let pwhtPending = 0;
+
+                let mtReqCount = 0;
+                let mtAccCount = 0;
+                let ptReqCount = 0;
+                let ptAccCount = 0;
+                let pwhtReqCount = 0;
+                let pwhtAccCount = 0;
+
+                let pmiDoneCount = 0;
+                let hardDoneCount = 0;
+                let ferriteDoneCount = 0;
+
+                const jointStatusMap = {};
 
                 joints.forEach(j => {
                     const d = j.data;
+                    const base = j.base;
+                    const rev = j.rev;
                     const isFW = (j.wtClass === 'FW');
                     const isRej = (d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ');
                     const isPend = ((d.reqRT&&(!d.hasRT || d.rtRes==='')) || 
                                     (d.reqPAUT&&(!d.hasPAUT || d.pautRes==='')) || 
                                     (d.reqMT&&(!d.hasMT || d.mtRes==='')) || 
                                     (d.reqPT&&(!d.hasPT || d.ptRes==='')));
-                    
+
                     if(isRej) {
                         h.r++;
                         let rejMethods = [];
@@ -3622,17 +3680,205 @@
                     } else {
                         h.d++;
                     }
+
+                    if (d.wDate) weldedCount++;
+                    if (d.statusCol && d.statusCol.toString().trim().toLowerCase() === 'completed') {
+                        completeCount++;
+                    }
+
+                    if (d.reqRT) {
+                        rtReqCount++;
+                        if (d.rtRes === 'ACC') rtAccCount++;
+                        if (!d.rtRes) rtPending++;
+                    }
+                    if (d.reqPAUT) {
+                        pautReqCount++;
+                        if (d.pautRes === 'ACC') pautAccCount++;
+                        if (!d.pautRes) pautPending++;
+                    }
+                    if (d.reqMT) {
+                        mtReqCount++;
+                        if (d.mtRes === 'ACC') mtAccCount++;
+                        if (!d.mtRes) mtPending++;
+                    }
+                    if (d.reqPT) {
+                        ptReqCount++;
+                        if (d.ptRes === 'ACC') ptAccCount++;
+                        if (!d.ptRes) ptPending++;
+                    }
+                    if (d.reqPwht) {
+                        pwhtReqCount++;
+                        if (d.pwhtRes === 'ACC') pwhtAccCount++;
+                        if (!d.pwhtRes) pwhtPending++;
+                    }
+
+                    if (d.pmiRep) pmiDoneCount++;
+                    if (d.hardnessRep) hardDoneCount++;
+                    if (d.ferriteRep) ferriteDoneCount++;
+
+                    if (!jointStatusMap[base] || jointStatusMap[base].rev < rev) {
+                        jointStatusMap[base] = {
+                            rev: rev,
+                            rt: d.rtRes,
+                            paut: d.pautRes,
+                            mt: d.mtRes,
+                            pt: d.ptRes,
+                            pwht: d.pwhtRes
+                        };
+                    }
                 });
+
+                h.weldingJoints = joints.length;
+                h.welded = weldedCount;
+                h.progress = h.weldingJoints > 0 ? (weldedCount / h.weldingJoints * 100) : 0;
+                h.jointComplete = completeCount;
+                h.jointNotComplete = h.weldingJoints - completeCount;
+
+                h.rtRequired = rtReqCount;
+                h.rtAcc = rtAccCount;
+                h.pautRequired = pautReqCount;
+                h.pautAcc = pautAccCount;
+
+                let rtActiveRej = 0;
+                let pautActiveRej = 0;
+                let mtActiveRej = 0;
+                let ptActiveRej = 0;
+                let pwhtActiveRej = 0;
+
+                Object.values(jointStatusMap).forEach(status => {
+                    if (status.rt === 'REJ') rtActiveRej++;
+                    if (status.paut === 'REJ') pautActiveRej++;
+                    if (status.mt === 'REJ') mtActiveRej++;
+                    if (status.pt === 'REJ') ptActiveRej++;
+                    if (status.pwht === 'REJ') pwhtActiveRej++;
+                });
+
+                const getNDTStatus = (reqCount, doneCount, pendingCount, activeRejCount, hasAcc) => {
+                    if (pendingCount > 0) return pendingCount.toString();
+                    if (activeRejCount > 0) return 'REJ';
+                    if (reqCount > 0 || doneCount > 0) {
+                        return hasAcc ? 'ACC' : 'OK';
+                    }
+                    return 'OK';
+                };
+
+                const getPWHTStatus = (reqCount, doneCount, pendingCount, activeRejCount, hasAcc) => {
+                    if (pendingCount > 0) return pendingCount.toString();
+                    if (activeRejCount > 0) return 'REJ';
+                    if (reqCount > 0 || doneCount > 0) {
+                        return hasAcc ? 'ACC' : 'OK';
+                    }
+                    return '';
+                };
+
+                h.rtStatus = getNDTStatus(rtReqCount, rtAccCount, rtPending, rtActiveRej, rtAccCount > 0);
+                h.pautStatus = getNDTStatus(pautReqCount, pautAccCount, pautPending, pautActiveRej, pautAccCount > 0);
+                h.mtStatus = getNDTStatus(mtReqCount, mtAccCount, mtPending, mtActiveRej, mtAccCount > 0);
+                h.ptStatus = getNDTStatus(ptReqCount, ptAccCount, ptPending, ptActiveRej, ptAccCount > 0);
+                h.pwhtStatus = getPWHTStatus(pwhtReqCount, pwhtAccCount, pwhtPending, pwhtActiveRej, pwhtAccCount > 0);
+
+                let pmiReqCount = joints.filter(j => j.data.reqPmi).length;
+                let hardReqCount = joints.filter(j => j.data.hardRep).length;
+                let ferriteReqCount = 0;
+
+                let pmiPending = joints.filter(j => j.data.reqPmi && !j.data.pmiRep).length;
+                let hardPending = joints.filter(j => j.data.hardRep && !j.data.hardnessRep).length;
+                let ferritePending = 0;
+
+                const getMaterialStatus = (reqCount, doneCount, pendingCount) => {
+                    if (pendingCount > 0) return pendingCount.toString();
+                    if (doneCount > 0) return 'ACC';
+                    return 'OK';
+                };
+
+                h.pmiStatus = getMaterialStatus(pmiReqCount, pmiDoneCount, pmiPending);
+                h.hardnessStatus = getMaterialStatus(hardReqCount, hardDoneCount, hardPending);
+                h.ferriteStatus = getMaterialStatus(ferriteReqCount, ferriteDoneCount, ferritePending);
             });
 
             return Object.values(hMap);
+        }
+
+        function generateHydroRowHtml(h, i, isEditable) {
+            const pkgKey = (h.testPack || h.line || '').toString().toUpperCase();
+            
+            let diff = h.dateTs ? (h.dateTs - Date.now())/86400000 : 99;
+            let isUrg = (diff>=-3 && diff<=3) && (h.p>0 || h.r>0);
+            const spoolArr = Array.from(h.spools);
+            const spoolCount = spoolArr.length;
+            const spoolTip = spoolArr.join(', ');
+            
+            const lineArr = Array.from(h.lines);
+            const lineDisp = lineArr.length > 0 ? lineArr.join(', ') : (h.line || '-');
+
+            const encHtml = (s) => (s||'').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            
+            const detailParts = [];
+            const repairJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
+            const pendJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
+            if (repairJoints.length > 0) detailParts.push('<span class="text-danger" style="font-size:0.65rem;"><b>REJ:</b> ' + repairJoints.slice(0, 10).map(s => s.trim()).join('; ') + (repairJoints.length > 10 ? ' ...(+' + (repairJoints.length-10) + ')' : '') + '</span>');
+            if (pendJoints.length > 0) detailParts.push('<span class="text-warning" style="font-size:0.65rem;"><b>PEND:</b> ' + pendJoints.slice(0, 15).map(s => s.trim()).join('; ') + (pendJoints.length > 15 ? ' ...(+' + (pendJoints.length-15) + ')' : '') + '</span>');
+            if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detailParts.push('<span class="text-info" style="font-size:0.65rem;"><b>NDT Random:</b> Thiếu %RT/MT</span>');
+            const detailHtml = detailParts.length > 0 ? detailParts.join('<br>') : '<span class="text-success" style="font-size:0.65rem;">✅ All Clear</span>';
+
+            const editAttr = isEditable ? 'contenteditable="true"' : '';
+            const editCls = isEditable ? 'editable-cell' : '';
+
+            const getColStyle = (val) => {
+                if (val === 'ACC' || val === 'OK') {
+                    return 'style="background-color: #d4edda; color: #155724; font-weight: bold; text-align: center;"';
+                }
+                if (val === 'REJ') {
+                    return 'style="background-color: #f8d7da; color: #721c24; font-weight: bold; text-align: center;"';
+                }
+                return 'style="text-align: center;"';
+            };
+
+            const notCompStyle = h.jointNotComplete > 0 ? 'style="background-color: #ffcb9e; color: #7f2d0f; font-weight: bold; text-align: center;"' : 'style="text-align: center;"';
+
+            return `<tr class="${isUrg?'table-danger animate__animated animate__flash':''} clickable-row" 
+                        onclick="scrollToVisualizer('${encHtml(pkgKey)}')" 
+                        style="cursor:pointer;" 
+                        title="Click to view detailed progress in Visualizer">
+                <td class="text-muted small">${i+1}</td>
+                <td ${editAttr} class="fw-bold ${editCls} ${h.dateStr === 'No Plan Date' ? 'text-danger bg-warning bg-opacity-10' : ''}" data-field="dateStr">${h.dateStr}</td>
+                <td ${editAttr} class="${editCls}" data-field="skylineDateStr">${h.skylineDateStr || '-'}</td>
+                <td ${editAttr} class="${editCls}" data-field="sys">${h.sys}</td>
+                <td ${editAttr} class="text-primary fw-bold ${editCls}" data-field="testPack">${h.testPack || '-'}</td>
+                <td ${editAttr} class="${editCls}" data-field="line" title="${encHtml(lineDisp)}">
+                    <div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lineDisp}</div>
+                </td>
+                <td class="text-center" title="${encHtml(spoolTip)}"><span class="badge bg-light text-dark border">${spoolCount}</span></td>
+                
+                <td class="text-center">${h.weldingJoints}</td>
+                <td class="text-center">${h.welded}</td>
+                <td class="text-center fw-bold">${h.progress.toFixed(0)}%</td>
+                <td class="text-center">${h.jointComplete}</td>
+                <td ${notCompStyle}>${h.jointNotComplete}</td>
+                <td class="text-center">${h.rtRequired}</td>
+                <td class="text-center">${h.rtAcc}</td>
+                <td class="text-center">${h.pautRequired}</td>
+                <td class="text-center">${h.pautAcc}</td>
+                <td ${getColStyle(h.rtStatus)}>${h.rtStatus}</td>
+                <td ${getColStyle(h.pautStatus)}>${h.pautStatus}</td>
+                <td ${getColStyle(h.mtStatus)}>${h.mtStatus}</td>
+                <td ${getColStyle(h.ptStatus)}>${h.ptStatus}</td>
+                <td ${getColStyle(h.pmiStatus)}>${h.pmiStatus}</td>
+                <td ${getColStyle(h.ferriteStatus)}>${h.ferriteStatus}</td>
+                <td ${getColStyle(h.hardnessStatus)}>${h.hardnessStatus}</td>
+                <td ${getColStyle(h.pwhtStatus)}>${h.pwhtStatus}</td>
+
+                <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${detailHtml}</td>
+                <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
+                <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
+            </tr>`;
         }
 
         function renderHydro() {
             const tbody = document.getElementById('hydroBody');
             try {
             if(hydroPlanData.length === 0 && filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="16" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="27" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
                 return;
             }
 
@@ -3680,81 +3926,18 @@
             });
 
             const finalHtml = sorted.map((h, i) => {
-                const pkgKey = (h.testPack || h.line || '').toString().toUpperCase();
-                
-                // Final Status logic: Integrated NDT Random Compliance
-                let sttBadge = '';
-                if (h.t === 0) {
-                    sttBadge = '<span class="badge bg-secondary">No Joints</span>';
-                } else if (h.r > 0) {
-                    sttBadge = '<span class="badge bg-danger shadow-sm">REPAIR</span>';
-                } else if (h.p > 0 || !h.isNdtRandomCompliant) {
-                    sttBadge = '<span class="badge bg-warning text-dark shadow-sm">PENDING</span>';
-                } else {
-                    sttBadge = '<span class="badge bg-success shadow-sm">CLEARED</span>';
-                }
-
                 // Filter by STT if selected
                 if (fSTT) {
                     const currentStt = (h.r > 0) ? 'REPAIR' : ((h.p > 0 || !h.isNdtRandomCompliant) ? 'PENDING' : 'DONE');
                     if (fSTT !== currentStt) return '';
                 }
-
-                let diff = h.dateTs ? (h.dateTs - Date.now())/86400000 : 99;
-                let isUrg = (diff>=-3 && diff<=3) && (h.p>0 || h.r>0);
-                const spoolArr = Array.from(h.spools);
-                const spoolCount = spoolArr.length;
-                const spoolTip = spoolArr.join(', ');
-                
-                const lineArr = Array.from(h.lines);
-                const lineDisp = lineArr.length > 0 ? lineArr.join(', ') : (h.line || '-');
-
-                const pctD = h.t > 0 ? (h.d/h.t*100) : 0;
-                const pctP = h.t > 0 ? (h.p/h.t*100) : 0;
-                const pctR = h.t > 0 ? (h.r/h.t*100) : 0;
-                
-                const progressBar = h.t > 0 ? `<div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:7px;border-radius:4px;"><div class="progress-bar bg-success" style="width:${pctD}%"></div><div class="progress-bar bg-warning" style="width:${pctP}%"></div><div class="progress-bar bg-danger" style="width:${pctR}%"></div></div><span class="fw-bold small" style="min-width:38px;font-size:.7rem;">${pctD.toFixed(0)}%</span></div>` : '<span class="text-muted small">-</span>';
-                
-                const encHtml = (s) => (s||'').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                
-                // Build pending/repair detail string
-                const detailParts = [];
-                const repairJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
-                const pendJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
-                if (repairJoints.length > 0) detailParts.push('<span class="text-danger" style="font-size:0.65rem;"><b>REJ:</b> ' + repairJoints.slice(0, 10).map(s => s.trim()).join('; ') + (repairJoints.length > 10 ? ' ...(+' + (repairJoints.length-10) + ')' : '') + '</span>');
-                if (pendJoints.length > 0) detailParts.push('<span class="text-warning" style="font-size:0.65rem;"><b>PEND:</b> ' + pendJoints.slice(0, 15).map(s => s.trim()).join('; ') + (pendJoints.length > 15 ? ' ...(+' + (pendJoints.length-15) + ')' : '') + '</span>');
-                if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detailParts.push('<span class="text-info" style="font-size:0.65rem;"><b>NDT Random:</b> Thiếu %RT/MT</span>');
-                const detailHtml = detailParts.length > 0 ? detailParts.join('<br>') : '<span class="text-success" style="font-size:0.65rem;">✅ All Clear</span>';
-
-                return `<tr class="${isUrg?'table-danger animate__animated animate__flash':''} clickable-row" 
-                            onclick="scrollToVisualizer('${encHtml(pkgKey)}')" 
-                            style="cursor:pointer;" 
-                            title="Click to view detailed progress in Visualizer">
-                    <td class="text-muted small">${i+1}</td>
-                    <td contenteditable="true" class="fw-bold editable-cell ${h.dateStr === 'No Plan Date' ? 'text-danger bg-warning bg-opacity-10' : ''}" data-field="dateStr">${h.dateStr}</td>
-                    <td contenteditable="true" class="editable-cell" data-field="skylineDateStr">${h.skylineDateStr || '-'}</td>
-                    <td contenteditable="true" class="editable-cell" data-field="sys">${h.sys}</td>
-                    <td contenteditable="true" class="text-primary fw-bold editable-cell" data-field="testPack">${h.testPack || '-'}</td>
-                    <td contenteditable="true" class="editable-cell" data-field="line" title="${encHtml(lineDisp)}">
-                        <div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lineDisp}</div>
-                    </td>
-                    <td class="text-center" title="${encHtml(spoolTip)}"><span class="badge bg-light text-dark border">${spoolCount}</span></td>
-                    <td class="fw-bold text-secondary">${h.t}</td>
-                    <td>${progressBar}</td>
-                    <td class="text-success fw-bold">${h.d}</td>
-                    <td class="text-warning fw-bold" title="${encHtml(h.pendingSummary.filter(s=>s.includes('PEND')).join('\n'))}">${h.p}</td>
-                    <td class="text-danger fw-bold" title="${encHtml(h.pendingSummary.filter(s=>s.includes('REPAIR')).join('\n'))}">${h.r}</td>
-                    <td class="text-center">${sttBadge}</td>
-                    <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${detailHtml}</td>
-                    <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
-                    <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
-                </tr>`;
+                return generateHydroRowHtml(h, i, true);
             }).join('');
 
-            tbody.innerHTML = (sorted.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="16" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
+            tbody.innerHTML = (sorted.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="27" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
             } catch(e) {
                 console.error(e);
-                tbody.innerHTML = `<tr><td colspan="16" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="27" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
             }
             reapplyTableFilter('hydroTable');
         }
@@ -3793,15 +3976,42 @@
             const thinBdr = { top:{style:'thin',color:{argb:'FFDDDDDD'}}, bottom:{style:'thin',color:{argb:'FFDDDDDD'}}, left:{style:'thin',color:{argb:'FFDDDDDD'}}, right:{style:'thin',color:{argb:'FFDDDDDD'}} };
             const hFill = (argb) => ({ type:'pattern', pattern:'solid', fgColor:{argb} });
 
-            // Row 1: Group headers with merged cells
-            ws.addRow(['','','','','','', '', 'NDT Results','','','','','','','','']);
-            ws.mergeCells('A1:A2'); ws.mergeCells('B1:B2'); ws.mergeCells('C1:C2'); ws.mergeCells('D1:D2'); ws.mergeCells('E1:E2'); ws.mergeCells('F1:F2'); ws.mergeCells('G1:G2');
-            ws.mergeCells('H1:N1');
+            // Row 1: Header row with numbers 1 to 17 for the NDT columns
+            ws.addRow([
+                '','','','','','','',
+                '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17',
+                '','',''
+            ]);
+            ws.mergeCells('A1:A2');
+            ws.mergeCells('B1:B2');
+            ws.mergeCells('C1:C2');
+            ws.mergeCells('D1:D2');
+            ws.mergeCells('E1:E2');
+            ws.mergeCells('F1:F2');
+            ws.mergeCells('G1:G2');
+            ws.mergeCells('Y1:Y2');
+            ws.mergeCells('Z1:Z2');
+            ws.mergeCells('AA1:AA2');
+
             // Row 2: Detail headers
-            ws.addRow(['No.','Hydro Date','Skyline Date','System','Test Package','Line No.','Spools', 'Total Joints','Done','Pending','Repair','Progress %','Status','Pending/Repair Detail','Location','TV']);
+            ws.addRow([
+                'No.','Hydro Date','Skyline Date','System','Test Package','Line No.','Spools',
+                'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
+                'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
+                'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
+                'Pending/Repair Detail', 'Location', 'TV'
+            ]);
 
             // Style group header row colors
-            const hdrClr = {1:'FF0097A7',2:'FF0097A7',3:'FF0097A7',4:'FF0097A7',5:'FF0097A7',6:'FF0097A7',7:'FF0097A7', 8:'FF00695C',9:'FF2E7D32',10:'FFF57F17',11:'FFC62828',12:'FF1565C0',13:'FF37474F',14:'FF455A64'};
+            const hdrClr = {};
+            for(let c=1; c<=7; c++) hdrClr[c] = 'FF0097A7';
+            for(let c=8; c<=12; c++) hdrClr[c] = 'FF00695C';
+            for(let c=13; c<=16; c++) hdrClr[c] = 'FF1565C0';
+            for(let c=17; c<=24; c++) hdrClr[c] = 'FF5E35B1';
+            hdrClr[25] = 'FF455A64';
+            hdrClr[26] = 'FF37474F';
+            hdrClr[27] = 'FF37474F';
+
             for (let r = 1; r <= 2; r++) {
                 ws.getRow(r).eachCell({includeEmpty:true}, (cell, col) => {
                     cell.font = { bold:true, size:10, color:{argb:'FFFFFFFF'} };
@@ -3812,12 +4022,7 @@
             }
             ws.getRow(1).height = 22; ws.getRow(2).height = 22;
 
-            // Status color helpers
-            const sttFill = { 'Cleared':'FFD4EDDA', 'Repair':'FFF8D7DA', 'Pending':'FFFFF3CD', 'No Data':'FFE2E3E5' };
-            const sttFont = { 'Cleared':'FF0F5132', 'Repair':'FF842029', 'Pending':'FF664D03', 'No Data':'FF41464B' };
-
             sorted.forEach((h, i) => {
-                const stt = h.t===0 ? 'No Data' : (h.r>0 ? 'Repair' : ((h.p>0 || !h.isNdtRandomCompliant) ? 'Pending' : 'Cleared'));
                 const lineList = Array.from(h.lines).join(', ') || h.line || '-';
                 const repairJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
                 const pendJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
@@ -3825,34 +4030,63 @@
                 if (repairJoints.length > 0) detail += 'REJ: ' + repairJoints.map(s => s.trim()).join('; ') + '\n';
                 if (pendJoints.length > 0) detail += 'PEND: ' + pendJoints.map(s => s.trim()).join('; ') + '\n';
                 if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detail += 'NDT Random: Thiếu %RT/MT';
-                const pct = h.t > 0 ? Math.round(h.d / h.t * 100) + '%' : '-';
 
                 const locStr = h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-';
                 const remStr = h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-';
 
-                const row = ws.addRow([i+1, h.dateStr, h.skylineDateStr||'-', h.sys, h.testPack||'-', lineList, Array.from(h.spools).length, h.t, h.d, h.p, h.r, pct, stt, detail.trim()||'All Clear', locStr, remStr]);
+                const row = ws.addRow([
+                    i+1, h.dateStr, h.skylineDateStr||'-', h.sys, h.testPack||'-', lineList, Array.from(h.spools).length,
+                    h.weldingJoints, h.welded, h.progress/100, h.jointComplete, h.jointNotComplete,
+                    h.rtRequired, h.rtAcc, h.pautRequired, h.pautAcc,
+                    h.rtStatus, h.pautStatus, h.mtStatus, h.ptStatus, h.pmiStatus, h.ferriteStatus, h.hardnessStatus, h.pwhtStatus,
+                    detail.trim()||'All Clear', locStr, remStr
+                ]);
+
                 row.eachCell({includeEmpty:true}, (cell, col) => {
-                    cell.alignment = { vertical:'middle', horizontal: col===14?'left':'center', wrapText: col===14 };
+                    cell.alignment = { vertical:'middle', horizontal: col===25?'left':'center', wrapText: col===25 };
                     cell.border = thinBdr;
-                    // Done (9), Pending (10), Repair (11) - bold colored numbers
-                    if (col===9) cell.font = { bold:true, color:{argb:'FF2E7D32'} };
-                    else if (col===10) cell.font = { bold:true, color:{argb:'FFF57F17'} };
-                    else if (col===11) cell.font = { bold:true, color:{argb:'FFC62828'} };
-                    // Status column (13) - fill background
-                    if (col===13) {
-                        cell.fill = hFill(sttFill[stt] || 'FFFFFFFF');
-                        cell.font = { bold:true, color:{argb:sttFont[stt]||'FF000000'} };
+                    
+                    if (col === 10) {
+                        cell.numFormat = '0%';
                     }
-                    // Detail column (14) - light background for non-clear
-                    if (col===14 && stt !== 'Cleared' && stt !== 'No Data') {
-                        cell.fill = hFill(stt==='Repair'?'FFFFF5F5':'FFFFFDE7');
-                        cell.font = { size:9, color:{argb:stt==='Repair'?'FFC62828':'FF795548'} };
+                    
+                    // Joint Not complete column (12) - light orange if > 0
+                    if (col === 12 && h.jointNotComplete > 0) {
+                        cell.fill = hFill('FFFFF3CD');
+                        cell.font = { bold:true, color:{argb:'FF664D03'} };
+                    }
+                    
+                    // Color formatting for NDT columns (17 to 24)
+                    if (col >= 17 && col <= 24) {
+                        const val = cell.value;
+                        if (val === 'ACC' || val === 'OK') {
+                            cell.fill = hFill('FFD4EDDA');
+                            cell.font = { bold:true, color:{argb:'FF0F5132'} };
+                        } else if (val === 'REJ') {
+                            cell.fill = hFill('FFF8D7DA');
+                            cell.font = { bold:true, color:{argb:'FF842029'} };
+                        } else if (val && !isNaN(val)) {
+                            cell.font = { bold:true, color:{argb:'FF5E35B1'} };
+                        }
+                    }
+
+                    // Detail column (25) - light background for non-clear
+                    const hasDetail = detail.trim().length > 0;
+                    if (col===25 && hasDetail) {
+                        cell.fill = hFill(h.r>0?'FFF8D7DA':'FFFFF3CD');
+                        cell.font = { size:9, color:{argb:h.r>0?'FF842029':'FF664D03'} };
                     }
                 });
             });
 
             // Column widths
-            ws.columns = [{width:5},{width:13},{width:13},{width:8},{width:28},{width:35},{width:8},{width:10},{width:8},{width:8},{width:8},{width:10},{width:12},{width:50},{width:18},{width:25}];
+            ws.columns = [
+                {width:5}, {width:13}, {width:13}, {width:8}, {width:28}, {width:35}, {width:8},
+                {width:13}, {width:8}, {width:10}, {width:14}, {width:16},
+                {width:11}, {width:8}, {width:13}, {width:10},
+                {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8},
+                {width:50}, {width:18}, {width:25}
+            ];
 
             const buffer = await wb.xlsx.writeBuffer();
             saveAs(new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), `Hydrotest_Clearance_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -4583,41 +4817,9 @@
             });
 
             tbody.innerHTML = filtered.length === 0 
-                ? '<tr><td colspan="16" class="text-center py-4 text-muted small">Không tìm thấy Test Package / Line matching trong dữ liệu</td></tr>'
+                ? '<tr><td colspan="27" class="text-center py-4 text-muted small">Không tìm thấy Test Package / Line matching trong dữ liệu</td></tr>'
                 : filtered.map((h, i) => {
-                    const pkgKey = (h.testPack || h.line || '').toString().toUpperCase();
-                    let stt = h.t===0 ? '<span class="badge bg-secondary">No Joints</span>' : (h.r>0 ? '<span class="badge bg-danger shadow-sm">REPAIR</span>' : (h.p>0 ? '<span class="badge bg-warning text-dark shadow-sm">PENDING</span>' : '<span class="badge bg-success shadow-sm">CLEARED</span>'));
-                    const spoolArr = Array.from(h.spools);
-                    const spoolCount = spoolArr.length;
-                    const spoolTip = spoolArr.join(', ');
-
-                    const lineArr = Array.from(h.lines);
-                    const lineDisp = lineArr.length > 0 ? lineArr.join(', ') : (h.line || '-');
-
-                    const pctD = h.t > 0 ? (h.d/h.t*100) : 0;
-                    const pctP = h.t > 0 ? (h.p/h.t*100) : 0;
-                    const pctR = h.t > 0 ? (h.r/h.t*100) : 0;
-                    const progressBar = h.t > 0 ? `<div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:7px;border-radius:4px;"><div class="progress-bar bg-success" style="width:${pctD}%"></div><div class="progress-bar bg-warning" style="width:${pctP}%"></div><div class="progress-bar bg-danger" style="width:${pctR}%"></div></div><span class="fw-bold small" style="min-width:38px;font-size:.7rem;">${pctD.toFixed(0)}%</span></div>` : '<span class="text-muted small">-</span>';
-                    
-                    const encHtml = (s) => (s||'').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-                    return `<tr class="clickable-row" onclick="scrollToVisualizer('${encHtml(pkgKey)}')" title="Click to view in Visualizer">
-                        <td class="text-muted small">${i+1}</td>
-                        <td class="fw-bold ${h.dateStr === 'No Plan Date' ? 'text-danger bg-warning bg-opacity-10' : ''}">${h.dateStr}</td>
-                        <td>${h.skylineDateStr || '-'}</td>
-                        <td>${h.sys}</td>
-                        <td class="text-primary fw-bold">${h.testPack || '-'}</td>
-                        <td title="${encHtml(lineDisp)}"><div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lineDisp}</div></td>
-                        <td class="text-center" title="${encHtml(spoolTip)}"><span class="badge bg-light text-dark border">${spoolCount}</span></td>
-                        <td class="fw-bold text-secondary">${h.t}</td>
-                        <td>${progressBar}</td>
-                        <td class="text-success fw-bold">${h.d}</td>
-                        <td class="text-warning fw-bold">${h.p}</td>
-                        <td class="text-danger fw-bold">${h.r}</td>
-                        <td>${stt}</td>
-                        <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
-                        <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
-                    </tr>`;
+                    return generateHydroRowHtml(h, i, false);
                 }).join('');
 
             // Hiện banner filter
