@@ -5762,18 +5762,25 @@
                 } else {
                     g.isCompliant = true; // Does not fail the Test Package
                 }
+            });
 
-                // Determine Test Package status dynamically
-                const isNdtDone = g.rtDone >= g.rtReq && g.isCompliant;
-                const isReadyForHydro = isNdtDone;
+            // Second pass: Calculate package-level compliance and determine status
+            const nonCompliantKeys = new Set();
+            Object.values(groups).forEach(g => {
+                if (!g.isCompliant) {
+                    nonCompliantKeys.add(g.key.toUpperCase());
+                }
+            });
 
+            Object.values(groups).forEach(g => {
+                const isPkgCompliant = !nonCompliantKeys.has(g.key.toUpperCase());
                 const sheetHydroDate = sheetHydroDates.get(g.key.toUpperCase());
                 const isHydrotested = g.hydroDone > 0 || !!sheetHydroDate;
 
                 if (isHydrotested) {
                     g.status = 'Hydrotested';
                     if (sheetHydroDate) g.testDate = sheetHydroDate;
-                } else if (isReadyForHydro && g.visualAcc === g.actual) {
+                } else if (isPkgCompliant) {
                     g.status = 'Ready for Hydrotest';
                 } else if (g.visualAcc === g.actual) {
                     g.status = 'In Progress';
