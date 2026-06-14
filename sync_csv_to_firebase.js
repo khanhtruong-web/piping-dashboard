@@ -100,16 +100,17 @@ async function main() {
   };
 
   const map = {
-    sub: findKey(['Subcontractor', 'Sub-Contractor', 'SubCon', 'Sub', 'Nhà thầu phụ', 'IsSubContractor']),
-    sys: findKey(['System', 'SysNo', 'Sys', 'Hệ thống']),
-    joint: findKey(['Joint No.', 'Joint No', 'Joint_No', 'Joint', 'Mối hàn', 'JointNo']),
-    dwg: findKey(['Drawing No.', 'Drawing No', 'Dwg No', 'Drawing', 'Bản vẽ', 'DrawingNo']),
+    joint: findKey(['Joint No.', 'Joint No', 'Joint_No', 'JointNo', 'Joint', 'Mối hàn']),
+    sub: findKey(['IsSubContractor', 'SubContractor', 'Sub', 'Sub_Contractor', 'Nhà thầu phụ']),
+    sys: findKey(['System', 'Hệ thống']),
+    dwg: findKey(['DrawingNo', 'Drawing No.', 'Drawing No', 'Dwg No', 'Drawing', 'Bản vẽ']),
+    rev: findKey(['RevisionNo', 'Rev. bảng vẽ', 'Rev.', 'Rev', 'Revision', 'Rev. Bản vẽ', 'Drawing Rev']),
     line: findKey(['Line', 'Line No', 'Line_No', 'Tuyến']),
     spool: findKey(['SpoolNo', 'Spool No', 'Spool_No', 'Spool', 'Số Spool']),
-    welder: findKey(['Welder ID', 'Welder', 'WelderNo', 'Thợ hàn', 'WelderID']),
+    welder: findKey(['WelderID', 'Welder ID', 'Welder', 'WelderNo', 'Thợ hàn']),
     size: findKey(['Size', 'Kích thước']),
     diaIn: findKey(['DiaIn', 'Dia-Inch', 'DiaInch']),
-    thick: findKey(['Thickness', 'Thick', 'Độ dày', 'Thk']),
+    thick: findKey(['RevForJointNo', 'Thickness', 'Thick', 'Độ dày', 'Thk']),
     mat: findKey(['Material', 'Mat', 'Vật liệu']),
     wDate: findKey(['WeldingCompletedDate', 'Welding Completed Date', 'Weld Date', 'Welding Date', 'Ngày hàn']),
     weldType: findKey(['Weld Type', 'WeldType', 'Loại mối hàn']),
@@ -145,14 +146,17 @@ async function main() {
     defectLenInfo: findKey(['DefectLengthInfo', 'Defect Length Info']),
     typeOfDefect: findKey(['TypeOfDefect', 'Type Of Defect', 'Defect Type']),
     fitupAcc: findKey(['FitUpACC', 'FitUp ACC', 'Fit-Up ACC']),
-    hardnessRep: findKey(['HardnessTestReportNo', 'Hardness Report No', 'HardnessRep']),
+    hardnessRep: findKey(['HardnessTestReportDate', 'HardnessTestReportNo', 'Hardness Report No', 'HardnessRep']),
     ferriteRep: findKey(['FerriteTestReportNo', 'Ferrite Report No', 'FerriteRep']),
     hardRep: findKey(['Hardness', 'HardnessReq']),
     penalty: findKey(['Penalty', 'PEN']),
     hydroRep: findKey(['HydroTestReportNo', 'Hydro Test Report No', 'HydroRep']),
     releaseRep: findKey(['ReleaseNotesReportNo', 'Release Notes Report No', 'ReleaseRep']),
     summaryRep: findKey(['SummaryReportNo', 'Summary Report No', 'SummaryRep']),
-    ndtRequest: findKey(['NDTRequest', 'NDT Request', 'NDTReq'])
+    ndtRequest: findKey(['NDTRequest', 'NDT Request', 'NDTReq']),
+    ndtRate: findKey(['NDTRate', 'NDT Rate', 'Rate', 'Tỷ lệ NDT', 'ndtRate']),
+    pwhtRep: findKey(['PWHTReportNo', 'PWHT Report No.', 'PWHT Rep', 'pwhtRep']),
+    statusCol: findKey(['Status', 'DJ_Status', 'DJ Status', 'Stt'])
   };
 
   const getVal = (row, field) => { 
@@ -210,6 +214,7 @@ async function main() {
       isSub: clean(getVal(r, 'sub')),
       system: getVal(r, 'sys'),
       dwg: getVal(r, 'dwg'),
+      rev: getVal(r, 'rev'),
       line: getVal(r, 'line'),
       spool: getVal(r, 'spool'),
       welder: getVal(r, 'welder'),
@@ -271,7 +276,9 @@ async function main() {
       hydroRep: getVal(r, 'hydroRep'),
       releaseRep: getVal(r, 'releaseRep'),
       summaryRep: getVal(r, 'summaryRep'),
-      ndtRequest: (() => { const v = getVal(r, 'ndtRequest'); return v && v.toString().trim() === '1'; })()
+      ndtRequest: (() => { const v = getVal(r, 'ndtRequest'); return v && v.toString().trim() === '1'; })(),
+      pwhtRep: getVal(r, 'pwhtRep'),
+      statusCol: getVal(r, 'statusCol') || ''
     });
     
     count++;

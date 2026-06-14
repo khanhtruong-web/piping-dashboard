@@ -40,4 +40,6 @@ This dashboard is deployed on **Vercel** as a static site.
 - Bootstrap 5 + Chart.js
 - SheetJS + ExcelJS (Excel processing)
 - Firebase Realtime Database (cloud sync)
-- Deployed on Vercel via GitHub
+- Deployed on Vercel directly
+
+## For more info, visit <https://vercel.com/khanh-truong/piping-dashboard>

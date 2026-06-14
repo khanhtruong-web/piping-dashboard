@@ -74,29 +74,31 @@
         .ndt-method-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: #fafafa; margin-bottom: 6px; transition: all 0.15s; border: 1px solid transparent; }
         .ndt-method-row:hover { background: #f1f8e9; border-color: #c8e6c9; }
         .ndt-method-row:last-child { margin-bottom: 0; }
-        .ndt-method-badge { width: 48px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; color: #fff; flex-shrink: 0; }
+        .ndt-method-badge { width: 64px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; color: #fff; flex-shrink: 0; }
         .ndt-method-badge.m-rt { background: linear-gradient(135deg, #43a047, #66bb6a); }
         .ndt-method-badge.m-paut { background: linear-gradient(135deg, #1565c0, #42a5f5); }
         .ndt-method-badge.m-mt { background: linear-gradient(135deg, #f57c00, #ffa726); }
         .ndt-method-badge.m-pt { background: linear-gradient(135deg, #7b1fa2, #ab47bc); }
+        .ndt-method-badge.m-pmi { background: linear-gradient(135deg, #009688, #4db6ac); }
+        .ndt-method-badge.m-hardness { background: linear-gradient(135deg, #e91e63, #f06292); font-size: 0.58rem; }
         .ndt-method-badge.m-total { background: linear-gradient(135deg, #37474f, #78909c); }
-        .ndt-method-nums { display: flex; gap: 16px; flex: 1; min-width: 0; }
-        .ndt-method-nums .nm-item { text-align: center; min-width: 55px; }
+        .ndt-method-nums { display: flex; justify-content: space-between; flex: 1; min-width: 0; margin-right: 12px; }
+        .ndt-method-nums .nm-item { text-align: center; min-width: 48px; }
         .ndt-method-nums .nm-label { font-size: 0.6rem; color: #999; font-weight: 600; text-transform: uppercase; }
         .ndt-method-nums .nm-val { font-size: 0.85rem; font-weight: 800; }
-        .ndt-progress-wrap { flex: 1; min-width: 80px; max-width: 180px; }
+        .ndt-progress-wrap { width: 110px; flex-shrink: 0; }
         .ndt-progress-bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; position: relative; }
         .ndt-progress-bar .fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
         .ndt-progress-pct { font-size: 0.75rem; font-weight: 800; text-align: right; margin-top: 2px; }
         /* Backlog Size Table Heatmap */
         .backlog-tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.78rem; }
-        .backlog-tbl thead th { background: #263238; color: #fff; padding: 8px 10px; font-weight: 700; text-align: center; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .backlog-tbl thead th { position: sticky; top: 0; z-index: 10; background: #263238; color: #fff; padding: 12px 10px; font-weight: 700; text-align: center; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .backlog-tbl thead th:first-child { border-radius: 8px 0 0 0; }
         .backlog-tbl thead th:last-child { border-radius: 0 8px 0 0; }
-        .backlog-tbl tbody td { padding: 6px 10px; text-align: center; font-weight: 600; border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+        .backlog-tbl tbody td { padding: 12px 10px; text-align: center; font-weight: 600; border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
         .backlog-tbl tbody tr:hover td { background: #e8f5e9 !important; }
         .backlog-tbl tbody td:first-child { font-weight: 800; color: #1565c0; text-align: left; padding-left: 14px; }
-        .backlog-tbl tfoot td { background: #fff3e0; font-weight: 800; padding: 8px 10px; text-align: center; border-top: 2px solid #ffcc80; }
+        .backlog-tbl tfoot td { background: #fff3e0; font-weight: 800; padding: 12px 10px; text-align: center; border-top: 2px solid #ffcc80; }
         .backlog-tbl tfoot td:first-child { text-align: left; padding-left: 14px; color: #e65100; }
         .backlog-tbl tfoot td:last-child { color: #c62828; }
         .heat-0 { color: #bbb; }
@@ -114,8 +116,10 @@
         /* TABLE CONTAINER AUTO HEIGHT CHIẾM VỪA KHÍT NỘI DUNG, SCROLL KHI QUÁ 78vh */
         .table-compact-container { max-height: 78vh; overflow-y: auto; border: 1px solid #c8e6c9; border-radius: 8px; background: #fff; }
         .table-compact { margin-bottom: 0; width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-        .table-compact thead th { position: sticky; top: 0; background-color: #e8f5e9; color: var(--text-primary); z-index: 10; font-size: 0.65rem; text-transform: uppercase; border-bottom: 2px solid #81c784; padding: 8px 4px; text-align: center; }
-        .table-compact tbody td { font-size: 0.68rem; padding: 4px 3px; vertical-align: middle; border-bottom: 1px solid #f1f1f1; white-space: normal; word-wrap: break-word; text-align: center; }
+        .table-compact thead th { position: sticky; top: 0; background-color: #e8f5e9; color: var(--text-primary); z-index: 10; font-size: 0.72rem; text-transform: uppercase; border-bottom: 2px solid #81c784; padding: 14px 8px; text-align: center; }
+        .table-compact tbody td { font-size: 0.75rem; padding: 10px 8px; vertical-align: middle; border-bottom: 1px solid #f1f1f1; white-space: normal; word-wrap: break-word; text-align: center; }
+        .table-compact tbody tr:nth-child(even) { background-color: #f9fbf9; }
+        .table-compact tbody tr:hover { background-color: #f1f8e9; transition: background 0.15s; }
         
         .table-detail-container { max-height: 78vh; overflow-y: auto; overflow-x: auto; border: 1px solid #c8e6c9; border-radius: 8px; background: #fff; }
         .table-detail { margin-bottom: 0; width: 100%; border-collapse: separate; border-spacing: 0; }
@@ -138,20 +142,46 @@
         .table-detail tbody td.hydro-sticky-col-4, .table-detail tfoot td.hydro-sticky-col-4 { left: 310px; border-right: 3px solid #c8e6c9; }
         .table-detail tfoot td.hydro-sticky-col { z-index: 15; background-color: #fff3e0; }
         
-        .table-compact tfoot th, .table-detail tfoot th { position: sticky; bottom: 0; z-index: 10; background-color: #fff3e0; color: #e65100; font-size: 0.7rem; font-weight: 800; border-top: 2px solid #ffcc80; padding: 8px 4px; text-align: center; white-space: nowrap; }
+        .table-compact tfoot th, .table-detail tfoot th { position: sticky; bottom: 0; z-index: 10; background-color: #fff3e0; color: #e65100; font-size: 0.65rem; font-weight: 800; border-top: 2px solid #ffcc80; padding: 6px 2px; text-align: center; white-space: normal; word-wrap: break-word; word-break: break-all; line-height: 1.15; }
         
         .table-matrix-container { max-height: 78vh; overflow-y: auto; overflow-x: auto; border: 1px solid #c8e6c9; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .table-matrix thead th { position: sticky; top: 0; background: #fff; z-index: 5; white-space: nowrap; padding: 8px; vertical-align: middle; border-bottom-width: 2px; }
-        .table-matrix tbody td { white-space: nowrap; padding: 6px; }
+        .table-matrix thead tr:nth-child(1) th { position: sticky; top: 0; background: #f8f9fa; z-index: 10; white-space: nowrap; padding: 10px 6px; vertical-align: middle; border-bottom-width: 2px; }
+        .table-matrix thead tr:nth-child(1) th.col-bw-rt { background-color: #e3f2fd !important; }
+        .table-matrix thead tr:nth-child(1) th.col-bw-mt { background-color: #e8f5e9 !important; }
+        .table-matrix thead tr:nth-child(1) th.col-sw-mt { background-color: #fff3e0 !important; }
+        .table-matrix thead tr:nth-child(1) th.col-fw-mt { background-color: #f3e5f5 !important; }
+        
+        .table-matrix thead tr:nth-child(2) th { position: sticky; top: 38px; background: #f8f9fa; z-index: 9; white-space: nowrap; padding: 10px 6px; vertical-align: middle; border-bottom-width: 2px; }
+        .table-matrix thead tr:nth-child(2) th.col-bw-rt { background-color: #e3f2fd !important; }
+        .table-matrix thead tr:nth-child(2) th.col-bw-mt { background-color: #e8f5e9 !important; }
+        .table-matrix thead tr:nth-child(2) th.col-sw-mt { background-color: #fff3e0 !important; }
+        .table-matrix thead tr:nth-child(2) th.col-fw-mt { background-color: #f3e5f5 !important; }
+        
+        .table-matrix tbody td { white-space: nowrap; padding: 10px 8px; }
+        .table-matrix tbody tr:nth-child(even) { background-color: #fafafa; }
         .table-matrix tbody tr:hover { background-color: #f1f8e9; }
         .col-bw-rt { background-color: #e3f2fd; } .col-bw-mt { background-color: #e8f5e9; } .col-sw-mt { background-color: #fff3e0; } .col-fw-mt { background-color: #f3e5f5; }
+        
+        /* Compliance Table tfoot Grand Total Sticky Bottom */
+        #complianceTable tfoot th, #complianceTable tfoot td {
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 800;
+            border-top: 2px solid #81c784;
+            padding: 10px 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
         
         .badge-st { padding: 2px 4px; border-radius: 3px; font-weight: 700; font-size: 0.6rem; display: inline-block; }
         .bg-acc { background: #c8e6c9; color: #1b5e20; } .bg-rej { background: #ffcdd2; color: #b71c1c; } .bg-rs { background: #fff9c4; color: #f57f17; } .bg-wait { background: #f5f5f5; color: #9e9e9e; }
         
-        .bg-ok { background-color: #dcedc8; color: #33691e; font-weight: bold; border-radius: 4px; padding: 4px 8px; font-size: 0.75rem;} 
-        .bg-progress { background-color: #bbdefb; color: #0d47a1; font-weight: bold; border-radius: 4px; padding: 4px 8px; font-size: 0.75rem;}
-        .bg-pending { background-color: #f5f5f5; color: #757575; font-weight: bold; border-radius: 4px; padding: 4px 8px; font-size: 0.75rem;}
+        .bg-ok { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; font-weight: bold; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; display: inline-block; } 
+        .bg-progress { background-color: #fff8e1; color: #f57f17; border: 1px solid #ffe082; font-weight: bold; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; display: inline-block; }
+        .bg-pending { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; font-weight: bold; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; display: inline-block; }
 
         .page-ctrl { display: flex; align-items: center; gap: 5px; }
         .page-ctrl span { font-size: 0.75rem; font-weight: 700; white-space: nowrap; background: #fff; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd; }
@@ -381,9 +411,21 @@
         .flow-step-hydro { border-left: 3px solid #00cbd6; }
         .flow-step-reins { border-left: 3px solid #3f51b5; }
         .flow-step-leak { border-left: 3px solid #009688; }
+
+        /* CSS bổ sung đồng bộ màu nền sticky cột cho hàng non-compliant */
+        .ndr-table tbody tr.bg-danger.bg-opacity-10 td.ndr-sticky-col { background-color: #fdf2f2 !important; }
+        .ndr-table tbody tr.bg-danger.bg-opacity-10:hover td.ndr-sticky-col { background-color: #fcd7d7 !important; }
+        .ndr-table tbody tr.bg-danger.bg-opacity-10.ndr-row-tp:hover td.ndr-sticky-col { background-color: #e3f2fd !important; }
+
+        /* Tăng kích thước khung view top-up (modal Joint Detail) */
+        @media (min-width: 1200px) {
+            #ndrJointModal .modal-dialog {
+                max-width: 95% !important;
+            }
+        }
     </style>
 </head>
-<body>
+<body class="collapsed">
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
@@ -396,7 +438,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
                     <h5 class="modal-title"><i class="fas fa-calendar-alt me-2"></i>Project Activity Calendar</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
                 </div>
                 <div class="modal-body bg-light">
                     <div class="d-flex justify-content-between mb-3 align-items-center bg-white p-3 rounded shadow-sm border">
@@ -424,7 +466,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title"><i class="fas fa-bell me-2"></i>Daily Action Center</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
                 </div>
                 <div class="modal-body bg-light" id="reminderBody">
                     <div class="text-center py-4 text-muted">Thinking...</div>
@@ -443,7 +485,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title"><i class="fas fa-robot me-2"></i>Piping AI Assistant (Multimodal & Deep Search)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
                 </div>
                 <div class="modal-body bg-light d-flex flex-column" style="height: 600px;">
                     <div id="aiChatBody" class="flex-grow-1 overflow-auto p-2">
@@ -469,10 +511,10 @@
                             <button class="btn-remove-attachment" onclick="clearAiAttachment()"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="d-flex gap-2 mb-2 mt-2">
-                            <input type="file" id="aiFileInput" class="d-none" accept="image/*, .txt, .csv" onchange="handleAiFileAttach(event)">
+                            <input type="file" id="aiFileInput" class="d-none" accept="image/*, .txt, .csv" onchange="handleAiFileAttach(event)" title="Chọn file đính kèm">
                             <button type="button" class="btn btn-light border text-secondary" onclick="document.getElementById('aiFileInput').click()" title="Đính kèm ảnh hoặc file text"><i class="fas fa-paperclip"></i></button>
-                            <input type="text" id="aiUserInput" class="form-control" placeholder="Hỏi tiến độ, Line / Joint liên quan hydrotest, phân tích ảnh..." onkeypress="handleAiKeyPress(event)">
-                            <button type="button" class="btn btn-primary px-4" onclick="sendAiMessage()"><i class="fas fa-paper-plane"></i></button>
+                            <input type="text" id="aiUserInput" class="form-control" placeholder="Hỏi tiến độ, Line / Joint liên quan hydrotest, phân tích ảnh..." onkeypress="handleAiKeyPress(event)" title="Nhập tin nhắn AI">
+                            <button type="button" class="btn btn-primary px-4" onclick="sendAiMessage()" aria-label="Gửi tin nhắn" title="Gửi tin nhắn"><i class="fas fa-paper-plane"></i></button>
                         </div>
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input" type="checkbox" id="aiIncludeFullData" checked onchange="document.getElementById('aiFullDataOptions').style.display = this.checked ? 'block' : 'none'">
@@ -640,37 +682,37 @@
 
         <div class="mb-3">
             <label class="filter-label">Welding Date</label>
-            <div class="row g-1"><div class="col-6"><input type="date" id="dateStart" class="form-control form-control-sm"></div><div class="col-6"><input type="date" id="dateEnd" class="form-control form-control-sm"></div></div>
+            <div class="row g-1"><div class="col-6"><input type="date" id="dateStart" class="form-control form-control-sm" title="Ngày bắt đầu"></div><div class="col-6"><input type="date" id="dateEnd" class="form-control form-control-sm" title="Ngày kết thúc"></div></div>
         </div>
 
         <div class="mb-3">
             <label class="filter-label">RT Report Date</label>
-            <div class="row g-1"><div class="col-6"><input type="date" id="rtDateStart" class="form-control form-control-sm"></div><div class="col-6"><input type="date" id="rtDateEnd" class="form-control form-control-sm"></div></div>
+            <div class="row g-1"><div class="col-6"><input type="date" id="rtDateStart" class="form-control form-control-sm" title="Ngày RT bắt đầu"></div><div class="col-6"><input type="date" id="rtDateEnd" class="form-control form-control-sm" title="Ngày RT kết thúc"></div></div>
         </div>
 
         <div class="mb-3">
             <label class="filter-label">PAUT Report Date</label>
-            <div class="row g-1"><div class="col-6"><input type="date" id="pautDateStart" class="form-control form-control-sm"></div><div class="col-6"><input type="date" id="pautDateEnd" class="form-control form-control-sm"></div></div>
+            <div class="row g-1"><div class="col-6"><input type="date" id="pautDateStart" class="form-control form-control-sm" title="Ngày PAUT bắt đầu"></div><div class="col-6"><input type="date" id="pautDateEnd" class="form-control form-control-sm" title="Ngày PAUT kết thúc"></div></div>
         </div>
 
         <div class="mb-3">
             <label class="filter-label">Weld Type</label>
-            <select id="filterWeldType" class="form-select form-select-sm"><option value="">All</option></select>
+            <select id="filterWeldType" class="form-select form-select-sm" title="Lọc loại mối hàn"><option value="">All</option></select>
         </div>
 
         <div class="mb-3">
             <label class="filter-label">Material</label>
-            <select id="filterMaterial" class="form-select form-select-sm"><option value="">All</option></select>
+            <select id="filterMaterial" class="form-select form-select-sm" title="Lọc vật liệu"><option value="">All</option></select>
         </div>
 
         <div class="mb-3">
             <label class="filter-label">Size OD</label>
-            <select id="filterSizeOD" class="form-select form-select-sm"><option value="">All</option></select>
+            <select id="filterSizeOD" class="form-select form-select-sm" title="Lọc kích thước OD"><option value="">All</option></select>
         </div>
 
         <div class="mb-3">
             <label class="filter-label">NDT Status (STT)</label>
-            <select id="filterSTT" class="form-select form-select-sm">
+            <select id="filterSTT" class="form-select form-select-sm" title="Lọc trạng thái NDT">
                 <option value="">All Status</option>
                 <option value="DONE">Done</option>
                 <option value="PENDING">Pending</option>
@@ -679,11 +721,11 @@
         </div>
 
         <div class="row g-1 mb-3">
-            <div class="col-4"><label class="filter-label">RT Res</label><select id="filterRT" class="form-select form-select-sm"><option value="">All</option><option value="ACC">ACC</option><option value="REJ">REJ</option><option value="RS">RS</option></select></div>
-            <div class="col-4"><label class="filter-label">PAUT Res</label><select id="filterPAUT" class="form-select form-select-sm"><option value="">All</option><option value="ACC">ACC</option><option value="REJ">REJ</option></select></div>
-            <div class="col-4"><label class="filter-label">PWHT</label><select id="filterPWHT" class="form-select form-select-sm"><option value="">All</option><option value="ACC">ACC</option><option value="REJ">REJ</option></select></div>
+            <div class="col-4"><label class="filter-label">RT Res</label><select id="filterRT" class="form-select form-select-sm" title="Lọc kết quả RT"><option value="">All</option><option value="ACC">ACC</option><option value="REJ">REJ</option><option value="RS">RS</option></select></div>
+            <div class="col-4"><label class="filter-label">PAUT Res</label><select id="filterPAUT" class="form-select form-select-sm" title="Lọc kết quả PAUT"><option value="">All</option><option value="ACC">ACC</option><option value="REJ">REJ</option></select></div>
+            <div class="col-4"><label class="filter-label">PWHT</label><select id="filterPWHT" class="form-select form-select-sm" title="Lọc kết quả PWHT"><option value="">All</option><option value="ACC">ACC</option><option value="REJ">REJ</option></select></div>
         </div>
-        <div class="mb-2"><label class="filter-label">System</label><select id="sSystem" class="form-select form-select-sm"><option value="">All</option></select></div>
+        <div class="mb-2"><label class="filter-label">System</label><select id="sSystem" class="form-select form-select-sm" title="Lọc hệ thống"><option value="">All</option></select></div>
         <div class="mb-2">
             <label class="filter-label d-flex justify-content-between align-items-center" title="Dán nhiều Drawing từ Excel, cách nhau bằng phẩy hoặc xuống dòng">
                 <span>Drawing No. (Multi-search)</span>
@@ -713,7 +755,7 @@
             </label>
             <textarea id="sSpool" class="form-control form-control-sm" placeholder="Nhập hoặc dán danh sách Spool..."></textarea>
         </div>
-        <div class="mb-4"><label class="filter-label">Joint No.</label><input type="text" id="sJoint" class="form-control form-control-sm"></div>
+        <div class="mb-4"><label class="filter-label">Joint No.</label><input type="text" id="sJoint" class="form-control form-control-sm" title="Tìm Joint No" placeholder="Nhập Joint No"></div>
 
         <div class="d-grid gap-2 mb-4">
             <button class="btn-apply" onclick="applyFilters()" id="btnApply">Apply Filters</button>
@@ -750,7 +792,7 @@
     <div class="main-content" id="dashboardContent">
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div class="d-flex align-items-center">
-                <button class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Toggle Sidebar" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
                 <h2 class="h5 mb-0 fw-bold d-flex align-items-center">
                     <svg class="me-2" width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 6px;">
                         <rect width="100" height="100" rx="20" fill="#1e3a8a"/>
@@ -763,7 +805,7 @@
             <div>
                 <button class="notification-btn me-3 text-warning" onclick="showCalendarModal()" title="Project Calendar"><i class="fas fa-calendar-alt"></i></button>
                 <button class="notification-btn me-3 text-primary" onclick="showAiModal()" title="Ask AI"><i class="fas fa-robot"></i></button>
-                <button class="notification-btn me-3" onclick="showReminders()"><i class="fas fa-bell"></i><span class="notification-badge" id="notiBadge">0</span></button>
+                <button class="notification-btn me-3" onclick="showReminders()" aria-label="Thông báo" title="Thông báo"><i class="fas fa-bell"></i><span class="notification-badge" id="notiBadge">0</span></button>
             </div>
         </div>
 
@@ -907,7 +949,7 @@
                                 </div>
                                 <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardNdtDoneBacklog')" title="Focus mode"></i>
                             </div>
-                            <div class="chart-box chart-full-height"><canvas id="ndtBacklogChart"></canvas></div>
+                            <div class="chart-box chart-full-height" style="height: 420px;"><canvas id="ndtBacklogChart"></canvas></div>
                         </div>
                     </div>
                     <div class="col-lg-5">
@@ -926,7 +968,7 @@
 
                 <!-- ROW 3: Backlog by Size + PWHT -->
                 <div class="row g-4 mb-4">
-                    <div class="col-lg-5">
+                    <div class="col-lg-6">
                         <div class="glass-card h-100" id="cardBacklogBySize">
                             <div class="chart-header">
                                 <div class="d-flex align-items-center gap-2">
@@ -940,14 +982,14 @@
                             </div>
                             <div style="max-height:420px; overflow-y:auto;">
                                 <table class="backlog-tbl" id="backlogSizeTable">
-                                    <thead><tr><th>Pipe Size</th><th>RT</th><th>PAUT</th><th>MT/PT</th><th>Total</th></tr></thead>
+                                    <thead><tr><th>Pipe Size</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>Total</th></tr></thead>
                                     <tbody id="backlogSizeBody"></tbody>
                                     <tfoot id="backlogSizeFoot"></tfoot>
                                 </table>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-7">
+                    <div class="col-lg-6">
                         <div class="glass-card h-100" id="cardPwhtProgress">
                             <div class="chart-header">
                                 <div class="d-flex align-items-center gap-2">
@@ -956,7 +998,7 @@
                                 </div>
                                 <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardPwhtProgress')" title="Focus mode"></i>
                             </div>
-                            <div class="row">
+                            <div class="row align-items-center">
                                 <div class="col-md-5">
                                     <div class="pwht-stats-grid" id="pwhtStatsGrid">
                                         <div class="pwht-mini-card"><div class="pm-val text-success" id="pwhtDone">0</div><div class="pm-label">Completed</div></div>
@@ -997,7 +1039,7 @@
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardMatrixCompliance')" title="Focus mode"></i>
                         </div>
                     </div>
-                    <div class="table-matrix-container" style="max-height: 65vh; height: auto;">
+                    <div class="table-matrix-container sticky-vh-65">
                         <table class="table table-bordered table-hover small text-center mb-0 align-middle table-matrix" id="complianceTable">
                             <thead class="table-light">
                                 <tr>
@@ -1019,6 +1061,7 @@
                                 </tr>
                             </thead>
                             <tbody id="complianceBody"></tbody>
+                            <tfoot id="complianceFoot"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -1030,16 +1073,16 @@
                             <span>Detailed Inspection Data (NDT Status)</span>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <input type="text" class="form-control form-control-sm" placeholder="Search Status..." style="width: 150px; font-size: 0.75rem;" data-target-table="tableStatusTable" oninput="applyTableFilter('tableStatusTable')">
+                            <input type="text" class="form-control form-control-sm" placeholder="Search Status..." style="width: 150px; font-size: 0.75rem;" data-target-table="tableStatusTable" oninput="applyTableFilter('tableStatusTable')" title="Search Status">
                             <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" onclick="generateRCA()" title="Root Cause Analysis">✨ AI RCA Report</button>
-                            <div class="page-ctrl"><button id="btnPrevCompact" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageCompact('prev')"><i class="fas fa-chevron-left"></i></button><span id="pageInfoCompact">Page 1/1</span><button id="btnNextCompact" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageCompact('next')"><i class="fas fa-chevron-right"></i></button></div>
+                            <div class="page-ctrl"><button id="btnPrevCompact" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageCompact('prev')" aria-label="Trang trước" title="Trang trước"><i class="fas fa-chevron-left"></i></button><span id="pageInfoCompact">Page 1/1</span><button id="btnNextCompact" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageCompact('next')" aria-label="Trang sau" title="Trang sau"><i class="fas fa-chevron-right"></i></button></div>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardNdtStatusTable')" title="Focus mode"></i>
                         </div>
                     </div>
                     <div class="table-compact-container sticky-vh-65">
                         <table class="table-compact" id="tableStatusTable">
-                            <colgroup><col style="width: 3%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 8%;"><col style="width: 8%;"><col style="width: 6%;"><col style="width: 4%;"><col style="width: 3%;"><col style="width: 3%;"><col style="width: 4%;"><col style="width: 3%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 5%;"><col style="width: 5%;"></colgroup>
-                            <thead><tr><th>No</th><th>Sub</th><th>Sys</th><th>Drawing</th><th>Line</th><th>Spool</th><th>Joint</th><th>Size</th><th>Thk</th><th>Mat</th><th class="text-primary">Rate</th><th>Visual</th><th>W.Date</th><th>NDT L</th><th>Def L</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>PWHT</th><th>DefectID</th><th>Defect Type</th><th>Stt</th></tr></thead>
+                            <colgroup><col style="width: 3%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 8%;"><col style="width: 4%;"><col style="width: 8%;"><col style="width: 6%;"><col style="width: 4%;"><col style="width: 3%;"><col style="width: 5%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 4%;"><col style="width: 5%;"><col style="width: 3%;"><col style="width: 3%;"><col style="width: 3%;"><col style="width: 3%;"><col style="width: 3%;"><col style="width: 6%;"><col style="width: 5%;"></colgroup>
+                            <thead><tr><th>No</th><th>Sub</th><th>Sys</th><th>Drawing</th><th>Rev.</th><th>Line</th><th>Spool</th><th>Joint</th><th>Size</th><th>Thk</th><th>Mat</th><th class="text-primary">Rate</th><th>Visual</th><th>W.Date</th><th>NDT L</th><th>Def L</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>PWHT</th><th>Defect Type</th><th>Stt</th></tr></thead>
                             <tbody id="tableStatusBody"></tbody><tfoot id="tableStatusFoot"></tfoot>
                         </table>
                     </div>
@@ -1049,11 +1092,11 @@
                     <div class="chart-header">
                         <div class="d-flex align-items-center gap-2">
                             <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardFullReportTable')"><i class="fas fa-chevron-left me-1"></i> Back to report</button>
-                            <span>Detailed Inspection Data (Full Report - 21 Cols)</span>
+                            <span>Detailed Inspection Data (Full Report - 22 Cols)</span>
                         </div>
                         <div class="d-flex gap-3 align-items-center">
-                            <input type="text" class="form-control form-control-sm" placeholder="Search Full Report..." style="width: 160px; font-size: 0.75rem;" data-target-table="tableFullTable" oninput="applyTableFilter('tableFullTable')">
-                            <div class="page-ctrl me-2"><button id="btnPrevFull" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageFull('prev')"><i class="fas fa-chevron-left"></i></button><span id="pageInfoFull">Page 1/1</span><button id="btnNextFull" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageFull('next')"><i class="fas fa-chevron-right"></i></button></div>
+                            <input type="text" class="form-control form-control-sm" placeholder="Search Full Report..." style="width: 160px; font-size: 0.75rem;" data-target-table="tableFullTable" oninput="applyTableFilter('tableFullTable')" title="Search Full Report">
+                            <div class="page-ctrl me-2"><button id="btnPrevFull" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageFull('prev')" aria-label="Trang trước" title="Trang trước"><i class="fas fa-chevron-left"></i></button><span id="pageInfoFull">Page 1/1</span><button id="btnNextFull" class="btn btn-sm btn-outline-success py-0 px-2" onclick="changePageFull('next')" aria-label="Trang sau" title="Trang sau"><i class="fas fa-chevron-right"></i></button></div>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-file-excel me-1"></i> Excel
@@ -1070,7 +1113,7 @@
                     </div>
                     <div class="table-detail-container sticky-vh-65">
                         <table class="table-detail" id="tableFullTable">
-                            <thead><tr><th>No</th><th>SubCon</th><th>System</th><th>Drawing No.</th><th>Line No.</th><th>Spool No.</th><th>Welder ID</th><th>Joint No.</th><th>Size</th><th>Thk</th><th>Material</th><th>Weld Type</th><th>Joint Remark</th><th>Test Package No.</th><th>RT Report</th><th>PAUT Report</th><th>MT Report</th><th>PT Report</th><th>PMI Report</th><th>Hardness</th><th>Ferrite</th></tr></thead>
+                            <thead><tr><th>No</th><th>SubCon</th><th>System</th><th>Drawing No.</th><th>Revision No</th><th>Line No.</th><th>Spool No.</th><th>Welder ID</th><th>Joint No.</th><th>Size</th><th>Thk</th><th>Material</th><th>Weld Type</th><th>Joint Remark</th><th>Test Package No.</th><th>RT Report</th><th>PAUT Report</th><th>MT Report</th><th>PT Report</th><th>PMI Report</th><th>Hardness Report</th><th>Ferrite Report</th><th>PWHT Report</th></tr></thead>
                             <tbody id="tableFullBody"></tbody><tfoot id="tableFullFoot"></tfoot>
                         </table>
                     </div>
@@ -1127,7 +1170,7 @@
                         <div class="d-flex align-items-center gap-3 flex-wrap">
                             <div class="d-flex align-items-center gap-1">
                                 <span class="small fw-bold text-muted">Hydro Date:</span>
-                                <input type="date" id="hydroDate" class="form-control form-control-sm" style="width: 150px;" onchange="renderHydro()">
+                                <input type="date" id="hydroDate" class="form-control form-control-sm" style="width: 150px;" onchange="renderHydro()" title="Chọn ngày hydrotest">
                                 <button class="btn btn-sm btn-outline-secondary" onclick="clearHydroFilters()" title="Clear Filters"><i class="fas fa-times me-1"></i>Clear</button>
                             </div>
                             <input type="text" id="hydroSearchInput" class="form-control form-control-sm" placeholder="Search Hydro Packages..." style="width: 180px; font-size: 0.75rem;" data-target-table="hydroTable" oninput="applyTableFilter('hydroTable')">
@@ -1187,7 +1230,16 @@
                         <span><i class="fas fa-filter me-2"></i><strong>Đang lọc theo Visualizer search.</strong> Bảng chỉ hiển thị Test Package / Line matching.</span>
                         <button class="btn btn-sm btn-outline-info py-0 px-2" onclick="clearVisualizer()"><i class="fas fa-times me-1"></i>Bỏ lọc</button>
                     </div>
-                    <div id="hydroStatsBanner" class="d-flex justify-content-around bg-light p-2 rounded mb-2 border shadow-sm" style="font-size:0.9rem;"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                        <div id="hydroStatsBanner" class="d-flex justify-content-around bg-light p-2 rounded border shadow-sm flex-grow-1" style="font-size:0.9rem; margin-bottom:0 !important; max-width: 600px;"></div>
+                        <div class="bg-light p-2 rounded border shadow-sm d-flex gap-3 align-items-center flex-wrap" style="font-size:0.72rem;">
+                            <span class="fw-bold text-muted"><i class="fas fa-info-circle me-1 text-info"></i>NDT Legend:</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-success" style="background-color: #d4edda !important; color: #155724 !important; border: 1px solid #c3e6cb !important; font-size:0.65rem; padding: 2px 6px;">ACC</span> Đã kiểm tra & Đạt (Accepted)</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-success" style="background-color: #d4edda !important; color: #155724 !important; border: 1px solid #c3e6cb !important; font-size:0.65rem; padding: 2px 6px;">OK</span> Đủ scope / Không yêu cầu test</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-danger" style="background-color: #f8d7da !important; color: #721c24 !important; border: 1px solid #f5c6cb !important; font-size:0.65rem; padding: 2px 6px;">REJ</span> Phát hiện lỗi hàn (Rejected)</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-warning text-dark" style="background-color: #fff3cd !important; color: #856404 !important; border: 1px solid #ffeeba !important; font-size:0.65rem; padding: 2px 6px;">Số (e.g. 1)</span> Số mối hàn còn lại cần test (Pending)</span>
+                        </div>
+                    </div>
                     <div class="table-detail-container sticky-vh-65">
                         <table class="table-detail" id="hydroTable">
                             <thead>
@@ -1219,10 +1271,9 @@
                                     <th style="min-width:220px;">Actual Status</th>
                                     <th style="width:120px;">Location</th>
                                     <th style="min-width:120px;">TV</th>
-                                    <th style="width:120px; text-align: center;">Hydrotest Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="hydroBody"><tr><td colspan="28" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
+                            <tbody id="hydroBody"><tr><td colspan="27" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
                             <tfoot id="hydroTfoot"></tfoot>
                         </table>
                     </div>
@@ -1255,7 +1306,7 @@
                                     <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardWelderStats')" title="Focus mode"></i>
                                 </div>
                             </div>
-                            <div class="table-matrix-container" style="max-height: 50vh; height: auto;">
+                            <div class="table-matrix-container sticky-vh-65">
                                 <table class="table table-bordered table-sm text-center small mb-0" id="welderTable">
                                     <thead class="table-light"><tr><th>ID</th><th>Total Joints</th><th>Dia-Inch</th><th>Defect</th><th>Rate %</th><th>AI Review</th></tr></thead>
                                     <tbody id="welderTableBody"></tbody>
@@ -1325,10 +1376,10 @@
 
                     <!-- KPI Cards -->
                     <div class="ndr-kpi-grid" id="ndrKpiGrid">
-                        <div class="ndr-kpi-card kpi-total"><div class="ndr-kpi-label">Total Sub-Lots</div><div class="ndr-kpi-val" id="ndrKpiTotal">0</div></div>
+                        <div class="ndr-kpi-card kpi-total"><div class="ndr-kpi-label">TEST PACKAGE NO.</div><div class="ndr-kpi-val" id="ndrKpiTotal">0</div></div>
                         <div class="ndr-kpi-card kpi-ok"><div class="ndr-kpi-label">Compliant</div><div class="ndr-kpi-val text-success" id="ndrKpiOk">0</div></div>
                         <div class="ndr-kpi-card kpi-nok"><div class="ndr-kpi-label">Non-Compliant</div><div class="ndr-kpi-val text-danger" id="ndrKpiNok">0</div></div>
-                        <div class="ndr-kpi-card kpi-pct"><div class="ndr-kpi-label">Compliance %</div><div class="ndr-kpi-val" id="ndrKpiPct" style="color:#e65100;">0%</div></div>
+                        <div class="ndr-kpi-card kpi-pct"><div class="ndr-kpi-label">Compliance %</div><div class="ndr-kpi-val" id="ndrKpiPct" style="color:#2e7d32;">0%</div></div>
                     </div>
 
                     <!-- Filter Bar -->
@@ -1337,9 +1388,9 @@
                             <button class="ndr-toggle-btn active" id="ndrViewTP" onclick="setNdrView('tp')">By Test Package</button>
                             <button class="ndr-toggle-btn" id="ndrViewLine" onclick="setNdrView('line')">By Line</button>
                         </div>
-                        <select class="form-select-sm" id="ndrFilterSys" onchange="renderNdtRandom()" style="min-width:100px;"><option value="">All System</option></select>
-                        <select class="form-select-sm" id="ndrFilterSubcon" onchange="renderNdtRandom()" style="min-width:110px;"><option value="">All Subcon</option></select>
-                        <select class="form-select-sm" id="ndrFilterWtype" onchange="renderNdtRandom()" style="min-width:110px;">
+                         <select class="form-select-sm" id="ndrFilterSys" onchange="renderNdtRandom()" style="min-width:100px;" title="Lọc hệ thống NDT"><option value="">All System</option></select>
+                        <select class="form-select-sm" id="ndrFilterSubcon" onchange="renderNdtRandom()" style="min-width:110px;" title="Lọc nhà thầu phụ NDT"><option value="">All Subcon</option></select>
+                        <select class="form-select-sm" id="ndrFilterWtype" onchange="renderNdtRandom()" style="min-width:110px;" title="Lọc loại mối hàn NDT">
                             <option value="">All Weld Type</option>
                             <option value="BW">BW</option>
                             <option value="SW">SW</option>
@@ -1348,7 +1399,7 @@
                         </select>
                         <!-- Date filter -->
                         <span class="small fw-bold text-muted ms-1">Test Date:</span>
-                        <input type="date" id="ndrDate" class="form-control-sm" style="width: 150px;" onchange="renderNdtRandom()">
+                        <input type="date" id="ndrDate" class="form-control-sm" style="width: 150px;" onchange="renderNdtRandom()" title="Chọn ngày NDT">
                         <button class="btn btn-sm btn-outline-secondary" onclick="clearNdrFilters()" title="Clear Filters"><i class="fas fa-times me-1"></i>Clear</button>
                         <!-- Multi-TP search -->
                         <input type="text" class="form-control-sm" id="ndrSearch" placeholder="Search TP/Line (multi: A,B,C)" onkeyup="debouncedRenderNdtRandom(); syncNdtAndHydroSearch('ndr')" style="min-width:185px;" title="Tìm kiếm nhiều gói: nhập tên cách nhau bởi dấu , ; hoặc xuống dòng">
@@ -1408,14 +1459,14 @@
             <div class="modal-content">
                 <div class="modal-header bg-info text-dark">
                     <h5 class="modal-title fw-bold"><i class="fas fa-list-check me-2"></i>Quản lý Ghi Chú & Nhắc nhở</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
                 </div>
                 <div class="modal-body bg-light">
                     <div class="mb-3 p-3 bg-white border rounded shadow-sm">
                         <label class="form-label fw-bold text-primary small">Thêm công việc mới</label>
                         <input type="text" id="noteText" class="form-control form-control-sm mb-2" placeholder="Ví dụ: Kiểm tra lại PWHT Line 405...">
                         <div class="d-flex gap-2">
-                            <input type="date" id="noteDate" class="form-control form-control-sm">
+                            <input type="date" id="noteDate" class="form-control form-control-sm" title="Chọn ngày ghi chú">
                             <button class="btn btn-sm btn-primary w-50 fw-bold" onclick="addScheduledNote()"><i class="fas fa-plus me-1"></i>Thêm</button>
                         </div>
                     </div>
@@ -1434,13 +1485,13 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title"><i class="fas fa-cloud me-2"></i>Cấu Hình Firebase Realtime Database</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p class="small text-muted mb-3">Sử dụng Firebase Realtime Database để đồng bộ dữ liệu tới điện thoại của nhiều người xem khác nhao. Để bảo mật, chỉ Host mới cần cấp API Key đầy đủ để Push dữ liệu. Điện thoại chỉ cần link Database URL để đọc dữ liệu.</p>
                     <div class="mb-3">
                         <label class="form-label text-primary fw-bold">1. Chế Độ Hoạt Động</label>
-                        <select id="fbMode" class="form-select" onchange="toggleFbMode()">
+                        <select id="fbMode" class="form-select" onchange="toggleFbMode()" title="Chế độ Firebase">
                             <option value="viewer">Tôi là Người Xem (Viewer - Chỉ tải data về)</option>
                             <option value="host">Tôi là Máy Chủ (Host - Tuỳ quyền Đẩy & Tải data)</option>
                         </select>
@@ -1476,7 +1527,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title"><i class="fab fa-google-drive me-2"></i>Cài Đặt Google Drive Sync</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info py-2 small mb-3">
@@ -2868,6 +2919,7 @@
                 sub: findKey(['IsSubContractor', 'SubContractor', 'Sub', 'Sub_Contractor', 'Nhà thầu phụ']),
                 sys: findKey(['System', 'Hệ thống']),
                 dwg: findKey(['DrawingNo', 'Drawing No.', 'Drawing No', 'Dwg No', 'Drawing', 'Bản vẽ']),
+                rev: findKey(['RevisionNo', 'Rev. bảng vẽ', 'Rev.', 'Rev', 'Revision', 'Rev. Bản vẽ', 'Drawing Rev']),
                 line: findKey(['Line', 'Line No', 'Line_No', 'Tuyến']),
                 spool: findKey(['SpoolNo', 'Spool No', 'Spool_No', 'Spool', 'Số Spool']),
                 welder: findKey(['WelderID', 'Welder ID', 'Welder', 'WelderNo', 'Thợ hàn']),
@@ -2917,7 +2969,9 @@
                 releaseRep: findKey(['ReleaseNotesReportNo', 'Release Notes Report No', 'ReleaseRep']),
                 summaryRep: findKey(['SummaryReportNo', 'Summary Report No', 'SummaryRep']),
                 ndtRequest: findKey(['NDTRequest', 'NDT Request', 'NDTReq']),
-                statusCol: findKey(['Status'])
+                ndtRate: findKey(['NDTRate', 'NDT Rate', 'Rate', 'Tỷ lệ NDT', 'ndtRate']),
+                pwhtRep: findKey(['PWHTReportNo', 'PWHT Report No.', 'PWHT Rep', 'pwhtRep']),
+                statusCol: findKey(['Status', 'DJ_Status', 'DJ Status', 'Stt'])
             };
 
             const getVal = (row, field) => { const k = map[field]; return (k && row[k] !== undefined && row[k] !== null) ? row[k] : ""; };
@@ -2963,7 +3017,7 @@
                 const visAccVal = getStatus(getVal(r, 'visualACC'));
 
                 processed.push({
-                    id: i+1, isSub: clean(getVal(r, 'sub')), system: getVal(r, 'sys'), dwg: getVal(r, 'dwg'),
+                    id: i+1, isSub: clean(getVal(r, 'sub')), system: getVal(r, 'sys'), dwg: getVal(r, 'dwg'), rev: getVal(r, 'rev'),
                     line: getVal(r, 'line'), spool: getVal(r, 'spool'), welder: getVal(r, 'welder'), joint: jointVal.toString(),
                     size: getVal(r, 'size'), sizeVal: sizeVal, thick: getVal(r, 'thick'), mat: getVal(r, 'mat'),
                     weldType: getVal(r, 'weldType') || '', jointRem: getVal(r, 'jointRem') || '', location: getVal(r, 'location') || '', testPkg: getVal(r, 'testPkg'),
@@ -2981,8 +3035,10 @@
                     mtRes: getStatus(getVal(r, 'mtRes')), 
                     ptRes: getStatus(getVal(r, 'ptRes')),
                     reqRT: isReq(getVal(r, 'reqRT')), reqPAUT: isReq(getVal(r, 'reqPAUT')), reqMT: isReq(getVal(r, 'reqMT')), reqPT: isReq(getVal(r, 'reqPT')), reqPwht: isReq(getVal(r, 'reqPwht')), reqPmi: isReq(getVal(r, 'reqPmi')),
+                    reqHardness: isReq(getVal(r, 'hardRep')),
                     hasRT: hasRep(getVal(r, 'rtRep')), hasPAUT: hasRep(getVal(r, 'pautRep')), 
                     hasMT: hasRep(getVal(r, 'mtRep')), hasPT: hasRep(getVal(r, 'ptRep')),
+                    hasPMI: hasRep(getVal(r, 'pmiRep')), hasHardness: hasRep(getVal(r, 'hardnessRep')),
                     pwhtRes: getStatus(getVal(r, 'pwhtRes')), 
                     lenNDT: parseFloat(getVal(r, 'lenNDT')) || 0,
                     lenDefect: parseFloat(getVal(r, 'lenDefect')) || parseFloat(getVal(r, 'defectLenInfo')) || 0, 
@@ -3006,6 +3062,7 @@
                     releaseRep: getVal(r, 'releaseRep'),
                     summaryRep: getVal(r, 'summaryRep'),
                     ndtRequest: (() => { const v = getVal(r, 'ndtRequest'); return v && v.toString().trim() === '1'; })(),
+                    pwhtRep: getVal(r, 'pwhtRep'),
                     statusCol: getVal(r, 'statusCol') || ''
                 });
             }
@@ -3285,7 +3342,7 @@
             };
             const dateMap = {};
             const pwhtStats = { acc:0, pending:0, required: 0, remaining: 0 };
-            const ndtStats = { PAUT:{s:0,d:0,b:0}, RT:{s:0,d:0,b:0}, MT:{s:0,d:0,b:0}, PT:{s:0,d:0,b:0} };
+            const ndtStats = { PAUT:{s:0,d:0,b:0}, RT:{s:0,d:0,b:0}, MT:{s:0,d:0,b:0}, PT:{s:0,d:0,b:0}, PMI:{s:0,d:0,b:0}, Hardness:{s:0,d:0,b:0} };
             const systemSet = new Set();
             const subconSet = new Set();
             const weldTypeSet = new Set();
@@ -3335,17 +3392,35 @@
                     else { pwhtStats.remaining++; }
                 }
                 
-                if(d.reqRT) ndtStats.RT.s++;
-                if(d.hasRT) ndtStats.RT.d++;
+                if(d.reqRT) {
+                    ndtStats.RT.s++;
+                    if(d.hasRT) ndtStats.RT.d++;
+                }
                 
-                if(d.reqPAUT) ndtStats.PAUT.s++;
-                if(d.hasPAUT) ndtStats.PAUT.d++;
+                if(d.reqPAUT) {
+                    ndtStats.PAUT.s++;
+                    if(d.hasPAUT) ndtStats.PAUT.d++;
+                }
                 
-                if(d.reqMT) ndtStats.MT.s++;
-                if(d.hasMT) ndtStats.MT.d++;
+                if(d.reqMT) {
+                    ndtStats.MT.s++;
+                    if(d.hasMT) ndtStats.MT.d++;
+                }
                 
-                if(d.reqPT) ndtStats.PT.s++;
-                if(d.hasPT) ndtStats.PT.d++;
+                if(d.reqPT) {
+                    ndtStats.PT.s++;
+                    if(d.hasPT) ndtStats.PT.d++;
+                }
+
+                if(d.reqPmi) {
+                    ndtStats.PMI.s++;
+                    if(d.hasPMI) ndtStats.PMI.d++;
+                }
+
+                if(d.reqHardness) {
+                    ndtStats.Hardness.s++;
+                    if(d.hasHardness) ndtStats.Hardness.d++;
+                }
                 
                 if(d.system) systemSet.add(d.system);
                 if(d.isSub) subconSet.add(d.isSub);
@@ -3356,8 +3431,8 @@
             }
             
             // Calculate Remaining (Backlog) for each method dynamically
-            ['PAUT','RT','PT','MT'].forEach(m => {
-                ndtStats[m].b = Math.max(0, ndtStats[m].s - ndtStats[m].d);
+            ['PAUT','RT','PT','MT','PMI','Hardness'].forEach(m => {
+                ndtStats[m].b = ndtStats[m].s - ndtStats[m].d;
             });
             
             cachedAnalytics = { 
@@ -3895,17 +3970,7 @@
                     h.actualStatus = '';
                 }
 
-                if (!h.actualStatus) {
-                    const detailParts = [];
-                    const repairJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
-                    const pendJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
-                    if (repairJoints.length > 0) detailParts.push('<span class="text-danger" style="font-size:0.65rem;"><b>REJ:</b> ' + repairJoints.slice(0, 10).map(s => s.trim()).join('; ') + (repairJoints.length > 10 ? ' ...(+' + (repairJoints.length-10) + ')' : '') + '</span>');
-                    if (pendJoints.length > 0) detailParts.push('<span class="text-warning" style="font-size:0.65rem;"><b>PEND:</b> ' + pendJoints.slice(0, 15).map(s => s.trim()).join('; ') + (pendJoints.length > 15 ? ' ...(+' + (pendJoints.length-15) + ')' : '') + '</span>');
-                    if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detailParts.push('<span class="text-info" style="font-size:0.65rem;"><b>NDT Random:</b> Thiếu %RT/MT</span>');
-                    h.actualStatus = detailParts.length > 0 ? detailParts.join('<br>') : '<span class="text-success" style="font-size:0.65rem;">✅ All Clear</span>';
-                }
-
-                const isHydrotested = hydroDoneCount > 0 || (sheetData && hasRep(sheetData.hydroDate));
+                const isHydrotested = (sheetData && hasRep(sheetData.hydroDate)) || (hydroDoneCount > 0);
 
                 if (isHydrotested) {
                     h.status = 'Hydrotested';
@@ -4027,7 +4092,6 @@
                 <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${h.actualStatus}</td>
                 <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
                 <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
-                <td class="text-center align-middle">${getHydroStatusBadge(h.status)}</td>
             </tr>`;
         }
 
@@ -4095,7 +4159,7 @@
                 <td class="text-center">${totals.rtAcc}</td>
                 <td class="text-center">${totals.pautReq}</td>
                 <td class="text-center">${totals.pautAcc}</td>
-                <td colspan="12"></td>
+                <td colspan="11"></td>
             </tr>`;
         }
 
@@ -4103,7 +4167,7 @@
             const tbody = document.getElementById('hydroBody');
             try {
             if(hydroPlanData.length === 0 && filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="28" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="27" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
                 return;
             }
 
@@ -4222,7 +4286,7 @@
                 'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
                 'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
                 'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
-                'Actual Status', 'Location', 'TV', 'Hydrotest Status'
+                'Actual Status', 'Location', 'TV'
             ]);
 
             // Style group header row colors
@@ -4234,7 +4298,6 @@
             hdrClr[25] = 'FF455A64';
             hdrClr[26] = 'FF37474F';
             hdrClr[27] = 'FF37474F';
-            hdrClr[28] = 'FF2A365F'; // custom color for Hydrotest Status
 
             ws.getRow(1).eachCell({includeEmpty:true}, (cell, col) => {
                 cell.font = { bold:true, size:10, color:{argb:'FFFFFFFF'} };
@@ -4251,13 +4314,6 @@
                 const sheetData = sheetHydroDates.get(pkgName);
                 if (sheetData && sheetData.statusFab) {
                     detail = sheetData.statusFab;
-                } else {
-                    const rJoints = h.pendingSummary.filter(s => s.includes('REPAIR'));
-                    const pJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
-                    if (rJoints.length > 0) detail += 'REJ: ' + rJoints.map(s => s.trim()).join('; ') + '\n';
-                    if (pJoints.length > 0) detail += 'PEND: ' + pJoints.map(s => s.trim()).join('; ') + '\n';
-                    if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detail += 'NDT Random: Thiếu %RT/MT';
-                    detail = detail.trim() || 'All Clear';
                 }
 
                 const locStr = h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-';
@@ -4268,7 +4324,7 @@
                     h.weldingJoints, h.welded, h.progress/100, h.jointComplete, h.jointNotComplete,
                     h.rtRequired, h.rtAcc, h.pautRequired, h.pautAcc,
                     h.rtStatus, h.pautStatus, h.mtStatus, h.ptStatus, h.pmiStatus, h.ferriteStatus, h.hardnessStatus, h.pwhtStatus,
-                    detail, locStr, remStr, h.status
+                    detail, locStr, remStr
                 ]);
 
                 row.eachCell({includeEmpty:true}, (cell, col) => {
@@ -4300,7 +4356,7 @@
                     }
 
                     // Detail column (25) - light background for non-clear
-                    const hasDetail = detail.trim().length > 0 && detail !== 'All Clear';
+                    const hasDetail = detail.trim().length > 0;
                     if (col===25 && hasDetail) {
                         const lowVal = detail.toLowerCase();
                         if (lowVal.includes('done') || lowVal.includes('complete') || lowVal.includes('ready')) {
@@ -4314,24 +4370,6 @@
                             cell.font = { size:9, color:{argb:'FF664D03'} };
                         }
                     }
-
-                    // Hydrotest Status column (28)
-                    if (col === 28) {
-                        const val = cell.value;
-                        if (val === 'Hydrotested') {
-                            cell.fill = hFill('FFE2EAFC');
-                            cell.font = { bold:true, color:{argb:'FF1A365D'} };
-                        } else if (val === 'Ready for Hydrotest') {
-                            cell.fill = hFill('FFD4EDDA');
-                            cell.font = { bold:true, color:{argb:'FF0F5132'} };
-                        } else if (val === 'REPAIR') {
-                            cell.fill = hFill('FFF8D7DA');
-                            cell.font = { bold:true, color:{argb:'FF842029'} };
-                        } else {
-                            cell.fill = hFill('FFFFF3CD');
-                            cell.font = { bold:true, color:{argb:'FF664D03'} };
-                        }
-                    }
                 });
             });
 
@@ -4341,7 +4379,7 @@
                 {width:13}, {width:8}, {width:10}, {width:14}, {width:16},
                 {width:11}, {width:8}, {width:13}, {width:10},
                 {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8},
-                {width:50}, {width:18}, {width:25}, {width:20}
+                {width:50}, {width:18}, {width:25}
             ];
 
             const buffer = await wb.xlsx.writeBuffer();
@@ -4423,14 +4461,19 @@
         function renderBacklogBySize() {
             const sizeMap = {};
             filteredData.forEach(d => {
-                let bRT = (d.reqRT && !d.hasRT) ? 1 : 0; let bPAUT = (d.reqPAUT && !d.hasPAUT) ? 1 : 0;
-                let bMT = (d.reqMT && !d.hasMT) ? 1 : 0; let bPT = (d.reqPT && !d.hasPT) ? 1 : 0;
+                let bRT = (d.reqRT && !d.hasRT) ? 1 : 0;
+                let bPAUT = (d.reqPAUT && !d.hasPAUT) ? 1 : 0;
+                let bMT = (d.reqMT && !d.hasMT) ? 1 : 0;
+                let bPT = (d.reqPT && !d.hasPT) ? 1 : 0;
     
                 if (bRT || bPAUT || bMT || bPT) {
                     let sStr = d.size || "Unknown";
-                    if (!sizeMap[sStr]) sizeMap[sStr] = { size: sStr, val: d.sizeVal, rt: 0, paut: 0, mtpt: 0, total: 0 };
-                    sizeMap[sStr].rt += bRT; sizeMap[sStr].paut += bPAUT; sizeMap[sStr].mtpt += (bMT || bPT ? 1 : 0);
-                    sizeMap[sStr].total += (bRT + bPAUT + (bMT || bPT ? 1 : 0));
+                    if (!sizeMap[sStr]) sizeMap[sStr] = { size: sStr, val: d.sizeVal, rt: 0, paut: 0, mt: 0, pt: 0, total: 0 };
+                    sizeMap[sStr].rt += bRT;
+                    sizeMap[sStr].paut += bPAUT;
+                    sizeMap[sStr].mt += bMT;
+                    sizeMap[sStr].pt += bPT;
+                    sizeMap[sStr].total += (bRT + bPAUT + bMT + bPT);
                 }
             });
 
@@ -4438,22 +4481,22 @@
             const tbody = document.getElementById('backlogSizeBody');
             if (!tbody) return;
             
-            let html = ''; let tRt = 0, tPaut = 0, tMtpt = 0, tTotal = 0;
+            let html = ''; let tRt = 0, tPaut = 0, tMt = 0, tPt = 0, tTotal = 0;
             // Find max for heatmap scaling
-            const maxVal = Math.max(...sizeArr.map(i => Math.max(i.rt, i.paut, i.mtpt)), 1);
+            const maxVal = Math.max(...sizeArr.map(i => Math.max(i.rt, i.paut, i.mt, i.pt)), 1);
             const heatCls = (v) => v === 0 ? 'heat-0' : (v > maxVal * 0.6 ? 'heat-hi' : (v > maxVal * 0.25 ? 'heat-med' : 'heat-lo'));
             
             sizeArr.forEach(item => {
-                tRt += item.rt; tPaut += item.paut; tMtpt += item.mtpt; tTotal += item.total;
-                html += `<tr><td>${item.size}</td><td class="${heatCls(item.rt)}">${item.rt > 0 ? item.rt : '-'}</td><td class="${heatCls(item.paut)}">${item.paut > 0 ? item.paut : '-'}</td><td class="${heatCls(item.mtpt)}">${item.mtpt > 0 ? item.mtpt : '-'}</td><td class="fw-bold" style="color:#c62828;">${item.total}</td></tr>`;
+                tRt += item.rt; tPaut += item.paut; tMt += item.mt; tPt += item.pt; tTotal += item.total;
+                html += `<tr><td>${item.size}</td><td class="${heatCls(item.rt)}">${item.rt > 0 ? item.rt : '-'}</td><td class="${heatCls(item.paut)}">${item.paut > 0 ? item.paut : '-'}</td><td class="${heatCls(item.mt)}">${item.mt > 0 ? item.mt : '-'}</td><td class="${heatCls(item.pt)}">${item.pt > 0 ? item.pt : '-'}</td><td class="fw-bold" style="color:#c62828;">${item.total}</td></tr>`;
             });
             
-            if(sizeArr.length === 0) { html = `<tr><td colspan="5" class="text-success fw-bold py-4"><i class="fas fa-check-circle me-2"></i>Không có nợ NDT!</td></tr>`; }
+            if(sizeArr.length === 0) { html = `<tr><td colspan="6" class="text-success fw-bold py-4"><i class="fas fa-check-circle me-2"></i>Không có nợ NDT!</td></tr>`; }
             tbody.innerHTML = html;
             
             const tfoot = document.getElementById('backlogSizeFoot');
             if(tfoot && sizeArr.length > 0) {
-                tfoot.innerHTML = `<tr><td>TOTAL</td><td>${tRt}</td><td>${tPaut}</td><td>${tMtpt}</td><td>${tTotal}</td></tr>`;
+                tfoot.innerHTML = `<tr><td>TOTAL</td><td>${tRt}</td><td>${tPaut}</td><td>${tMt}</td><td>${tPt}</td><td>${tTotal}</td></tr>`;
             }
             reapplyTableFilter('backlogSizeTable');
         }
@@ -4489,6 +4532,22 @@
 
             const tbody=document.getElementById('complianceBody'); tbody.innerHTML='';
             let rowIndex = 1;
+            
+            // Khai báo các biến tích lũy tổng quát
+            let totalJoints = 0;
+            let totalBwTotal = 0;
+            let totalBwRt = 0;
+            let totalBwMtPt = 0;
+            let totalSwTotal = 0;
+            let totalSwMtPt = 0;
+            let totalFwTotal = 0;
+            let totalFwMtPt = 0;
+            
+            let totalBwRtReqQty = 0;
+            let totalBwMtPtReqQty = 0;
+            let totalSwMtPtReqQty = 0;
+            let totalFwMtPtReqQty = 0;
+
             Object.keys(groups).sort().forEach(k=>{ 
                 const g=groups[k]; 
                 const rule = matrixMap.get(g.sys + '|' + g.spec) || DEFAULT_RULE; 
@@ -4514,6 +4573,21 @@
                 const swMtPtRes = calc(g.swTotal, g.swMtPt, reqSwMtPt); 
                 const fwMtPtRes = calc(g.fwTotal, g.fwMtPt, reqFwMtPt);
 
+                // Tích lũy
+                totalJoints += g.total;
+                totalBwTotal += g.bwTotal;
+                totalBwRt += g.bwRt;
+                totalBwMtPt += g.bwMtPt;
+                totalSwTotal += g.swTotal;
+                totalSwMtPt += g.swMtPt;
+                totalFwTotal += g.fwTotal;
+                totalFwMtPt += g.fwMtPt;
+
+                totalBwRtReqQty += Math.ceil(g.bwTotal * reqBwRt / 100);
+                totalBwMtPtReqQty += Math.ceil(g.bwTotal * reqBwMtPt / 100);
+                totalSwMtPtReqQty += Math.ceil(g.swTotal * reqSwMtPt / 100);
+                totalFwMtPtReqQty += Math.ceil(g.fwTotal * reqFwMtPt / 100);
+
                 tbody.innerHTML+=`<tr>
                     <td class="text-muted fw-bold">${rowIndex++}</td><td class="fw-bold text-start ps-3">${g.sys}</td><td class="text-start ps-3">${g.spec}</td><td class="text-start ps-3">${g.mat}</td><td class="fw-bold text-secondary">${g.total}</td>
                     <td class="bg-light">${bwRtRes.reqStr}</td><td class="fw-bold text-primary">${bwRtRes.actStr}</td><td>${bwRtRes.sttStr}</td>
@@ -4522,6 +4596,45 @@
                     <td class="bg-light">${fwMtPtRes.reqStr}</td><td class="fw-bold text-info">${fwMtPtRes.actStr}</td><td>${fwMtPtRes.sttStr}</td>
                 </tr>`; 
             });
+
+            // Render dòng Grand Total vào complianceFoot
+            const tfoot = document.getElementById('complianceFoot');
+            if (tfoot) {
+                const calcTotal = (total, actual, reqQty) => {
+                    if (total === 0) return { reqStr: '-', actStr: '<span class="text-muted">-</span>', sttStr: '<span class="text-muted small">-</span>' };
+                    const actPct = (actual / total) * 100;
+                    const reqPct = (reqQty / total) * 100;
+                    let sttClass, sttText;
+                    if (actual >= reqQty) { sttClass = 'bg-ok'; sttText = 'Ok'; } else if (actual > 0) { sttClass = 'bg-progress'; sttText = 'Progress'; } else { sttClass = 'bg-pending'; sttText = 'Pending'; }
+                    return { 
+                        reqStr: `${reqPct.toFixed(1)}%`, 
+                        actStr: `[${actual} / ${reqQty}]`, 
+                        sttStr: `<span class="${sttClass}">${sttText} (${actPct.toFixed(1)}%)</span>` 
+                    };
+                };
+
+                const bwRtRes = calcTotal(totalBwTotal, totalBwRt, totalBwRtReqQty);
+                const bwMtPtRes = calcTotal(totalBwTotal, totalBwMtPt, totalBwMtPtReqQty);
+                const swMtPtRes = calcTotal(totalSwTotal, totalSwMtPt, totalSwMtPtReqQty);
+                const fwMtPtRes = calcTotal(totalFwTotal, totalFwMtPt, totalFwMtPtReqQty);
+
+                tfoot.innerHTML = `<tr>
+                    <td colspan="4" style="text-align:left; background:#e8f5e9; color:#2e7d32; font-weight:800; padding:10px 8px; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10;">GRAND TOTAL</td>
+                    <td style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10;">${totalJoints}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${bwRtRes.reqStr}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${bwRtRes.actStr}</td>
+                    <td style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${bwRtRes.sttStr}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${bwMtPtRes.reqStr}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${bwMtPtRes.actStr}</td>
+                    <td style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${bwMtPtRes.sttStr}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${swMtPtRes.reqStr}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${swMtPtRes.actStr}</td>
+                    <td style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${swMtPtRes.sttStr}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${fwMtPtRes.reqStr}</td>
+                    <td style="background:#f5f5f5; color:#333; font-weight:800; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${fwMtPtRes.actStr}</td>
+                    <td style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;">${fwMtPtRes.sttStr}</td>
+                </tr>`;
+            }
             reapplyTableFilter('complianceTable');
         }
 
@@ -4685,9 +4798,9 @@
             });
 
             const md = ndtStats;
-            const totalBacklog=md.RT.b+md.PAUT.b+md.MT.b+md.PT.b;
-            const totalScope = md.RT.s+md.PAUT.s+md.MT.s+md.PT.s;
-            const totalDone = md.RT.d+md.PAUT.d+md.MT.d+md.PT.d;
+            const totalBacklog=md.RT.b+md.PAUT.b+md.MT.b+md.PT.b+md.PMI.b+md.Hardness.b;
+            const totalScope = md.RT.s+md.PAUT.s+md.MT.s+md.PT.s+md.PMI.s+md.Hardness.s;
+            const totalDone = md.RT.d+md.PAUT.d+md.MT.d+md.PT.d+md.PMI.d+md.Hardness.d;
             document.getElementById('statScope').innerText=totalScope.toLocaleString();
             document.getElementById('statBacklog').innerText=totalBacklog.toLocaleString();
             let maxB=-1,crit="-"; for(const[m,d]of Object.entries(md)){if(d.b>maxB){maxB=d.b;crit=m;}}
@@ -4699,14 +4812,16 @@
             document.getElementById('statNdtProgress').style.color = ndtPct >= 95 ? '#2e7d32' : (ndtPct >= 80 ? '#e65100' : '#c62828');
             document.getElementById('statNdtProgressSub').innerText = `${totalDone.toLocaleString()} / ${totalScope.toLocaleString()} completed`;
 
+            const maxVal = Math.max(...[md.PAUT.d, md.RT.d, md.PT.d, md.MT.d, md.PMI.d, md.Hardness.d, md.PAUT.b, md.RT.b, md.PT.b, md.MT.b, md.PMI.b, md.Hardness.b]);
+
             if(chartInstances.ndtBacklog) chartInstances.ndtBacklog.destroy();
-            chartInstances.ndtBacklog=new Chart(document.getElementById('ndtBacklogChart'),{type:'bar',data:{labels:['PAUT','RT','PT','MT'],datasets:[{label:'Done',data:[md.PAUT.d,md.RT.d,md.PT.d,md.MT.d],backgroundColor:['rgba(21,101,192,0.75)','rgba(67,160,71,0.75)','rgba(123,31,162,0.75)','rgba(245,124,0,0.75)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00'],borderWidth:1,borderRadius:4},{label:'Remaining',data:[md.PAUT.b,md.RT.b,md.PT.b,md.MT.b],backgroundColor:['rgba(21,101,192,0.2)','rgba(67,160,71,0.2)','rgba(123,31,162,0.2)','rgba(245,124,0,0.2)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00'],borderWidth:1,borderRadius:4,borderDash:[3,3]}]},options:{maintainAspectRatio:false,plugins:{datalabels:{color:'#333',font:{weight:'bold',size:11},anchor:'end',align:'top',formatter:v=>v>0?v.toLocaleString():''},legend:{labels:{usePointStyle:true,padding:14}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}}}}});
+            chartInstances.ndtBacklog=new Chart(document.getElementById('ndtBacklogChart'),{type:'bar',data:{labels:['PAUT','RT','PT','MT','PMI','Hardness'],datasets:[{label:'Done',data:[md.PAUT.d,md.RT.d,md.PT.d,md.MT.d,md.PMI.d,md.Hardness.d],backgroundColor:['rgba(21,101,192,0.75)','rgba(67,160,71,0.75)','rgba(123,31,162,0.75)','rgba(245,124,0,0.75)','rgba(0,150,136,0.75)','rgba(233,30,99,0.75)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00','#009688','#e91e63'],borderWidth:1,borderRadius:4},{label:'Remaining',data:[md.PAUT.b,md.RT.b,md.PT.b,md.MT.b,md.PMI.b,md.Hardness.b],backgroundColor:['rgba(21,101,192,0.2)','rgba(67,160,71,0.2)','rgba(123,31,162,0.2)','rgba(245,124,0,0.2)','rgba(0,150,136,0.2)','rgba(233,30,99,0.2)'],borderColor:['#1565c0','#43a047','#7b1fa2','#f57c00','#009688','#e91e63'],borderWidth:1,borderRadius:4,borderDash:[3,3]}]},options:{maintainAspectRatio:false,layout:{padding:{top:25}},plugins:{datalabels:{color:'#333',font:{weight:'bold',size:11},anchor:'end',align:'top',formatter:v=>v>0?v.toLocaleString():''},legend:{labels:{usePointStyle:true,padding:14}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,suggestedMax:maxVal*1.15,grid:{color:'rgba(0,0,0,0.05)'}}}}});
             
             // New method breakdown rendering
             const methodBreakdown = document.getElementById('ndtMethodBreakdown');
-            const methodColors = {PAUT:'m-paut', RT:'m-rt', MT:'m-mt', PT:'m-pt'};
+            const methodColors = {PAUT:'m-paut', RT:'m-rt', MT:'m-mt', PT:'m-pt', PMI:'m-pmi', Hardness:'m-hardness'};
             let breakdownHtml = '';
-            ['PAUT','RT','PT','MT'].forEach(m => {
+            ['PAUT','RT','PT','MT','PMI','Hardness'].forEach(m => {
                 const d = md[m];
                 const p = d.s > 0 ? Math.round(d.d / d.s * 100) : 0;
                 const barColor = p >= 95 ? '#4caf50' : (p >= 80 ? '#ff9800' : '#f44336');
@@ -4751,7 +4866,14 @@
                 const bd=(v)=>{ if(v==='ACC')return'<span class="badge-st bg-acc">ACC</span>'; if(v==='REJ')return'<span class="badge-st bg-rej">REJ</span>'; if(v==='RS')return'<span class="badge-st bg-rs">RS</span>'; return'<span class="badge-st bg-wait">-</span>'; };
                 let stt='<span class="badge-st bg-wait">Pending</span>'; if(d.rtRes==='ACC'||d.pautRes==='ACC')stt='<span class="badge-st bg-acc">Done</span>'; if(d.rtRes==='REJ'||d.pautRes==='REJ')stt='<span class="badge-st bg-rej">Repair</span>';
                 const visB = d.visualRes === 'ACC' ? '<span class="badge-st bg-acc">ACC</span>' : (d.visualRes === 'REJ' ? '<span class="badge-st bg-rej">REJ</span>' : '<span class="badge-st bg-wait">-</span>');
-                html += `<tr><td>${start+i+1}</td><td>${d.isSub}</td><td>${d.system}</td><td title="${d.dwg}">${d.dwg}</td><td title="${d.line}">${d.line}</td><td>${d.spool}</td><td>${d.joint}</td><td>${d.size}</td><td>${d.thick}</td><td>${d.mat}</td><td class="text-primary fw-bold">${d.ndtRate}</td><td>${visB}</td><td>${d.wDateStr}</td><td>${d.lenNDT.toFixed(2)}</td><td class="${d.lenDefect>0?'text-danger fw-bold':''}">${d.lenDefect}</td><td>${bd(d.rtRes)}</td><td>${bd(d.pautRes)}</td><td>${bd(d.mtRes)}</td><td>${bd(d.ptRes)}</td><td>${bd(d.pwhtRes)}</td><td class="small" title="${d.defectID}">${d.defectID || '-'}</td><td class="small" title="${d.typeOfDefect}">${d.typeOfDefect || '-'}</td><td>${stt}</td></tr>`;
+                let realStt = stt;
+                if(d.statusCol) {
+                    const stUpper = d.statusCol.toUpperCase();
+                    if(stUpper.includes('DONE') || stUpper.includes('ACC')) realStt = `<span class="badge-st bg-acc">${d.statusCol}</span>`;
+                    else if(stUpper.includes('REPAIR') || stUpper.includes('REJ')) realStt = `<span class="badge-st bg-rej">${d.statusCol}</span>`;
+                    else realStt = `<span class="badge-st bg-wait">${d.statusCol}</span>`;
+                }
+                html += `<tr><td>${start+i+1}</td><td>${d.isSub}</td><td>${d.system}</td><td title="${d.dwg}">${d.dwg}</td><td title="${d.rev}">${d.rev || '-'}</td><td title="${d.line}">${d.line}</td><td>${d.spool}</td><td>${d.joint}</td><td>${d.size}</td><td>${d.thick}</td><td>${d.mat}</td><td class="text-primary fw-bold">${d.ndtRate}</td><td>${visB}</td><td>${d.wDateStr}</td><td>${d.lenNDT.toFixed(2)}</td><td class="${d.lenDefect>0?'text-danger fw-bold':''}">${d.defectLenInfo || d.lenDefect}</td><td>${bd(d.rtRes)}</td><td>${bd(d.pautRes)}</td><td>${bd(d.mtRes)}</td><td>${bd(d.ptRes)}</td><td>${bd(d.pwhtRes)}</td><td class="small" title="${d.typeOfDefect}">${d.typeOfDefect || '-'}</td><td>${realStt}</td></tr>`;
             });
             tbody.innerHTML = html;
             const max = Math.ceil(filteredData.length/rowsPerPage)||1;
@@ -4759,20 +4881,68 @@
             document.getElementById('btnPrevCompact').disabled = (pageCompact===1); document.getElementById('btnNextCompact').disabled = (pageCompact===max);
 
             const s = currentSummary || getSummary();
-            document.getElementById('tableStatusFoot').innerHTML = `<tr><th colspan="11">TOTAL SCOPE (Dia-Inch: ${s.diaInch.toFixed(1)}")</th><th>Vis:${s.vis}</th><th></th><th>${s.ndtL.toFixed(1)}</th><th>${s.defL.toFixed(1)}</th><th>A:${s.rtA} R:${s.rtR}</th><th></th><th>A:${s.mtA} R:${s.mtR}</th><th>A:${s.ptA} R:${s.ptR}</th><th>A:${s.pwhtA} R:${s.pwhtR}</th><th></th><th></th><th>Count: ${s.total}</th></tr>`;
+            document.getElementById('tableStatusFoot').innerHTML = `<tr>
+                <th colspan="8" style="text-align:left; background:#e8f5e9; color:#2e7d32; font-weight:800; padding:10px 8px; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10;">GRAND TOTAL</th>
+                <th style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10; text-align: center;">${s.diaInch.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}"</th>
+                <th colspan="3" style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10; text-align: center;">Acc:<br>${s.vis.toLocaleString()}</th>
+                <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10; text-align: center;">${s.ndtL.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}</th>
+                <th style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10; text-align: center; ${s.defL > 0 ? 'color:#c62828;' : ''}">${s.defL.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">A:${s.rtA.toLocaleString()}<br>R:${s.rtR.toLocaleString()}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">A:${s.pautA.toLocaleString()}<br>R:${s.pautR.toLocaleString()}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">A:${s.mtA.toLocaleString()}<br>R:${s.mtR.toLocaleString()}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">A:${s.ptA.toLocaleString()}<br>R:${s.ptR.toLocaleString()}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">A:${s.pwhtA.toLocaleString()}<br>R:${s.pwhtR.toLocaleString()}</th>
+                <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10; text-align: center;">Count:<br>${s.total.toLocaleString()}</th>
+            </tr>`;
             if (window.reapplyTableFilter) window.reapplyTableFilter('tableStatusTable');
         }
 
         function renderFullReportTable() {
             const tbody = document.getElementById('tableFullBody'); const start = (pageFull - 1) * rowsPerPage; const subset = filteredData.slice(start, start + rowsPerPage);
             let html = '';
-            subset.forEach((d, i) => { html += `<tr><td>${start+i+1}</td><td>${d.isSub}</td><td>${d.system}</td><td>${d.dwg}</td><td>${d.line}</td><td>${d.spool}</td><td>${d.welder}</td><td>${d.joint}</td><td>${d.size}</td><td>${d.thick}</td><td>${d.mat}</td><td>${d.weldType}</td><td><small class="text-muted">${d.jointRem}</small></td><td class="fw-bold">${d.testPkg}</td><td>${d.rtRep}</td><td>${d.pautRep}</td><td>${d.mtRep}</td><td>${d.ptRep}</td><td>${d.pmiRep}</td><td>${d.hardRep}</td><td>${d.ferriteRep}</td></tr>`; });
+            subset.forEach((d, i) => { html += `<tr><td>${start+i+1}</td><td>${d.isSub}</td><td>${d.system}</td><td>${d.dwg}</td><td>${d.rev || '-'}</td><td>${d.line}</td><td>${d.spool}</td><td>${d.welder}</td><td>${d.joint}</td><td>${d.size}</td><td>${d.thick}</td><td>${d.mat}</td><td>${d.weldType}</td><td><small class="text-muted">${d.jointRem}</small></td><td class="fw-bold">${d.testPkg}</td><td>${d.rtRep || '-'}</td><td>${d.pautRep || '-'}</td><td>${d.mtRep || '-'}</td><td>${d.ptRep || '-'}</td><td>${d.pmiRep || '-'}</td><td>${d.hardnessRep || '-'}</td><td>${d.ferriteRep || '-'}</td><td>${d.pwhtRep || '-'}</td></tr>`; });
             tbody.innerHTML = html;
+            
+            // Tính số lượng báo cáo động cho từng cột báo cáo
+            let rtCount = 0, pautCount = 0, mtCount = 0, ptCount = 0, pmiCount = 0, hardCount = 0, ferriteCount = 0, pwhtCount = 0;
+            filteredData.forEach(d => {
+                if (d.rtRep && d.rtRep.toString().trim()) rtCount++;
+                if (d.pautRep && d.pautRep.toString().trim()) pautCount++;
+                if (d.mtRep && d.mtRep.toString().trim()) mtCount++;
+                if (d.ptRep && d.ptRep.toString().trim()) ptCount++;
+                if (d.pmiRep && d.pmiRep.toString().trim()) pmiCount++;
+                if (d.hardnessRep && d.hardnessRep.toString().trim()) hardCount++;
+                if (d.ferriteRep && d.ferriteRep.toString().trim()) ferriteCount++;
+                if (d.pwhtRep && d.pwhtRep.toString().trim()) pwhtCount++;
+            });
+
             const max = Math.ceil(filteredData.length/rowsPerPage)||1;
             document.getElementById('pageInfoFull').innerText = `Page ${pageFull}/${max}`;
             document.getElementById('btnPrevFull').disabled = (pageFull===1); document.getElementById('btnNextFull').disabled = (pageFull===max);
+            
             const s = currentSummary || getSummary();
-            document.getElementById('tableFullFoot').innerHTML = `<tr><th colspan="21">TOTAL SUMMARY: ${s.total} Joints | Dia-Inch: ${s.diaInch.toFixed(1)}" | NDT Len: ${s.ndtL.toFixed(1)} | Defect Len: ${s.defL.toFixed(1)} | RT/PAUT (A:${s.rtA}/R:${s.rtR}) | MT (A:${s.mtA}/R:${s.mtR})</th></tr>`;
+            // Bố trí Grand Total theo cột, hiển thị màu sắc chuyên nghiệp
+            document.getElementById('tableFullFoot').innerHTML = `<tr>
+                <th colspan="9" style="text-align:left; background:#e8f5e9; color:#2e7d32; font-weight:800; padding:10px 8px; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10;">GRAND TOTAL (${s.total.toLocaleString()} Joints)</th>
+                <th style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10; text-align: center;">${s.diaInch.toFixed(1)}"</th>
+                <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${rtCount}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${pautCount}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${mtCount}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${ptCount}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${pmiCount}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${hardCount}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${ferriteCount}</th>
+                <th style="background:#e3f2fd; color:#1565c0; font-weight:800; font-size:0.75rem; border-top: 2px solid #90caf9; position: sticky; bottom: 0; z-index: 10; text-align: center;">Rep: ${pwhtCount}</th>
+            </tr>`;
+            
             if (window.reapplyTableFilter) window.reapplyTableFilter('tableFullTable');
         }
 
@@ -4785,12 +4955,13 @@
         function exportData(isExportAll = false) { 
             const dataToExport = isExportAll ? rawData : filteredData;
             
-            // Xây dựng mảng dữ liệu cho Excel với key là tên Header giống y hệt bảng "Full Report - 21 Cols"
+            // Xây dựng mảng dữ liệu cho Excel với key là tên Header giống y hệt bảng "Full Report - 22 Cols"
             const excelData = dataToExport.map((d, i) => ({
                 "No": i + 1,
                 "SubCon": d.isSub,
                 "System": d.system,
                 "Drawing No.": d.dwg,
+                "Revision No": d.rev || "-",
                 "Line No.": d.line,
                 "Spool No.": d.spool,
                 "Welder ID": d.welder,
@@ -4799,28 +4970,29 @@
                 "Thk": d.thick,
                 "Material": d.mat,
                 "Weld Type": d.weldType,
-                "TV": d.jointRem,
+                "Joint Remark": d.jointRem,
                 "Location": d.location,
                 "Test Package No.": d.testPkg,
-                "RT Report": d.rtRep,
-                "PAUT Report": d.pautRep,
-                "MT Report": d.mtRep,
-                "PT Report": d.ptRep,
-                "PMI Report": d.pmiRep,
-                "Hardness": d.hardRep,
-                "Ferrite": d.ferriteRep,
-                "Visual": d.visualRes,
-                "DefectLocation": d.defectLoc,
-                "DefectID": d.defectID,
-                "DefectLengthInfo": d.defectLenInfo,
-                "TypeOfDefect": d.typeOfDefect
+                "RT Report": d.rtRep || "-",
+                "PAUT Report": d.pautRep || "-",
+                "MT Report": d.mtRep || "-",
+                "PT Report": d.ptRep || "-",
+                "PMI Report": d.pmiRep || "-",
+                "Hardness Report": d.hardnessRep || "-",
+                "Ferrite Report": d.ferriteRep || "-",
+                "PWHT Report": d.pwhtRep || "-",
+                "Visual": d.visualRes || "-",
+                "Defect Location": d.defectLoc || "-",
+                "Defect ID": d.defectID || "-",
+                "Def L": d.defectLenInfo || "-",
+                "Defect Type": d.typeOfDefect || "-"
             }));
 
             // Tạo worksheet từ JSON
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             
             // Căn chỉnh độ rộng cột cơ bản cho đẹp
-            worksheet['!cols'] =[
+            worksheet['!cols'] = [
                 {wch: 5},  // No
                 {wch: 10}, // SubCon
                 {wch: 10}, // System
@@ -4833,7 +5005,7 @@
                 {wch: 8},  // Thk
                 {wch: 12}, // Material
                 {wch: 12}, // Weld Type
-                {wch: 20}, // TV
+                {wch: 20}, // Joint Remark
                 {wch: 18}, // Location
                 {wch: 20}, // Test Package
                 {wch: 15}, // RT
@@ -4841,13 +5013,14 @@
                 {wch: 15}, // MT
                 {wch: 15}, // PT
                 {wch: 15}, // PMI
-                {wch: 15}, // Hardness
-                {wch: 15}, // Ferrite
+                {wch: 15}, // Hardness Report
+                {wch: 15}, // Ferrite Report
+                {wch: 15}, // PWHT Report
                 {wch: 8},  // Visual
-                {wch: 15}, // DefectLocation
-                {wch: 15}, // DefectID
-                {wch: 15}, // DefectLengthInfo
-                {wch: 15}  // TypeOfDefect
+                {wch: 15}, // Defect Location
+                {wch: 15}, // Defect ID
+                {wch: 15}, // Def L
+                {wch: 15}  // Defect Type
             ];
 
             // Tạo workbook và chèn sheet
@@ -5004,7 +5177,9 @@
             if (showNonCompliant) showNonCompliant.checked = false;
             const sortFailFirst = document.getElementById('ndrSortFailFirst');
             if (sortFailFirst) sortFailFirst.checked = true;
-            renderNdtRandom();
+            
+            setNdrView('tp');
+            ndrBackToOverview();
         }
 
         // Tính NDT stats cho 1 nhóm joints
@@ -5017,7 +5192,9 @@
                 const isPend = ((x.reqRT&&(!x.hasRT || x.rtRes==='')) || 
                                 (x.reqPAUT&&(!x.hasPAUT || x.pautRes==='')) || 
                                 (x.reqMT&&(!x.hasMT || x.mtRes==='')) || 
-                                (x.reqPT&&(!x.hasPT || x.ptRes==='')));
+                                (x.reqPT&&(!x.hasPT || x.ptRes==='')) ||
+                                (x.reqPmi&&(!x.hasPMI || x.pmiRep==='')) ||
+                                (x.reqHardness&&(!x.hasHardness || x.hardnessRep==='')));
                 
                 if(isRej) { 
                     r++; 
@@ -5035,6 +5212,8 @@
                     if(x.reqPAUT && (!x.hasPAUT || x.pautRes==='')) missing.push('PAUT');
                     if(x.reqMT && (!x.hasMT || x.mtRes==='')) missing.push('MT');
                     if(x.reqPT && (!x.hasPT || x.ptRes==='')) missing.push('PT');
+                    if(x.reqPmi && (!x.hasPMI || x.pmiRep==='')) missing.push('PMI');
+                    if(x.reqHardness && (!x.hasHardness || x.hardnessRep==='')) missing.push('Hardness');
                     pendingList.push({j: x.joint, s: x.spool, st: 'PEND', msg: missing.join(',')}); 
                 }
                 else { d++; }
@@ -6160,6 +6339,8 @@
                     };
                 }
                 const g = groups[gk];
+                if (!g.testPackages) g.testPackages = new Set();
+                if (d.testPkg) g.testPackages.add(d.testPkg.toString().trim().toUpperCase());
                 if (d.weldType && d.weldType.toString().trim()) g.actual++;
                 if ((d.weldType || '').toString().trim().toUpperCase() !== 'DEL') g.dwgTotal++;
                 if (d.mat) g.mats.add(d.mat);
@@ -6189,13 +6370,15 @@
                 g.rtPct = Math.max(g.rtPct, rtPctJ);
                 g.mtPct = Math.max(g.mtPct, mtPctJ);
 
-                if (d.hasRT || d.hasPAUT) {
+                const isRtSelected = d.hasRT || d.hasPAUT || d.rtRes === 'ACC' || d.pautRes === 'ACC' || d.rtRes === 'REJ' || d.pautRes === 'REJ';
+                if (isRtSelected) {
                     g.rtSelect++;
                     g.lineStats[lName].rtSelect++;
                 }
                 if (d.rtRes === 'ACC' || d.pautRes === 'ACC' || d.rtRes === 'REJ' || d.pautRes === 'REJ') g.rtDone++;
 
-                if (d.hasMT || d.hasPT) {
+                const isMtSelected = d.hasMT || d.hasPT || d.mtRes === 'ACC' || d.ptRes === 'ACC' || d.mtRes === 'REJ' || d.ptRes === 'REJ';
+                if (isMtSelected) {
                     g.mtSelect++;
                     g.lineStats[lName].mtSelect++;
                 }
@@ -6275,8 +6458,24 @@
 
             Object.values(groups).forEach(g => {
                 const isPkgCompliant = !nonCompliantKeys.has(g.key.toUpperCase());
-                const sheetData = sheetHydroDates.get(g.key.toUpperCase());
-                const isHydrotested = g.hydroDone > 0 || (sheetData && hasRep(sheetData.hydroDate));
+                let isHydrotested = g.hydroDone > 0;
+                let sheetData = undefined;
+                if (groupBy === 'tp') {
+                    sheetData = sheetHydroDates.get(g.key.toUpperCase());
+                    if (sheetData && hasRep(sheetData.hydroDate)) {
+                        isHydrotested = true;
+                    }
+                } else {
+                    if (g.testPackages) {
+                        for (let tp of g.testPackages) {
+                            const sd = sheetHydroDates.get(tp);
+                            if (sd && hasRep(sd.hydroDate)) {
+                                isHydrotested = true;
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 if (isHydrotested) {
                     g.status = 'Hydrotested';
@@ -6335,14 +6534,23 @@
 
             let firstCols = '';
             if (isFirstRow) {
+                const borderBottomStyle = rowspan > 1 ? 'border-bottom: none !important;' : '';
                 firstCols = `
-                <td rowspan="${rowspan}" class="text-center fw-bold text-muted align-middle border-end ndr-sticky-col ndr-sticky-col-0" style="background-color:inherit; width:40px; min-width:40px;">${groupIdx}</td>
-                <td rowspan="${rowspan}" class="align-middle border-end ndr-sticky-col ndr-sticky-col-1" style="background-color:inherit; width:180px; min-width:180px;" title="${encHtml(g.key)}">
+                <td class="text-center fw-bold text-muted align-middle border-end ndr-sticky-col ndr-sticky-col-0" style="width:40px; min-width:40px; ${borderBottomStyle}">${groupIdx}</td>
+                <td class="align-middle border-end ndr-sticky-col ndr-sticky-col-1" style="width:180px; min-width:180px; ${borderBottomStyle}" title="${encHtml(g.key)}">
                     <span class="fw-bold">${g.key}</span>${compBadge}${eyeBtn}
                 </td>
-                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-2" style="background-color:inherit; width:100px; min-width:100px;">${g.testDate || '-'}</td>
-                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-3" style="background-color:inherit; width:80px; min-width:80px;">${g.matStr}</td>
-                <td rowspan="${rowspan}" class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-4" style="background-color:inherit; width:90px; min-width:90px;">${g.sys || '-'}</td>`;
+                <td class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-2" style="width:100px; min-width:100px; ${borderBottomStyle}">${g.testDate || '-'}</td>
+                <td class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-3" style="width:80px; min-width:80px; ${borderBottomStyle}">${g.matStr}</td>
+                <td class="text-center align-middle border-end ndr-sticky-col ndr-sticky-col-4" style="width:90px; min-width:90px; ${borderBottomStyle}">${g.sys || '-'}</td>`;
+            } else {
+                const borderBottomStyle = isLastRow ? '' : 'border-bottom: none !important;';
+                firstCols = `
+                <td class="ndr-sticky-col ndr-sticky-col-0 border-end" style="width:40px; min-width:40px; border-top: none !important; ${borderBottomStyle}"></td>
+                <td class="ndr-sticky-col ndr-sticky-col-1 border-end" style="width:180px; min-width:180px; border-top: none !important; ${borderBottomStyle}"></td>
+                <td class="ndr-sticky-col ndr-sticky-col-2 border-end" style="width:100px; min-width:100px; border-top: none !important; ${borderBottomStyle}"></td>
+                <td class="ndr-sticky-col ndr-sticky-col-3 border-end" style="width:80px; min-width:80px; border-top: none !important; ${borderBottomStyle}"></td>
+                <td class="ndr-sticky-col ndr-sticky-col-4 border-end" style="width:90px; min-width:90px; border-top: none !important; ${borderBottomStyle}"></td>`;
             }
 
             const rowStyle = isLastRow ? 'border-bottom: 2px solid #ced4da !important;' : '';
@@ -6658,6 +6866,11 @@
                 tot.penTotal += g.penTotal;
                 g.lines.forEach(l => tot.lineCount.add(l));
             });
+            // Update KPIs first
+            const uniqueKeys = [...new Set(rows.map(g => g.key))];
+            const nonCompliantKeys = [...new Set(rows.filter(g => !g.isCompliant).map(g => g.key))];
+            const compliantKeys = uniqueKeys.filter(k => !nonCompliantKeys.includes(k));
+
             const rtCurTot = tot.actual > 0 ? (tot.rtSelect / tot.actual * 100).toFixed(0) + '%' : '-';
             const rtFinTot = tot.rtReq > 0 ? (tot.rtSelect / tot.rtReq * 100).toFixed(0) + '%' : '-';
             const mtCurTot = tot.actual > 0 ? (tot.mtSelect / tot.actual * 100).toFixed(0) + '%' : '-';
@@ -6666,7 +6879,11 @@
             const hardPctTot = tot.hardCount > 0 ? (tot.htDone / tot.hardCount * 100).toFixed(1) + '%' : '-';
 
             document.getElementById('ndrTfoot').innerHTML = `<tr>
-                <td colspan="5" class="text-end fw-bold pe-3 ndr-sticky-col ndr-sticky-col-0" style="left:0; min-width:490px;">Total</td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-0">Total</td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-1">${uniqueKeys.length}</td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-2"></td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-3"></td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-4"></td>
                 <td></td>
                 <td>${tot.actual}</td>
                 <td>${tot.dwgTotal}</td>
@@ -6703,17 +6920,12 @@
                 <td></td>
             </tr>`;
 
-            // Update KPIs
-            const uniqueKeys = [...new Set(rows.map(g => g.key))];
-            const nonCompliantKeys = [...new Set(rows.filter(g => !g.isCompliant).map(g => g.key))];
-            const compliantKeys = uniqueKeys.filter(k => !nonCompliantKeys.includes(k));
-            
             document.getElementById('ndrKpiTotal').innerText = uniqueKeys.length;
             document.getElementById('ndrKpiOk').innerText = compliantKeys.length;
             document.getElementById('ndrKpiNok').innerText = nonCompliantKeys.length;
             const pct = uniqueKeys.length > 0 ? Math.round(compliantKeys.length / uniqueKeys.length * 100) : 0;
             document.getElementById('ndrKpiPct').innerText = pct + '%';
-            document.getElementById('ndrKpiPct').style.color = pct >= 90 ? '#2e7d32' : (pct >= 70 ? '#e65100' : '#c62828');
+            document.getElementById('ndrKpiPct').style.color = '#2e7d32';
             } catch (e) {
                 console.error("NDT Random Render Error:", e);
                 document.getElementById('ndrTbody').innerHTML = `<tr><td colspan="30" class="text-danger text-center">Lỗi hệ thống khi tải NDT Random: ${e.message}</td></tr>`;
@@ -6821,6 +7033,7 @@
                 tot.penTotal += g.penTotal;
                 g.lines.forEach(l => tot.lineCount.add(l));
             });
+            const uniqueLines = [...new Set(rows.map(g => g.key))];
             const rtCurTot = tot.actual > 0 ? (tot.rtSelect / tot.actual * 100).toFixed(0) + '%' : '-';
             const rtFinTot = tot.rtReq > 0 ? (tot.rtSelect / tot.rtReq * 100).toFixed(0) + '%' : '-';
             const mtCurTot = tot.actual > 0 ? (tot.mtSelect / tot.actual * 100).toFixed(0) + '%' : '-';
@@ -6829,7 +7042,11 @@
             const hardPctTot = tot.hardCount > 0 ? (tot.htDone / tot.hardCount * 100).toFixed(1) + '%' : '-';
 
             document.getElementById('ndrDetailTfoot').innerHTML = `<tr>
-                <td colspan="5" class="text-end fw-bold pe-3 ndr-sticky-col ndr-sticky-col-0" style="left:0; min-width:490px;">Total</td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-0">Total</td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-1">${uniqueLines.length}</td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-2"></td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-3"></td>
+                <td class="text-center fw-bold ndr-sticky-col ndr-sticky-col-4"></td>
                 <td></td>
                 <td>${tot.actual}</td>
                 <td>${tot.dwgTotal}</td>
@@ -6973,24 +7190,16 @@ async function exportNdtRandomExcel() {
             const groups = buildNdrGroups(data, ndrViewMode);
             let rows = Object.values(groups);
 
-            const fMonthEx = parseInt(document.getElementById('ndrFilterMonth').value);
-            const fDayEx   = parseInt(document.getElementById('ndrFilterDay').value);
-            if (!isNaN(fMonthEx) || !isNaN(fDayEx)) {
+            const ndrDateVal = document.getElementById('ndrDate').value;
+            let ndrFilterTs = ndrDateVal ? new Date(ndrDateVal + 'T00:00:00').getTime() : null;
+
+            if (ndrFilterTs !== null) {
                 rows = rows.filter(g => {
                     if (!g.testDate || g.testDate === '-') return false;
-                    const raw = g.testDate.toString().trim();
-                    let d;
-                    if (/\d{4}-\d{2}-\d{2}/.test(raw)) { d = new Date(raw); }
-                    else if (/\d{2}\/\d{2}\/\d{4}/.test(raw)) { const [dd,mm,yyyy]=raw.split('/'); d=new Date(+yyyy,+mm-1,+dd); }
-                    else if (/\d{2}-\d{2}-\d{4}/.test(raw)) { const [dd,mm,yyyy]=raw.split('-'); d=new Date(+yyyy,+mm-1,+dd); }
-                    else {
-                        d = new Date(raw);
-                    }
+                    const d = parseExDate(g.testDate);
                     if (!d || isNaN(d.getTime())) return false;
-                    if (isNaN(d)) return false;
-                    if (!isNaN(fMonthEx) && (d.getMonth()+1) !== fMonthEx) return false;
-                    if (!isNaN(fDayEx)   && d.getDate() !== fDayEx) return false;
-                    return true;
+                    d.setHours(0,0,0,0);
+                    return d.getTime() === ndrFilterTs;
                 });
             }
 
@@ -7022,12 +7231,12 @@ async function exportNdtRandomExcel() {
             const hFill = (argb) => ({ type:'pattern', pattern:'solid', fgColor:{argb} });
             const label = ndrViewMode === 'tp' ? 'Test Package No.' : 'Line';
 
-            ws.addRow([...Array(11).fill(''), 'RT / PAUT', ...Array(6).fill(''), 'MT / PT', ...Array(4).fill(''), 'Hardness & PMI', ...Array(5).fill(''), 'Repair / Rework', ...Array(9).fill('')]);
-            for (let c of ['A','B','C','D','E','F','G','H','I','J','K']) ws.mergeCells(`${c}1:${c}2`);
-            ws.mergeCells('L1:R1'); ws.mergeCells('S1:W1'); ws.mergeCells('X1:AC1'); ws.mergeCells('AD1:AG1');
-            for (let c of ['AH','AI','AJ','AK','AL','AM']) ws.mergeCells(`${c}1:${c}2`);
+            ws.addRow([...Array(12).fill(''), 'RT / PAUT', ...Array(6).fill(''), 'MT / PT', ...Array(4).fill(''), 'Hardness & PMI', ...Array(5).fill(''), 'Repair / Rework', ...Array(9).fill('')]);
+            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L']) ws.mergeCells(`${c}1:${c}2`);
+            ws.mergeCells('M1:S1'); ws.mergeCells('T1:X1'); ws.mergeCells('Y1:AD1'); ws.mergeCells('AE1:AH1');
+            for (let c of ['AI','AJ','AK','AL','AM','AN']) ws.mergeCells(`${c}1:${c}2`);
 
-            ws.addRow(['No.', label, 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc',
+            ws.addRow(['No.', label, 'Test Date', 'Material', 'System', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc',
                 '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final',
                 '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final',
                 'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done',
@@ -7035,7 +7244,7 @@ async function exportNdtRandomExcel() {
                 'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
 
             const HC = (col) => {
-                if (col <= 11) return 'FF263238'; if (col <= 18) return 'FF1565C0'; if (col <= 23) return 'FF2E7D32'; if (col <= 29) return 'FF4A148C'; if (col <= 33) return 'FFB71C1C'; if (col === 34) return 'FF4A148C'; if (col === 35) return 'FF1B5E20'; return 'FF263238';
+                if (col <= 12) return 'FF263238'; if (col <= 19) return 'FF1565C0'; if (col <= 24) return 'FF2E7D32'; if (col <= 30) return 'FF4A148C'; if (col <= 34) return 'FFB71C1C'; if (col === 35) return 'FF4A148C'; if (col === 36) return 'FF1B5E20'; return 'FF263238';
             };
             for (let r = 1; r <= 2; r++) {
                 ws.getRow(r).eachCell({includeEmpty:true}, (cell, col) => {
@@ -7064,12 +7273,12 @@ async function exportNdtRandomExcel() {
                 const bgArgb = grpBg[groupNum % 2];
                 const rtFinalVal = g.rtFinal === -1 ? 'N/A' : (g.rtFinal >= 0 ? Math.min(g.rtFinal,100).toFixed(1)+'%' : '0%');
                 const mtFinalVal = g.mtFinal === -1 ? 'N/A' : (g.mtFinal >= 0 ? Math.min(g.mtFinal,100).toFixed(1)+'%' : '0%');
-                const row = ws.addRow([groupNum, g.key, g.testDate||'TBA', g.matStr, g.wt, g.actual, g.dwgTotal, g.fitupAcc||0, g.weldedCompleted||0, g.weldedBacklog||0, g.visualAcc, g.rtPct>0?g.rtPct:'', g.rtReq||'', g.rtSelect||'', g.rtDone||'', g.rtRemaining||0, g.rtPct>0?g.rtCurrent.toFixed(1)+'%':'', rtFinalVal, g.mtPct>0?g.mtPct+'%':'', g.mtReq||'', g.mtSelect||'', g.mtPct>0?g.mtCurrent.toFixed(1)+'%':'', mtFinalVal, g.htDone||0, g.hardPct>0?g.hardPct.toFixed(1)+'%':'', g.pmiCount||'', g.pmiPct>0?g.pmiPct.toFixed(1)+'%':'', g.pwhtDone||0, g.ferriteDone||0, g.r1||'', g.r2||'', g.rs||'', g.rwTotal||'', g.penTotal||'', g.lineCount, g.locationStr||'-', g.remarkStr||'-', g.status||'In Progress', g.isCompliant?'PASS':'FAIL']);
+                const row = ws.addRow([groupNum, g.key, g.testDate||'TBA', g.matStr, g.sys||'-', g.wt, g.actual, g.dwgTotal, g.fitupAcc||0, g.weldedCompleted||0, g.weldedBacklog||0, g.visualAcc, g.rtPct>0?g.rtPct:'', g.rtReq||'', g.rtSelect||'', g.rtDone||'', g.rtRemaining||0, g.rtPct>0?g.rtCurrent.toFixed(1)+'%':'', rtFinalVal, g.mtPct>0?g.mtPct+'%':'', g.mtReq||'', g.mtSelect||'', g.mtPct>0?g.mtCurrent.toFixed(1)+'%':'', mtFinalVal, g.htDone||0, g.hardPct>0?g.hardPct.toFixed(1)+'%':'', g.pmiCount||'', g.pmiPct>0?g.pmiPct.toFixed(1)+'%':'', g.pwhtDone||0, g.ferriteDone||0, g.r1||'', g.r2||'', g.rs||'', g.rwTotal||'', g.penTotal||'', g.lineCount, g.locationStr||'-', g.remarkStr||'-', g.status||'In Progress', g.isCompliant?'PASS':'FAIL']);
                 row.eachCell({includeEmpty:true}, (cell, col) => {
                     cell.alignment = { vertical:'middle', horizontal:'center' };
                     cell.border = thinBdr;
                     if (bgArgb !== 'FFFFFFFF') cell.fill = hFill(bgArgb);
-                    if (col === 18 || col === 23) {
+                    if (col === 19 || col === 24) {
                         const pct = parseFloat(cell.value);
                         if (cell.value === 'N/A') { cell.fill = hFill('FFF5F5F5'); cell.font = {color:{argb:'FFBDBDBD'}}; }
                         else if (!isNaN(pct)) {
@@ -7078,8 +7287,8 @@ async function exportNdtRandomExcel() {
                             else { cell.fill = hFill('FFFFE0E0'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
                         }
                     }
-                    if (col === 33 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
-                    if (col === 39) {
+                    if (col === 34 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
+                    if (col === 40) {
                         if (cell.value === 'PASS') { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, size:10, color:{argb:'FF155724'}}; }
                         else { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, size:10, color:{argb:'FF842029'}}; }
                     }
@@ -7088,24 +7297,24 @@ async function exportNdtRandomExcel() {
 
             Object.values(mergeTracker).forEach(m => {
                 if (m.startRow < m.endRow) {
-                    for (let col = 1; col <= 4; col++) {
+                    for (let col = 1; col <= 5; col++) {
                         ws.mergeCells(m.startRow, col, m.endRow, col);
                         ws.getCell(m.startRow, col).alignment = { vertical:'middle', horizontal:'center', wrapText:true };
                     }
                 }
             });
-            ws.columns = [{width:5},{width:32},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},{width:8},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},{width:9},{width:10},{width:10},{width:13},{width:12},{width:8},{width:8},{width:8},{width:8},{width:8},{width:8},{width:5},{width:5},{width:5},{width:9},{width:8},{width:8},{width:18},{width:25},{width:12},{width:11}];
-            ws.views = [{ state:'frozen', xSplit:2, ySplit:2, topLeftCell:'C3' }];
+            ws.columns = [{width:5},{width:32},{width:12},{width:16},{width:15},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},{width:8},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},{width:9},{width:10},{width:10},{width:13},{width:12},{width:8},{width:8},{width:8},{width:8},{width:8},{width:8},{width:5},{width:5},{width:5},{width:9},{width:8},{width:8},{width:18},{width:25},{width:12},{width:11}];
+            ws.views = [{ state:'frozen', xSplit:5, ySplit:2, topLeftCell:'F3' }];
 
             const ws2 = wb.addWorksheet('Line NDT Detail');
             const tpKeys = [...new Set(rows.map(g => g.key))];
-            ws2.addRow([...Array(12).fill(''), 'RT / PAUT', ...Array(6).fill(''), 'MT / PT', ...Array(4).fill(''), 'Hardness & PMI', ...Array(5).fill(''), 'Repair / Rework', ...Array(9).fill('')]);
-            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L']) ws2.mergeCells(`${c}1:${c}2`);
-            ws2.mergeCells('M1:S1'); ws2.mergeCells('T1:X1'); ws2.mergeCells('Y1:AD1'); ws2.mergeCells('AE1:AH1');
-            for (let c of ['AI','AJ','AK','AL','AM','AN']) ws2.mergeCells(`${c}1:${c}2`);
-            ws2.addRow(['No.', 'Test Package', 'Line', 'Test Date', 'Material', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc', '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final', '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final', 'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done', 'R1', 'R2', 'RS', 'RW Total', 'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
+            ws2.addRow([...Array(13).fill(''), 'RT / PAUT', ...Array(6).fill(''), 'MT / PT', ...Array(4).fill(''), 'Hardness & PMI', ...Array(5).fill(''), 'Repair / Rework', ...Array(9).fill('')]);
+            for (let c of ['A','B','C','D','E','F','G','H','I','J','K','L','M']) ws2.mergeCells(`${c}1:${c}2`);
+            ws2.mergeCells('N1:T1'); ws2.mergeCells('U1:Y1'); ws2.mergeCells('Z1:AE1'); ws2.mergeCells('AF1:AI1');
+            for (let c of ['AJ','AK','AL','AM','AN','AO']) ws2.mergeCells(`${c}1:${c}2`);
+            ws2.addRow(['No.', 'Test Package', 'Line', 'Test Date', 'Material', 'System', 'Weld Type', 'Actual Joint', 'DWG Total', 'Fit-up Acc', 'Welded Completed', 'Welded Backlog', 'Visual Acc', '%RT', 'RT Required', 'RT/PAUT Select', 'RT/PAUT Done', 'RT/PAUT Remaining', '%RT Current', '%RT Final', '%MT/PT', 'MT/PT Required', 'MT/PT Select', '%MT/PT Current', '%MT/PT Final', 'HT Done', '%Hard', 'PMI Done', '%PMI', 'PWHT Done', 'Ferrite Done', 'R1', 'R2', 'RS', 'RW Total', 'PEN Total', 'Line Count', 'Location', 'TV', 'Status', 'Compliance']);
             
-            const HC2 = (col) => { if(col<=12) return 'FF263238'; if(col<=19) return 'FF1565C0'; if(col<=24) return 'FF2E7D32'; if(col<=30) return 'FF4A148C'; if(col<=34) return 'FFB71C1C'; if(col===35) return 'FF4A148C'; if(col===36) return 'FF1B5E20'; return 'FF263238'; };
+            const HC2 = (col) => { if(col<=13) return 'FF263238'; if(col<=20) return 'FF1565C0'; if(col<=25) return 'FF2E7D32'; if(col<=31) return 'FF4A148C'; if(col<=35) return 'FFB71C1C'; if(col===36) return 'FF4A148C'; if(col===37) return 'FF1B5E20'; return 'FF263238'; };
             for (let r = 1; r <= 2; r++) { ws2.getRow(r).eachCell({includeEmpty:true}, (cell, col) => { cell.font = {bold:true,size:9,color:{argb:'FFE0E0E0'}}; cell.alignment = {vertical:'middle',horizontal:'center',wrapText:true}; cell.fill = hFill(HC2(col)); cell.border = thinBdr; }); }
             ws2.getRow(1).height = 22; ws2.getRow(2).height = 20;
 
@@ -7119,12 +7328,11 @@ async function exportNdtRandomExcel() {
                 mergeTracker2[tp] = { start: startRow2, end: startRow2 + lineRows.length - 1 };
                 lineRows.forEach((lg, li) => {
                     s2RowNum++;
-                    const lineRow = ws2.addRow([li===0?s2Idx++:'', li===0?tp:'', lg.key, lg.testDate||'TBA', lg.matStr, lg.wt, lg.actual, lg.dwgTotal, lg.fitupAcc||0, lg.weldedCompleted||0, lg.weldedBacklog||0, lg.visualAcc, lg.rtPct>0?lg.rtPct:'', lg.rtReq||'', lg.rtSelect||'', lg.rtDone||'', lg.rtRemaining||0, lg.rtPct>0?lg.rtCurrent.toFixed(1)+'%':'', lg.rtFinal===-1?'N/A':Math.min(lg.rtFinal,999).toFixed(1)+'%', lg.mtPct>0?lg.mtPct+'%':'', lg.mtReq||'', lg.mtSelect||'', lg.mtCurrent.toFixed(1)+'%', lg.mtFinal===-1?'N/A':Math.min(lg.mtFinal,999).toFixed(1)+'%', lg.htDone||0, lg.hardPct>0?lg.hardPct.toFixed(1)+'%':'', lg.pmiCount||'', lg.pmiPct>0?lg.pmiPct.toFixed(1)+'%':'', lg.pwhtDone||0, lg.ferriteDone||0, lg.r1||'', lg.r2||'', lg.rs||'', lg.rwTotal||'', lg.penTotal||'', lg.lineCount, lg.locationStr||'-', lg.remarkStr||'-', lg.status||'In Progress', lg.isCompliant?'PASS':'FAIL']);
+                    const lineRow = ws2.addRow([li===0?s2Idx++:'', li===0?tp:'', lg.key, lg.testDate||'TBA', lg.matStr, lg.sys||'-', lg.wt, lg.actual, lg.dwgTotal, lg.fitupAcc||0, lg.weldedCompleted||0, lg.weldedBacklog||0, lg.visualAcc, lg.rtPct>0?lg.rtPct:'', lg.rtReq||'', lg.rtSelect||'', lg.rtDone||'', lg.rtRemaining||0, lg.rtPct>0?lg.rtCurrent.toFixed(1)+'%':'', lg.rtFinal===-1?'N/A':Math.min(lg.rtFinal,999).toFixed(1)+'%', lg.mtPct>0?lg.mtPct+'%':'', lg.mtReq||'', lg.mtSelect||'', lg.mtCurrent.toFixed(1)+'%', lg.mtFinal===-1?'N/A':Math.min(lg.mtFinal,999).toFixed(1)+'%', lg.htDone||0, lg.hardPct>0?lg.hardPct.toFixed(1)+'%':'', lg.pmiCount||'', lg.pmiPct>0?lg.pmiPct.toFixed(1)+'%':'', lg.pwhtDone||0, lg.ferriteDone||0, lg.r1||'', lg.r2||'', lg.rs||'', lg.rwTotal||'', lg.penTotal||'', lg.lineCount, lg.locationStr||'-', lg.remarkStr||'-', lg.status||'In Progress', lg.isCompliant?'PASS':'FAIL']);
                     lineRow.eachCell({includeEmpty:true}, (cell, col) => {
                         cell.alignment = {vertical:'middle', horizontal:'center'};
                         cell.border = thinBdr;
-                        // %RT Final (19) & %MT Final (24)
-                        if (col === 19 || col === 24) {
+                        if (col === 20 || col === 25) {
                             const pct = parseFloat(cell.value);
                             if (cell.value === 'N/A') { cell.fill = hFill('FFF5F5F5'); cell.font = {color:{argb:'FFBDBDBD'}}; }
                             else if (!isNaN(pct)) {
@@ -7132,17 +7340,14 @@ async function exportNdtRandomExcel() {
                                 else            { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFC62828'}}; }
                             }
                         }
-                        // RW Total (34)
-                        if (col === 34 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
-                        // Compliance (40)
-                        if (col === 40) {
+                        if (col === 35 && cell.value > 0) { cell.fill = hFill('FFFFCDD2'); cell.font = {bold:true, color:{argb:'FFB71C1C'}}; }
+                        if (col === 41) {
                             if (cell.value === 'PASS') { cell.fill = hFill('FFD4EDDA'); cell.font = {bold:true, color:{argb:'FF155724'}}; }
                             else                       { cell.fill = hFill('FFF8D7DA'); cell.font = {bold:true, color:{argb:'FF842029'}}; }
                         }
                     });
                 });
             });
-            // Merge TP name column
             Object.values(mergeTracker2).forEach(m => {
                 if (m.start < m.end) {
                     ws2.mergeCells(m.start, 1, m.end, 1);
@@ -7154,14 +7359,14 @@ async function exportNdtRandomExcel() {
                 }
             });
             ws2.columns = [
-                {width:5},{width:30},{width:35},{width:12},{width:16},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},
+                {width:5},{width:30},{width:35},{width:12},{width:16},{width:15},{width:8},{width:8},{width:8},{width:8},{width:10},{width:10},
                 {width:8},{width:7},{width:9},{width:11},{width:11},{width:12},{width:12},{width:12},
                 {width:9},{width:10},{width:10},{width:13},{width:12},
                 {width:8},{width:8},{width:8},{width:8},{width:8},
                 {width:5},{width:5},{width:5},{width:9},
                 {width:8},{width:8},{width:18},{width:25},{width:12},{width:11}
             ];
-            ws2.views = [{ state:'frozen', xSplit:2, ySplit:2, topLeftCell:'C3' }];
+            ws2.views = [{ state:'frozen', xSplit:6, ySplit:2, topLeftCell:'G3' }];
 
             const buffer = await wb.xlsx.writeBuffer();
             saveAs(new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
@@ -7176,7 +7381,7 @@ async function exportNdtRandomExcel() {
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white py-2">
                     <h6 class="modal-title fw-bold" id="ndrJointModalTitle"></h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
                 </div>
                 <div class="modal-body p-3" id="ndrJointModalBody"></div>
                 <div class="modal-footer py-2">
