@@ -82,6 +82,8 @@
         .ndt-method-badge.m-pmi { background: linear-gradient(135deg, #009688, #4db6ac); }
         .ndt-method-badge.m-hardness { background: linear-gradient(135deg, #e91e63, #f06292); font-size: 0.58rem; }
         .ndt-method-badge.m-total { background: linear-gradient(135deg, #37474f, #78909c); }
+        .ndt-method-badge.m-hydro { background: linear-gradient(135deg, #0288d1, #29b6f6); }
+        .ndt-method-badge.m-weld { background: linear-gradient(135deg, #2e7d32, #66bb6a); }
         .ndt-method-nums { display: flex; justify-content: space-between; flex: 1; min-width: 0; margin-right: 12px; }
         .ndt-method-nums .nm-item { text-align: center; min-width: 48px; }
         .ndt-method-nums .nm-label { font-size: 0.6rem; color: #999; font-weight: 600; text-transform: uppercase; }
@@ -1180,6 +1182,48 @@
                     </div>
                     <p class="text-muted small">Tự động đối chiếu dữ liệu NDT để báo Cleared cho toàn bộ Test Package. Bạn có thể sử dụng Test Pack Visualizer để tra cứu chi tiết tiến độ 1 Package.</p>
                     
+                    <!-- ROW ĐỒ THỊ MỚI: HYDROTEST VÀ WELDING STATUS CHARTS -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-6">
+                            <div class="glass-card shadow-sm h-100" style="border: 1px solid rgba(2, 136, 209, 0.15); background: rgba(255, 255, 255, 0.65);">
+                                <div class="chart-header text-info py-2" style="border-bottom: 1px solid rgba(0,0,0,0.05); min-height: auto;">
+                                    <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-tint me-2"></i>Hydrotest Status</span>
+                                </div>
+                                <div class="p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6 col-sm-12">
+                                            <div class="chart-box" style="height: 180px; position: relative;">
+                                                <canvas id="hydroStatusChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-sm-12">
+                                            <div id="hydroStatusBreakdown"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="glass-card shadow-sm h-100" style="border: 1px solid rgba(46, 125, 50, 0.15); background: rgba(255, 255, 255, 0.65);">
+                                <div class="chart-header text-success py-2" style="border-bottom: 1px solid rgba(0,0,0,0.05); min-height: auto;">
+                                    <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-fire me-2"></i>Welding Status</span>
+                                </div>
+                                <div class="p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6 col-sm-12">
+                                            <div class="chart-box" style="height: 180px; position: relative;">
+                                                <canvas id="weldingStatusChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-sm-12">
+                                            <div id="weldingStatusBreakdown"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- TÍNH NĂNG MỚI: TEST PACK VISUALIZER (MULTI-SEARCH) -->
                     <div class="row mb-4 mt-2 p-3 bg-light rounded border border-info shadow-sm">
                         <div class="col-md-12">
@@ -4100,6 +4144,7 @@
             if (!tfoot) return;
             if (!displayedItems || displayedItems.length === 0) {
                 tfoot.innerHTML = '';
+                updateHydroCharts([], { joints: 0, completed: 0 });
                 return;
             }
 
@@ -4161,6 +4206,132 @@
                 <td class="text-center">${totals.pautAcc}</td>
                 <td colspan="11"></td>
             </tr>`;
+
+            updateHydroCharts(displayedItems, totals);
+        }
+
+        function updateHydroCharts(displayedItems, totals) {
+            // 1. Hydrotest Status Chart & Breakdown
+            const totalHydro = displayedItems.length;
+            const doneHydro = displayedItems.filter(h => h.status === 'Hydrotested').length;
+            const remainingHydro = totalHydro - doneHydro;
+            const hydroPct = totalHydro > 0 ? Math.round(doneHydro / totalHydro * 100) : 0;
+
+            const hydroBreakdown = document.getElementById('hydroStatusBreakdown');
+            if (hydroBreakdown) {
+                const barColor = hydroPct >= 95 ? '#4caf50' : (hydroPct >= 80 ? '#ff9800' : '#f44336');
+                hydroBreakdown.innerHTML = `
+                    <div class="ndt-method-row" style="background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.05); margin-bottom:0;">
+                        <div class="ndt-method-badge m-hydro">HYDRO</div>
+                        <div class="ndt-method-nums">
+                            <div class="nm-item"><div class="nm-label">Total</div><div class="nm-val text-dark">${totalHydro.toLocaleString()}</div></div>
+                            <div class="nm-item"><div class="nm-label">Done</div><div class="nm-val text-success">${doneHydro.toLocaleString()}</div></div>
+                            <div class="nm-item"><div class="nm-label">Remain</div><div class="nm-val text-danger">${remainingHydro.toLocaleString()}</div></div>
+                        </div>
+                        <div class="ndt-progress-wrap" style="width: 80px;">
+                            <div class="ndt-progress-bar"><div class="fill" style="width:${hydroPct}%; background:${barColor};"></div></div>
+                            <div class="ndt-progress-pct" style="color:${barColor};">${hydroPct}%</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (chartInstances.hydroStatus) chartInstances.hydroStatus.destroy();
+            const maxHydroVal = Math.max(doneHydro, remainingHydro);
+            chartInstances.hydroStatus = new Chart(document.getElementById('hydroStatusChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Done', 'Remaining'],
+                    datasets: [{
+                        label: 'Packages',
+                        data: [doneHydro, remainingHydro],
+                        backgroundColor: ['rgba(2, 136, 209, 0.75)', 'rgba(2, 136, 209, 0.2)'],
+                        borderColor: ['#0288d1', '#0288d1'],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    layout: { padding: { top: 25 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#333',
+                            font: { weight: 'bold', size: 10 },
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: v => v > 0 ? v.toLocaleString() : '0'
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, suggestedMax: maxHydroVal * 1.2 || 10, grid: { color: 'rgba(0,0,0,0.05)' } }
+                    }
+                }
+            });
+
+            // 2. Welding Status Chart & Breakdown
+            const totalWeld = totals.joints;
+            const doneWeld = totals.completed;
+            const remainingWeld = totalWeld - doneWeld;
+            const weldPct = totalWeld > 0 ? Math.round(doneWeld / totalWeld * 100) : 0;
+
+            const weldingBreakdown = document.getElementById('weldingStatusBreakdown');
+            if (weldingBreakdown) {
+                const barColor = weldPct >= 95 ? '#4caf50' : (weldPct >= 80 ? '#ff9800' : '#f44336');
+                weldingBreakdown.innerHTML = `
+                    <div class="ndt-method-row" style="background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.05); margin-bottom:0;">
+                        <div class="ndt-method-badge m-weld">WELD</div>
+                        <div class="ndt-method-nums">
+                            <div class="nm-item"><div class="nm-label">Total</div><div class="nm-val text-dark">${totalWeld.toLocaleString()}</div></div>
+                            <div class="nm-item"><div class="nm-label">Done</div><div class="nm-val text-success">${doneWeld.toLocaleString()}</div></div>
+                            <div class="nm-item"><div class="nm-label">Remain</div><div class="nm-val text-danger">${remainingWeld.toLocaleString()}</div></div>
+                        </div>
+                        <div class="ndt-progress-wrap" style="width: 80px;">
+                            <div class="ndt-progress-bar"><div class="fill" style="width:${weldPct}%; background:${barColor};"></div></div>
+                            <div class="ndt-progress-pct" style="color:${barColor};">${weldPct}%</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (chartInstances.weldingStatus) chartInstances.weldingStatus.destroy();
+            const maxWeldVal = Math.max(doneWeld, remainingWeld);
+            chartInstances.weldingStatus = new Chart(document.getElementById('weldingStatusChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Done', 'Remaining'],
+                    datasets: [{
+                        label: 'Joints',
+                        data: [doneWeld, remainingWeld],
+                        backgroundColor: ['rgba(46, 125, 50, 0.75)', 'rgba(46, 125, 50, 0.2)'],
+                        borderColor: ['#2e7d32', '#2e7d32'],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    layout: { padding: { top: 25 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#333',
+                            font: { weight: 'bold', size: 10 },
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: v => v > 0 ? v.toLocaleString() : '0'
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, suggestedMax: maxWeldVal * 1.2 || 10, grid: { color: 'rgba(0,0,0,0.05)' } }
+                    }
+                }
+            });
         }
 
         function renderHydro() {
