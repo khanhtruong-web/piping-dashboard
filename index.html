@@ -4382,14 +4382,14 @@
 
                     html += `<tr>
                         <td>${idx + 1}</td>
-                        <td>${d.line || '-'}</td>
-                        <td>${d.spool || '-'}</td>
+                        <td class="text-wrap">${d.line || '-'}</td>
+                        <td class="text-wrap">${d.spool || '-'}</td>
                         <td class="fw-bold">${d.joint || '-'}</td>
                         <td>${d.size || '-'}</td>
                         <td>${d.weldType || '-'}</td>
                         <td>${d.configCol || '-'}</td>
-                        <td>${d.location || '-'}</td>
-                        <td>${repNo}</td>
+                        <td class="text-wrap">${d.location || '-'}</td>
+                        <td class="text-wrap">${repNo}</td>
                         <td>${repDate}</td>
                         <td class="${resClass}">${res || '-'}</td>
                     </tr>`;
@@ -6220,7 +6220,7 @@
 
             // Header row
             ws.addRow([
-                'No.','Hydro Date','Skyline Date','System','Test Package','Line No.','Spools',
+                'No.','Hydrotested Date','Skyline Date','System','Test Package','Line No.','Spools',
                 'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
                 'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
                 'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
@@ -7791,6 +7791,30 @@
 
             document.getElementById('gSheetsStatus').innerHTML = '<span class="text-warning"><i class="fas fa-spinner fa-spin"></i> Loading...</span>';
 
+            let checkCount = 0;
+            const maxChecks = 20; // 10 seconds total (20 * 500ms)
+
+            const checkAndInit = () => {
+                const isGapiLoaded = typeof gapi !== 'undefined';
+                const isGoogleLoaded = typeof google !== 'undefined';
+
+                if (isGapiLoaded && isGoogleLoaded) {
+                    try {
+                        gapi.load('client', runInit);
+                        initTokenClient();
+                    } catch (e) {
+                        console.error("Error initializing Google API clients:", e);
+                        document.getElementById('gSheetsStatus').innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Init Failed</span>';
+                    }
+                } else if (checkCount < maxChecks) {
+                    checkCount++;
+                    setTimeout(checkAndInit, 500);
+                } else {
+                    document.getElementById('gSheetsStatus').innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> API Load Failed</span>';
+                    console.error("Google APIs failed to load (Timeout 10s). Check your connection or ad blocker.");
+                }
+            };
+
             const runInit = () => {
                 gapi.client.init({
                     apiKey: gsConfig.apiKey,
@@ -7808,11 +7832,7 @@
                 });
             };
 
-            if (typeof gapi !== 'undefined') {
-                gapi.load('client', runInit);
-            }
-
-            if (typeof google !== 'undefined') {
+            const initTokenClient = () => {
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: gsConfig.clientId,
                     scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly',
@@ -7842,7 +7862,9 @@
                 if(isAdminMode && gsConfig.autoSync && !gapiToken) {
                     setTimeout(() => { if(!gapiToken) tokenClient.requestAccessToken({prompt: ''}); }, 1000);
                 }
-            }
+            };
+
+            checkAndInit();
         }
 
         // --- DRIVE FILE DISCOVERY ---
@@ -8512,7 +8534,7 @@
                 const headers = rows[0].map(h => (h || '').toString().trim().toLowerCase());
                 let tpIdx = headers.findIndex(h => h.includes('test package') || h.includes('testpackage') || h.includes('testpack') || h === 'tp');
                 let skylineIdx = headers.findIndex(h => h.includes('skyline'));
-                let testPlanIdx = headers.findIndex(h => h.includes('test plan'));
+                let testPlanIdx = headers.findIndex(h => h.includes('test plan') || h.includes('testplan') || h.includes('plan date') || h.includes('plan_date') || h.includes('hydrotest plan') || h.includes('hydrotestplan') || h === 'plan');
                 let statusFabIdx = headers.findIndex(h => h.includes('actual status'));
                 let hydroIdx = headers.findIndex(h => (h.includes('hydro test') || h.includes('hydrotest') || h.includes('hydro date')) && !h.includes('ready'));
                 let systemIdx = headers.findIndex(h => h === 'system');
