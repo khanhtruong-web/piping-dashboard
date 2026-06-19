@@ -1886,7 +1886,7 @@
                         <div class="tab-content mt-3" id="ndtDetailTabsContent">
                             <!-- RT Pane -->
                             <div class="tab-pane fade show active" id="rt-detail-pane" role="tabpanel" aria-labelledby="rt-detail-tab">
-                                <div class="table-responsive" style="max-height: 400px;">
+                                <div class="table-responsive" style="max-height: 600px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
                                             <tr>
@@ -1897,6 +1897,7 @@
                                                 <th style="width: 75px;">Size</th>
                                                 <th style="width: 95px;">Weld Type</th>
                                                 <th style="width: 95px;">Config</th>
+                                                <th style="width: 95px;">Location</th>
                                                 <th style="width: 130px;">Report No.</th>
                                                 <th style="width: 110px;">Report Date</th>
                                                 <th style="width: 95px;">Result</th>
@@ -1909,7 +1910,7 @@
                             </div>
                             <!-- PAUT Pane -->
                             <div class="tab-pane fade" id="paut-detail-pane" role="tabpanel" aria-labelledby="paut-detail-tab">
-                                <div class="table-responsive" style="max-height: 400px;">
+                                <div class="table-responsive" style="max-height: 600px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
                                             <tr>
@@ -1920,6 +1921,7 @@
                                                 <th style="width: 75px;">Size</th>
                                                 <th style="width: 95px;">Weld Type</th>
                                                 <th style="width: 95px;">Config</th>
+                                                <th style="width: 95px;">Location</th>
                                                 <th style="width: 130px;">Report No.</th>
                                                 <th style="width: 110px;">Report Date</th>
                                                 <th style="width: 95px;">Result</th>
@@ -1932,7 +1934,7 @@
                             </div>
                             <!-- MT Pane -->
                             <div class="tab-pane fade" id="mt-detail-pane" role="tabpanel" aria-labelledby="mt-detail-tab">
-                                <div class="table-responsive" style="max-height: 400px;">
+                                <div class="table-responsive" style="max-height: 600px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
                                             <tr>
@@ -1943,6 +1945,7 @@
                                                 <th style="width: 75px;">Size</th>
                                                 <th style="width: 95px;">Weld Type</th>
                                                 <th style="width: 95px;">Config</th>
+                                                <th style="width: 95px;">Location</th>
                                                 <th style="width: 130px;">Report No.</th>
                                                 <th style="width: 110px;">Report Date</th>
                                                 <th style="width: 95px;">Result</th>
@@ -1955,7 +1958,7 @@
                             </div>
                             <!-- PT Pane -->
                             <div class="tab-pane fade" id="pt-detail-pane" role="tabpanel" aria-labelledby="pt-detail-tab">
-                                <div class="table-responsive" style="max-height: 400px;">
+                                <div class="table-responsive" style="max-height: 600px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
                                             <tr>
@@ -1966,6 +1969,7 @@
                                                 <th style="width: 75px;">Size</th>
                                                 <th style="width: 95px;">Weld Type</th>
                                                 <th style="width: 95px;">Config</th>
+                                                <th style="width: 95px;">Location</th>
                                                 <th style="width: 130px;">Report No.</th>
                                                 <th style="width: 110px;">Report Date</th>
                                                 <th style="width: 95px;">Result</th>
@@ -4384,6 +4388,7 @@
                         <td>${d.size || '-'}</td>
                         <td>${d.weldType || '-'}</td>
                         <td>${d.configCol || '-'}</td>
+                        <td>${d.location || '-'}</td>
                         <td>${repNo}</td>
                         <td>${repDate}</td>
                         <td class="${resClass}">${res || '-'}</td>
@@ -4391,14 +4396,14 @@
                 });
 
                 if (html === '') {
-                    html = '<tr><td colspan="10" class="text-center py-3 text-muted">No NDT requests for this day</td></tr>';
+                    html = '<tr><td colspan="11" class="text-center py-3 text-muted">No NDT requests for this day</td></tr>';
                     document.getElementById(tfootId).innerHTML = '';
                 } else {
                     const totalJoints = list.length;
                     document.getElementById(tfootId).innerHTML = `
                         <tr>
                             <td colspan="4" class="text-start ps-3">GRAND TOTAL: ${totalJoints} Joints</td>
-                            <td colspan="3"></td>
+                            <td colspan="4"></td>
                             <td colspan="3" class="text-end pe-3">
                                 <span class="text-success">ACC: ${accCount}</span> | 
                                 <span class="text-danger">REJ: ${rejCount}</span> | 
