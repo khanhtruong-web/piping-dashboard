@@ -738,7 +738,7 @@
                     <span id="activeHydroName" class="text-truncate w-100"></span>
                     <button class="btn-del-file" onclick="clearHydroData()" title="Xóa dữ liệu Hydrotest"><i class="fas fa-trash-alt"></i></button>
                 </div>
-                <small class="text-muted" style="font-size: 0.65rem;">Tải file chứa TestPackNo/Line và Hydro Date</small>
+                <small class="text-muted" style="font-size: 0.65rem;">Tải file chứa TestPackNo/Line và Hydrotested Date</small>
             </div>
 
             <!-- TÍNH NĂNG MỚI: TẢI / XÓA CUSTOM NDT MATRIX -->
@@ -1400,7 +1400,7 @@
                         </div>
                         <div class="d-flex align-items-center gap-3 flex-wrap">
                             <div class="d-flex align-items-center gap-1">
-                                <span class="small fw-bold text-muted">Hydro Date:</span>
+                                <span class="small fw-bold text-muted">Hydrotested Date:</span>
                                 <input type="date" id="hydroDate" class="form-control form-control-sm" style="width: 150px;" onchange="renderHydro()" title="Chọn ngày hydrotest">
                                 <button class="btn btn-sm btn-outline-secondary" onclick="clearHydroFilters()" title="Clear Filters"><i class="fas fa-times me-1"></i>Clear</button>
                             </div>
@@ -1522,7 +1522,7 @@
                             <thead>
                                 <tr>
                                     <th class="hydro-sticky-col hydro-sticky-col-0" style="width:40px;">No.</th>
-                                    <th class="hydro-sticky-col hydro-sticky-col-1 sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:100px;">Hydro Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
+                                    <th class="hydro-sticky-col hydro-sticky-col-1 sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:100px;">Hydrotested Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
                                     <th class="hydro-sticky-col hydro-sticky-col-2" style="width:100px;">Skyline Date</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-3" style="width:70px;">System</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-4" style="min-width:180px;">Test Package</th>
