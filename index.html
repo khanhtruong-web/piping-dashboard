@@ -1430,7 +1430,7 @@
                             </select>
                             <input type="text" id="hydroSearchInput" class="form-control form-control-sm" placeholder="Search Hydro Packages..." style="width: 180px; font-size: 0.75rem;" oninput="debouncedRenderHydro()">
                             <button class="btn btn-sm btn-info text-white fw-bold" onclick="exportHydroExcel()"><i class="fas fa-file-excel me-1"></i> Export Excel</button>
-                            <button class="btn btn-sm btn-outline-primary fw-bold" onclick="copyFilteredHydro()"><i class="fas fa-copy me-1"></i> Copy dữ liệu lọc</button>
+                            <button id="btnCopyHydroPackages" class="btn btn-sm btn-outline-primary fw-bold" onclick="copyFilteredTestPackages()"><i class="fas fa-copy me-1"></i> Copy Test Packages</button>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardHydroTracker')" title="Focus mode"></i>
                         </div>
                     </div>
@@ -5850,14 +5850,14 @@
             const notCompStyle = h.jointNotComplete > 0 ? 'style="background-color: #ffcb9e; color: #7f2d0f; font-weight: bold; text-align: center;"' : 'style="text-align: center;"';
 
             return `<tr class="${isUrg?'table-danger animate__animated animate__flash':''} clickable-row" 
-                        onclick="scrollToVisualizer('${encHtml(pkgKey)}')" 
+                        onclick="scrollToVisualizer('${encHtml(pkgKey)}', event)" 
                         style="cursor:pointer;" 
                         title="Click to view detailed progress in Visualizer">
                 <td class="text-muted small hydro-sticky-col hydro-sticky-col-0">${i+1}</td>
                 <td ${editAttr} class="fw-bold ${editCls} ${h.dateStr === 'No Plan Date' ? 'text-danger bg-warning bg-opacity-10' : ''} hydro-sticky-col hydro-sticky-col-1" data-field="dateStr">${h.dateStr}</td>
                 <td ${editAttr} class="${editCls} hydro-sticky-col hydro-sticky-col-2" data-field="skylineDateStr">${h.skylineDateStr || '-'}</td>
                 <td ${editAttr} class="${editCls} hydro-sticky-col hydro-sticky-col-3" data-field="sys">${h.sys}</td>
-                <td ${editAttr} class="text-primary fw-bold ${editCls} hydro-sticky-col hydro-sticky-col-4" data-field="testPack">${h.testPack || '-'}</td>
+                <td class="text-primary fw-bold hydro-sticky-col hydro-sticky-col-4" data-field="testPack">${h.testPack || '-'}</td>
                 <td ${editAttr} class="${editCls}" data-field="line" title="${encHtml(lineDisp)}">
                     <div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lineDisp}</div>
                 </td>
@@ -6196,7 +6196,14 @@
         }
 
         // Helper: Cuộn tới Visualizer và thực hiện visualize
-        function scrollToVisualizer(val) {
+        function scrollToVisualizer(val, event) {
+            // Kiểm tra xem người dùng có đang bôi đen văn bản để sao chép hay không
+            if (window.getSelection && window.getSelection().toString().trim() !== '') {
+                return; // Nếu đang bôi đen để copy thì không cuộn
+            }
+            if (event && (event.target.closest('[contenteditable]') || event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT' || event.target.tagName === 'TEXTAREA' || event.target.closest('.btn') || event.target.closest('a'))) {
+                return; // Không cuộn/visualize nếu người dùng click vào ô có thể chỉnh sửa hoặc button/link
+            }
             document.getElementById('vpSearch').value = val;
             visualizePack();
             
@@ -7250,7 +7257,7 @@
                         <span class="fw-bold small" style="min-width:45px;">${pctD.toFixed(1)}%</span>
                     </div>` : '<span class="text-muted small">-</span>';
 
-                rows.push(`<tr class="${stats.t === 0 ? 'table-light' : (stats.r > 0 ? 'table-danger' : '')}" style="cursor:pointer;" onclick="scrollToVisualizer('${encHtml(term)}')">
+                rows.push(`<tr class="${stats.t === 0 ? 'table-light' : (stats.r > 0 ? 'table-danger' : '')}" style="cursor:pointer;" onclick="scrollToVisualizer('${encHtml(term)}', event)">
                     <td class="text-muted small">${idx+1}</td>
                     <td class="text-primary fw-bold text-start"><i class="fas fa-box-open me-2 text-info"></i>${term}</td>
                     <td class="fw-bold">${stats.t}</td>
