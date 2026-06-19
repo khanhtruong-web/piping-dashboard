@@ -4763,7 +4763,22 @@
                                 borderColor: '#1565c0',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'Fit-up ACC',
@@ -4772,7 +4787,22 @@
                                 borderColor: '#2e7d32',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'Visual ACC',
@@ -4781,7 +4811,22 @@
                                 borderColor: '#0097a7',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'Cumulative Weld (S-Curve)',
@@ -4877,7 +4922,22 @@
                                 borderColor: '#7e57c2',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'NDT Completed',
@@ -4886,7 +4946,22 @@
                                 borderColor: '#66bb6a',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'NDT Remaining',
@@ -4895,7 +4970,22 @@
                                 borderColor: '#ffa726',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'NDT Backlog',
@@ -4904,7 +4994,22 @@
                                 borderColor: '#ef5350',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'NDT Repair',
@@ -4913,7 +5018,22 @@
                                 borderColor: '#26c6da',
                                 borderWidth: 1,
                                 borderRadius: 4,
-                                yAxisID: 'y'
+                                yAxisID: 'y',
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'Cumulative NDT Req (S-Curve)',
