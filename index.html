@@ -219,6 +219,17 @@
             border-bottom: 2px solid #373b3e !important;
         }
 
+        /* Sticky footer for Daily Detail Modal tables */
+        #dailyDetailModal .table-responsive table tfoot td {
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            background-color: #fff3e0 !important;
+            color: #e65100 !important;
+            border-top: 2px solid #ffcc80 !important;
+            font-weight: bold;
+        }
+
         @keyframes animate__flash {
             0%, 50%, 100% { opacity: 1; }
             25%, 75% { opacity: 0.4; background-color: #fff3cd; }
@@ -1880,6 +1891,7 @@
                                             <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
                                         </thead>
                                         <tbody id="tblRtDetailBody"></tbody>
+                                        <tfoot id="tblRtDetailFoot"></tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -1891,6 +1903,7 @@
                                             <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
                                         </thead>
                                         <tbody id="tblPautDetailBody"></tbody>
+                                        <tfoot id="tblPautDetailFoot"></tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -1902,6 +1915,7 @@
                                             <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
                                         </thead>
                                         <tbody id="tblMtDetailBody"></tbody>
+                                        <tfoot id="tblMtDetailFoot"></tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -1913,6 +1927,7 @@
                                             <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
                                         </thead>
                                         <tbody id="tblPtDetailBody"></tbody>
+                                        <tfoot id="tblPtDetailFoot"></tfoot>
                                     </table>
                                 </div>
                             </div>
@@ -3343,7 +3358,7 @@
                 welder: findKey(['WelderID', 'Welder ID', 'Welder', 'WelderNo', 'Thợ hàn']),
                 size: findKey(['Size', 'Kích thước']),
                 diaIn: findKey(['DiaIn', 'Dia-Inch', 'DiaInch']),
-                thick: findKey(['RevForJointNo', 'Thickness', 'Thick', 'Độ dày', 'Thk']),
+                thick: findKey(['Thick', 'Thickness', 'Thk', 'Độ dày']),
                 mat: findKey(['Material', 'Mat', 'Vật liệu']),
                 wDate: findKey(['WeldingCompletedDate', 'Welding Completed Date', 'Weld Date', 'Welding Date', 'Ngày hàn']),
                 weldType: findKey(['Weld Type', 'WeldType', 'Loại mối hàn']),
@@ -4253,8 +4268,12 @@
             document.getElementById('badgeMtCount').innerText = mtList.length;
             document.getElementById('badgePtCount').innerText = ptList.length;
 
-            const renderNdtTable = (list, type, tbodyId) => {
+            const renderNdtTable = (list, type, tbodyId, tfootId) => {
                 let html = '';
+                let accCount = 0;
+                let rejCount = 0;
+                let pendingCount = 0;
+
                 list.forEach((d, idx) => {
                     let repNo = '';
                     let repDate = '';
@@ -4284,10 +4303,18 @@
                         repDate = '-';
                         res = 'WAIT NDT';
                         resClass = 'text-warning fw-bold';
+                        pendingCount++;
                     } else {
-                        if (res === 'ACC') resClass = 'text-success fw-bold';
-                        else if (res === 'REJ') resClass = 'text-danger fw-bold';
-                        else resClass = 'text-secondary';
+                        if (res === 'ACC') {
+                            resClass = 'text-success fw-bold';
+                            accCount++;
+                        } else if (res === 'REJ') {
+                            resClass = 'text-danger fw-bold';
+                            rejCount++;
+                        } else {
+                            resClass = 'text-secondary';
+                            pendingCount++;
+                        }
                     }
 
                     html += `<tr>
@@ -4297,21 +4324,37 @@
                         <td>${d.line || '-'}</td>
                         <td>${d.size || '-'}</td>
                         <td>${d.weldType || '-'}</td>
-                        <td>${d.thick || d.configCol || '-'}</td>
+                        <td>${d.configCol || '-'}</td>
                         <td>${repNo}</td>
                         <td>${repDate}</td>
                         <td class="${resClass}">${res || '-'}</td>
                     </tr>`;
                 });
 
-                if (html === '') html = '<tr><td colspan="10" class="text-center py-3 text-muted">No NDT requests for this day</td></tr>';
+                if (html === '') {
+                    html = '<tr><td colspan="10" class="text-center py-3 text-muted">No NDT requests for this day</td></tr>';
+                    document.getElementById(tfootId).innerHTML = '';
+                } else {
+                    const totalJoints = list.length;
+                    document.getElementById(tfootId).innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-start ps-3">GRAND TOTAL: ${totalJoints} Joints</td>
+                            <td colspan="3"></td>
+                            <td colspan="3" class="text-end pe-3">
+                                <span class="text-success">ACC: ${accCount}</span> | 
+                                <span class="text-danger">REJ: ${rejCount}</span> | 
+                                <span class="text-warning">WAIT: ${pendingCount}</span>
+                            </td>
+                        </tr>
+                    `;
+                }
                 document.getElementById(tbodyId).innerHTML = html;
             };
 
-            renderNdtTable(rtList, 'RT', 'tblRtDetailBody');
-            renderNdtTable(pautList, 'PAUT', 'tblPautDetailBody');
-            renderNdtTable(mtList, 'MT', 'tblMtDetailBody');
-            renderNdtTable(ptList, 'PT', 'tblPtDetailBody');
+            renderNdtTable(rtList, 'RT', 'tblRtDetailBody', 'tblRtDetailFoot');
+            renderNdtTable(pautList, 'PAUT', 'tblPautDetailBody', 'tblPautDetailFoot');
+            renderNdtTable(mtList, 'MT', 'tblMtDetailBody', 'tblMtDetailFoot');
+            renderNdtTable(ptList, 'PT', 'tblPtDetailBody', 'tblPtDetailFoot');
 
             // Cập nhật nút export Excel
             document.getElementById('btnExportDailyDetailExcel').onclick = () => exportDailyDetailExcel(periodStr, groupUnit);
@@ -4539,7 +4582,7 @@
                             <td>${d.line || '-'}</td>
                             <td class="text-center">${d.size || '-'}</td>
                             <td class="text-center">${d.weldType || '-'}</td>
-                            <td class="text-center">${d.thick || d.configCol || '-'}</td>
+                            <td class="text-center">${d.configCol || '-'}</td>
                             <td class="text-center">${repNo}</td>
                             <td class="text-center">${repDate}</td>
                             <td class="text-center" ${resStyle}>${res || '-'}</td>
