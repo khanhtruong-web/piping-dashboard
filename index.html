@@ -1430,6 +1430,7 @@
                             </select>
                             <input type="text" id="hydroSearchInput" class="form-control form-control-sm" placeholder="Search Hydro Packages..." style="width: 180px; font-size: 0.75rem;" oninput="debouncedRenderHydro()">
                             <button class="btn btn-sm btn-info text-white fw-bold" onclick="exportHydroExcel()"><i class="fas fa-file-excel me-1"></i> Export Excel</button>
+                            <button class="btn btn-sm btn-outline-primary fw-bold" onclick="copyFilteredHydro()"><i class="fas fa-copy me-1"></i> Copy dữ liệu lọc</button>
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardHydroTracker')" title="Focus mode"></i>
                         </div>
                     </div>
@@ -6187,6 +6188,7 @@
 
             tbody.innerHTML = (sorted.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
             renderHydroTfoot(displayed);
+            window.lastFilteredHydroList = sorted;
             } catch(e) {
                 console.error(e);
                 tbody.innerHTML = `<tr><td colspan="28" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
@@ -7126,6 +7128,39 @@
 
             clearVisualizer();
             renderHydro();
+        }
+
+        function copyFilteredTestPackages() {
+            const list = window.lastFilteredHydroList || [];
+            if (list.length === 0) {
+                alert("Không có gói test package nào để copy!");
+                return;
+            }
+            const pkgs = [...new Set(list.map(h => h.testPack).filter(p => p))];
+            if (pkgs.length === 0) {
+                alert("Không có gói test package nào để copy!");
+                return;
+            }
+            const textToCopy = pkgs.join('\n');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const btn = document.getElementById('btnCopyHydroPackages');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check me-1"></i>Copied ' + pkgs.length + '!';
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-success');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-outline-primary');
+                    }, 2000);
+                } else {
+                    alert("Đã copy " + pkgs.length + " gói test package vào clipboard!");
+                }
+            }).catch(err => {
+                console.error('Lỗi khi copy: ', err);
+                alert("Không thể copy. Vui lòng cấp quyền clipboard hoặc thử lại.");
+            });
         }
 
         function clearNdrFilters() {
