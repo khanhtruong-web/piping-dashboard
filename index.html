@@ -4586,20 +4586,20 @@
             ws.addRow([]); // Blank row
 
             // Section 3: NDT Details List
-            ws.addRow(['NDT DETAILS LIST (RT, PAUT, MT, PT)', '', '', '', '', '', '', '', '', '', '']);
+            ws.addRow(['NDT DETAILS LIST (RT, PAUT, MT, PT)', '', '', '', '', '', '', '', '', '', '', '']);
             const ndtListHdrIdx = ws.rowCount;
-            ws.mergeCells(`A${ndtListHdrIdx}:K${ndtListHdrIdx}`);
+            ws.mergeCells(`A${ndtListHdrIdx}:L${ndtListHdrIdx}`);
             const ndtListHdr = ws.getCell(`A${ndtListHdrIdx}`);
             ndtListHdr.fill = headerFill('FF1565C0');
             ndtListHdr.font = { bold: true, color: { argb: 'FFFFFFFF' } };
             ndtListHdr.alignment = { horizontal: 'center' };
 
             // Header columns
-            ws.addRow(['No', 'NDT Method', 'Joint No.', 'Spool No.', 'Line No.', 'Size', 'Weld Type', 'Config', 'Report No.', 'Report Date', 'Result']);
+            ws.addRow(['No', 'NDT Method', 'Joint No.', 'Spool No.', 'Line No.', 'Size', 'Weld Type', 'Config', 'Location', 'Report No.', 'Report Date', 'Result']);
             const colHdrIdx = ws.rowCount;
             const colHdrRow = ws.getRow(colHdrIdx);
             colHdrRow.height = 24;
-            for (let c = 1; c <= 11; c++) {
+            for (let c = 1; c <= 12; c++) {
                 const cell = colHdrRow.getCell(c);
                 cell.fill = headerFill('FF37474F');
                 cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -4669,6 +4669,7 @@
                         d.size || '-',
                         d.weldType || '-',
                         d.configCol || '-',
+                        d.location || '-',
                         repNo,
                         repDate,
                         res
@@ -4682,25 +4683,25 @@
             for (let r = detailStartIdx; r <= detailEndIdx; r++) {
                 const row = ws.getRow(r);
                 row.height = 20;
-                for (let c = 1; c <= 11; c++) {
+                for (let c = 1; c <= 12; c++) {
                     const cell = row.getCell(c);
                     cell.border = thinBorder;
                     cell.alignment = { vertical: 'middle', horizontal: (c === 3 || c === 4 || c === 5) ? 'left' : 'center' };
                 }
                 
                 // Color result text
-                const resVal = row.getCell(11).value;
+                const resVal = row.getCell(12).value;
                 if (resVal === 'ACC') {
-                    row.getCell(11).font = { bold: true, color: { argb: 'FF2E7D32' } };
+                    row.getCell(12).font = { bold: true, color: { argb: 'FF2E7D32' } };
                 } else if (resVal === 'REJ') {
-                    row.getCell(11).font = { bold: true, color: { argb: 'FFC62828' } };
+                    row.getCell(12).font = { bold: true, color: { argb: 'FFC62828' } };
                 } else if (resVal === 'WAIT NDT') {
-                    row.getCell(11).font = { bold: true, color: { argb: 'FFF57F17' } };
+                    row.getCell(12).font = { bold: true, color: { argb: 'FFF57F17' } };
                 }
                 
                 // Highlight PENDING Report No
-                if (row.getCell(9).value === 'PENDING') {
-                    row.getCell(9).font = { bold: true, color: { argb: 'FFC62828' } };
+                if (row.getCell(10).value === 'PENDING') {
+                    row.getCell(10).font = { bold: true, color: { argb: 'FFC62828' } };
                 }
             }
 
@@ -4711,12 +4712,12 @@
             const totalWait = waitRt + waitPaut + waitMt + waitPt;
 
             ws.addRow([
-                `GRAND TOTAL: ${totalNdtJoints} Joints`, '', '', '', '', '', '', '', '', '', 
+                `GRAND TOTAL: ${totalNdtJoints} Joints`, '', '', '', '', '', '', '', '', '', '', 
                 `ACC: ${totalAcc} | REJ: ${totalRej} | WAIT: ${totalWait}`
             ]);
             const footerIdx = ws.rowCount;
-            ws.mergeCells(`A${footerIdx}:H${footerIdx}`);
-            ws.mergeCells(`I${footerIdx}:K${footerIdx}`);
+            ws.mergeCells(`A${footerIdx}:I${footerIdx}`);
+            ws.mergeCells(`J${footerIdx}:L${footerIdx}`);
 
             const fCell1 = ws.getCell(`A${footerIdx}`);
             fCell1.font = { bold: true };
@@ -4724,14 +4725,14 @@
             fCell1.fill = headerFill('FFFFF3E0');
             fCell1.border = thinBorder;
 
-            const fCell2 = ws.getCell(`I${footerIdx}`);
+            const fCell2 = ws.getCell(`J${footerIdx}`);
             fCell2.font = { bold: true };
             fCell2.alignment = { vertical: 'middle', horizontal: 'right' };
             fCell2.fill = headerFill('FFFFF3E0');
             fCell2.border = thinBorder;
 
             // Set column widths
-            const colWidths = [6, 12, 12, 35, 30, 10, 12, 15, 18, 15, 12];
+            const colWidths = [6, 12, 12, 35, 30, 10, 12, 15, 18, 18, 15, 12];
             colWidths.forEach((w, i) => {
                 ws.getColumn(i + 1).width = w;
             });
@@ -4802,7 +4803,8 @@
                         line: d.line || '-',
                         size: d.size || '-',
                         weldType: d.weldType || '-',
-                        configCol: d.configCol || '-'
+                        configCol: d.configCol || '-',
+                        location: d.location || '-'
                     });
                 });
             });
@@ -4826,7 +4828,7 @@
 
             // Title
             ws.addRow([`DAILY NDT BACKLOG REPORT - ${periodStr.toUpperCase()}${subconText.toUpperCase()}`]);
-            ws.mergeCells('A1:K1');
+            ws.mergeCells('A1:L1');
             ws.getCell('A1').font = { size: 14, bold: true, color: { argb: 'FFC62828' } };
             ws.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
             ws.getRow(1).height = 30;
@@ -4834,11 +4836,11 @@
             ws.addRow([]); // Blank row
 
             // Table Header
-            ws.addRow(['No', 'NDT Method', 'Joint No.', 'Spool No.', 'Line No.', 'Size', 'Weld Type', 'Config', 'Report No.', 'Report Date', 'Result']);
+            ws.addRow(['No', 'NDT Method', 'Joint No.', 'Spool No.', 'Line No.', 'Size', 'Weld Type', 'Config', 'Location', 'Report No.', 'Report Date', 'Result']);
             const colHdrIdx = ws.rowCount;
             const colHdrRow = ws.getRow(colHdrIdx);
             colHdrRow.height = 24;
-            for (let c = 1; c <= 11; c++) {
+            for (let c = 1; c <= 12; c++) {
                 const cell = colHdrRow.getCell(c);
                 cell.fill = headerFill('FFC62828');
                 cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -4857,6 +4859,7 @@
                     d.size,
                     d.weldType,
                     d.configCol,
+                    d.location,
                     'PENDING',
                     '-',
                     'WAIT NDT'
@@ -4868,28 +4871,28 @@
             for (let r = detailStartIdx; r <= detailEndIdx; r++) {
                 const row = ws.getRow(r);
                 row.height = 20;
-                for (let c = 1; c <= 11; c++) {
+                for (let c = 1; c <= 12; c++) {
                     const cell = row.getCell(c);
                     cell.border = thinBorder;
                     cell.alignment = { vertical: 'middle', horizontal: (c === 3 || c === 4 || c === 5) ? 'left' : 'center' };
                 }
                 
                 // Color result text and PENDING Report
-                row.getCell(9).font = { bold: true, color: { argb: 'FFC62828' } };
-                row.getCell(11).font = { bold: true, color: { argb: 'FFF57F17' } };
+                row.getCell(10).font = { bold: true, color: { argb: 'FFC62828' } };
+                row.getCell(12).font = { bold: true, color: { argb: 'FFF57F17' } };
             }
 
             // Grand Total
-            ws.addRow([`GRAND TOTAL BACKLOG: ${backlogList.length} Joints`, '', '', '', '', '', '', '', '', '', '']);
+            ws.addRow([`GRAND TOTAL BACKLOG: ${backlogList.length} Joints`, '', '', '', '', '', '', '', '', '', '', '']);
             const footerIdx = ws.rowCount;
-            ws.mergeCells(`A${footerIdx}:K${footerIdx}`);
+            ws.mergeCells(`A${footerIdx}:L${footerIdx}`);
             const fCell = ws.getCell(`A${footerIdx}`);
             fCell.font = { bold: true, color: { argb: 'FFC62828' } };
             fCell.alignment = { vertical: 'middle', horizontal: 'left' };
             fCell.fill = headerFill('FFFFECEE');
             fCell.border = thinBorder;
 
-            const colWidths = [6, 12, 12, 35, 30, 10, 12, 15, 18, 15, 12];
+            const colWidths = [6, 12, 12, 35, 30, 10, 12, 15, 18, 18, 15, 12];
             colWidths.forEach((w, i) => {
                 ws.getColumn(i + 1).width = w;
             });
