@@ -1249,7 +1249,7 @@
                     </div>
                     <div class="table-detail-container sticky-vh-65">
                         <table class="table-detail" id="tableFullTable">
-                            <thead><tr><th>No</th><th>SubCon</th><th>System</th><th>Drawing No.</th><th>Revision No</th><th>Line No.</th><th>Spool No.</th><th>Welder ID</th><th>Joint No.</th><th>Size</th><th>Thk</th><th>Material</th><th>Weld Type</th><th>Joint Remark</th><th>Test Package No.</th><th>RT Report</th><th>PAUT Report</th><th>MT Report</th><th>PT Report</th><th>PMI Report</th><th>Hardness Report</th><th>Ferrite Report</th><th>PWHT Report</th></tr></thead>
+                            <thead><tr><th>No</th><th>SubCon</th><th>System</th><th>Drawing No.</th><th>Revision No</th><th>Line No.</th><th>Spool No.</th><th>Joint No.</th><th>Size</th><th>Thk</th><th>Material</th><th>Weld Type</th><th>Joint Remark</th><th>Test Package No.</th><th>RT Report</th><th>PAUT Report</th><th>MT Report</th><th>PT Report</th><th>PMI Report</th><th>Hardness Report</th><th>Ferrite Report</th><th>PWHT Report</th></tr></thead>
                             <tbody id="tableFullBody"></tbody><tfoot id="tableFullFoot"></tfoot>
                         </table>
                     </div>
@@ -3371,7 +3371,7 @@
                 lenNDT: findKey(['LengthNDT', 'Length']),
                 lenDefect: findKey(['Defect Length', 'Defect']),
                 jointRem: findKey(['TV', 'Joint Remark', 'Remark', 'Ghi chú']),
-                location: findKey(['Location', 'Area', 'Vị trí']),
+                location: findKey(['TV', 'Location', 'Area', 'Vị trí']),
                 visualACC: findKey(['VisualACC', 'Visual ACC', 'Visual Acc']),
                 visualREJ: findKey(['VisualREJ', 'Visual REJ', 'Visual Rej']),
                 defectLoc: findKey(['DefectLocation', 'Defect Location']),
@@ -3392,8 +3392,8 @@
                 statusCol: findKey(['Status', 'DJ_Status', 'DJ Status', 'Stt']),
                 configCol: findKey(['Item01', 'Configuration']),
                 consumable: findKey(['WeldingConsumableLotNo', 'Consumable Lot No', 'Consumable', 'Constant']),
-                mtDate: findKey(['MTReportDate', 'MT Date']),
-                ptDate: findKey(['PTReportDate', 'PT Date'])
+                mtDate: findKey(['MTReportDate', 'MT Report Date', 'MT Date']),
+                ptDate: findKey(['PTReportDate', 'PT Report Date', 'PT Date'])
             };
 
             const getVal = (row, field) => { const k = map[field]; return (k && row[k] !== undefined && row[k] !== null) ? row[k] : ""; };
@@ -3493,7 +3493,7 @@
                     pwhtRep: asString(getVal(r, 'pwhtRep')),
                     statusCol: asString(getVal(r, 'statusCol')),
                     configCol: asString(getVal(r, 'configCol')),
-                    consumable: asString(getVal(r, 'consumable')),
+                    consumable: asString(getVal(r, 'location')),
                     mtDate: parseExDate(getVal(r, 'mtDate'))?.getTime() || null,
                     ptDate: parseExDate(getVal(r, 'ptDate'))?.getTime() || null
                 });
@@ -6382,7 +6382,7 @@
         function renderFullReportTable() {
             const tbody = document.getElementById('tableFullBody'); const start = (pageFull - 1) * rowsPerPage; const subset = filteredData.slice(start, start + rowsPerPage);
             let html = '';
-            subset.forEach((d, i) => { html += `<tr><td>${start+i+1}</td><td>${d.isSub}</td><td>${d.system}</td><td>${d.dwg}</td><td>${d.rev || '-'}</td><td>${d.line}</td><td>${d.spool}</td><td>${d.welder}</td><td>${d.joint}</td><td>${d.size}</td><td>${d.thick}</td><td>${d.mat}</td><td>${d.weldType}</td><td><small class="text-muted">${d.jointRem}</small></td><td class="fw-bold">${d.testPkg}</td><td>${d.rtRep || '-'}</td><td>${d.pautRep || '-'}</td><td>${d.mtRep || '-'}</td><td>${d.ptRep || '-'}</td><td>${d.pmiRep || '-'}</td><td>${d.hardnessRep || '-'}</td><td>${d.ferriteRep || '-'}</td><td>${d.pwhtRep || '-'}</td></tr>`; });
+            subset.forEach((d, i) => { html += `<tr><td>${start+i+1}</td><td>${d.isSub}</td><td>${d.system}</td><td>${d.dwg}</td><td>${d.rev || '-'}</td><td>${d.line}</td><td>${d.spool}</td><td>${d.joint}</td><td>${d.size}</td><td>${d.thick}</td><td>${d.mat}</td><td>${d.weldType}</td><td><small class="text-muted">${d.jointRem}</small></td><td class="fw-bold">${d.testPkg}</td><td>${d.rtRep || '-'}</td><td>${d.pautRep || '-'}</td><td>${d.mtRep || '-'}</td><td>${d.ptRep || '-'}</td><td>${d.pmiRep || '-'}</td><td>${d.hardnessRep || '-'}</td><td>${d.ferriteRep || '-'}</td><td>${d.pwhtRep || '-'}</td></tr>`; });
             tbody.innerHTML = html;
             
             // Tính số lượng báo cáo động cho từng cột báo cáo
@@ -6405,7 +6405,7 @@
             const s = currentSummary || getSummary();
             // Bố trí Grand Total theo cột, hiển thị màu sắc chuyên nghiệp
             document.getElementById('tableFullFoot').innerHTML = `<tr>
-                <th colspan="9" style="text-align:left; background:#e8f5e9; color:#2e7d32; font-weight:800; padding:10px 8px; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10;">GRAND TOTAL (${s.total.toLocaleString()} Joints)</th>
+                <th colspan="8" style="text-align:left; background:#e8f5e9; color:#2e7d32; font-weight:800; padding:10px 8px; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10;">GRAND TOTAL (${s.total.toLocaleString()} Joints)</th>
                 <th style="background:#e8f5e9; color:#2e7d32; font-weight:800; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10; text-align: center;">${s.diaInch.toFixed(1)}"</th>
                 <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
                 <th style="background:#f5f5f5; border-top: 2px solid #ddd; position: sticky; bottom: 0; z-index: 10;"></th>
