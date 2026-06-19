@@ -1341,7 +1341,7 @@
                                         <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardWeldingDailyPerformance')" title="Expand Welding chart"></i>
                                     </div>
                                 </div>
-                                <div class="chart-container-wrap" style="position: relative; height: 280px; width: 100%;">
+                                <div class="chart-container-wrap" style="position: relative; height: 400px; width: 100%;">
                                     <canvas id="chartWeldingDaily"></canvas>
                                 </div>
                                 <!-- Legend cho Welding -->
@@ -1366,7 +1366,7 @@
                                         <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardNdtDailyPerformance')" title="Expand NDT chart"></i>
                                     </div>
                                 </div>
-                                <div class="chart-container-wrap" style="position: relative; height: 280px; width: 100%;">
+                                <div class="chart-container-wrap" style="position: relative; height: 400px; width: 100%;">
                                     <canvas id="chartNdtDaily"></canvas>
                                 </div>
                                 <!-- Legend cho NDT -->
@@ -5148,6 +5148,7 @@
                                 position: 'left',
                                 title: { display: true, text: 'Quantity (Joints)', font: { weight: 'bold' } },
                                 grid: { color: 'rgba(0,0,0,0.05)' },
+                                grace: '10%',
                                 afterFit: function(scaleInstance) {
                                     scaleInstance.width = 65;
                                 }
@@ -5158,6 +5159,7 @@
                                 position: 'right',
                                 title: { display: true, text: 'Cumulative Quantity (Joints)', font: { weight: 'bold' } },
                                 grid: { drawOnChartArea: false },
+                                grace: '5%',
                                 afterFit: function(scaleInstance) {
                                     scaleInstance.width = 80;
                                 }
@@ -5363,6 +5365,7 @@
                                 position: 'left',
                                 title: { display: true, text: 'Quantity (Joints)', font: { weight: 'bold' } },
                                 grid: { color: 'rgba(0,0,0,0.05)' },
+                                grace: '10%',
                                 afterFit: function(scaleInstance) {
                                     scaleInstance.width = 65;
                                 }
@@ -5373,6 +5376,7 @@
                                 position: 'right',
                                 title: { display: true, text: 'Cumulative Requests', font: { weight: 'bold' } },
                                 grid: { drawOnChartArea: false },
+                                grace: '5%',
                                 afterFit: function(scaleInstance) {
                                     scaleInstance.width = 80;
                                 }
