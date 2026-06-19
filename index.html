@@ -1889,7 +1889,18 @@
                                 <div class="table-responsive" style="max-height: 400px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
-                                            <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
+                                            <tr>
+                                                <th style="width: 50px;">No</th>
+                                                <th style="width: 150px;">Line No.</th>
+                                                <th style="width: 120px;">Spool No.</th>
+                                                <th style="width: 95px;">Joint No.</th>
+                                                <th style="width: 75px;">Size</th>
+                                                <th style="width: 95px;">Weld Type</th>
+                                                <th style="width: 95px;">Config</th>
+                                                <th style="width: 130px;">Report No.</th>
+                                                <th style="width: 110px;">Report Date</th>
+                                                <th style="width: 95px;">Result</th>
+                                            </tr>
                                         </thead>
                                         <tbody id="tblRtDetailBody"></tbody>
                                         <tfoot id="tblRtDetailFoot"></tfoot>
@@ -1901,7 +1912,18 @@
                                 <div class="table-responsive" style="max-height: 400px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
-                                            <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
+                                            <tr>
+                                                <th style="width: 50px;">No</th>
+                                                <th style="width: 150px;">Line No.</th>
+                                                <th style="width: 120px;">Spool No.</th>
+                                                <th style="width: 95px;">Joint No.</th>
+                                                <th style="width: 75px;">Size</th>
+                                                <th style="width: 95px;">Weld Type</th>
+                                                <th style="width: 95px;">Config</th>
+                                                <th style="width: 130px;">Report No.</th>
+                                                <th style="width: 110px;">Report Date</th>
+                                                <th style="width: 95px;">Result</th>
+                                            </tr>
                                         </thead>
                                         <tbody id="tblPautDetailBody"></tbody>
                                         <tfoot id="tblPautDetailFoot"></tfoot>
@@ -1913,7 +1935,18 @@
                                 <div class="table-responsive" style="max-height: 400px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
-                                            <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
+                                            <tr>
+                                                <th style="width: 50px;">No</th>
+                                                <th style="width: 150px;">Line No.</th>
+                                                <th style="width: 120px;">Spool No.</th>
+                                                <th style="width: 95px;">Joint No.</th>
+                                                <th style="width: 75px;">Size</th>
+                                                <th style="width: 95px;">Weld Type</th>
+                                                <th style="width: 95px;">Config</th>
+                                                <th style="width: 130px;">Report No.</th>
+                                                <th style="width: 110px;">Report Date</th>
+                                                <th style="width: 95px;">Result</th>
+                                            </tr>
                                         </thead>
                                         <tbody id="tblMtDetailBody"></tbody>
                                         <tfoot id="tblMtDetailFoot"></tfoot>
@@ -1925,7 +1958,18 @@
                                 <div class="table-responsive" style="max-height: 400px;">
                                     <table class="table table-sm table-striped table-bordered align-middle text-center" style="font-size: 0.82rem;">
                                         <thead class="table-dark">
-                                            <tr><th>No</th><th>Joint No.</th><th>Spool No.</th><th>Line No.</th><th>Size</th><th>Weld Type</th><th>Config</th><th>Report No.</th><th>Report Date</th><th>Result</th></tr>
+                                            <tr>
+                                                <th style="width: 50px;">No</th>
+                                                <th style="width: 150px;">Line No.</th>
+                                                <th style="width: 120px;">Spool No.</th>
+                                                <th style="width: 95px;">Joint No.</th>
+                                                <th style="width: 75px;">Size</th>
+                                                <th style="width: 95px;">Weld Type</th>
+                                                <th style="width: 95px;">Config</th>
+                                                <th style="width: 130px;">Report No.</th>
+                                                <th style="width: 110px;">Report Date</th>
+                                                <th style="width: 95px;">Result</th>
+                                            </tr>
                                         </thead>
                                         <tbody id="tblPtDetailBody"></tbody>
                                         <tfoot id="tblPtDetailFoot"></tfoot>
@@ -4334,9 +4378,9 @@
 
                     html += `<tr>
                         <td>${idx + 1}</td>
-                        <td class="fw-bold">${d.joint || '-'}</td>
-                        <td>${d.spool || '-'}</td>
                         <td>${d.line || '-'}</td>
+                        <td>${d.spool || '-'}</td>
+                        <td class="fw-bold">${d.joint || '-'}</td>
                         <td>${d.size || '-'}</td>
                         <td>${d.weldType || '-'}</td>
                         <td>${d.configCol || '-'}</td>
@@ -5092,7 +5136,11 @@
                             }
                         },
                         scales: {
-                            x: { grid: { display: false } },
+                            x: {
+                                min: labels.length > (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) ? labels.length - (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) : 0,
+                                max: labels.length - 1,
+                                grid: { display: false }
+                            },
                             y: {
                                 type: 'linear',
                                 display: true,
@@ -5136,7 +5184,11 @@
                                     mode: 'x'
                                 },
                                 limits: {
-                                    x: { minRange: 3 }
+                                    x: {
+                                        min: 0,
+                                        max: labels.length - 1,
+                                        minRange: 3
+                                    }
                                 }
                             }
                         }
@@ -5299,7 +5351,11 @@
                             }
                         },
                         scales: {
-                            x: { grid: { display: false } },
+                            x: {
+                                min: labels.length > (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) ? labels.length - (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) : 0,
+                                max: labels.length - 1,
+                                grid: { display: false }
+                            },
                             y: {
                                 type: 'linear',
                                 display: true,
@@ -5343,7 +5399,11 @@
                                     mode: 'x'
                                 },
                                 limits: {
-                                    x: { minRange: 3 }
+                                    x: {
+                                        min: 0,
+                                        max: labels.length - 1,
+                                        minRange: 3
+                                    }
                                 }
                             }
                         }
