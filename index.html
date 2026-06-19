@@ -1402,6 +1402,8 @@
                             <div class="d-flex align-items-center gap-1">
                                 <span class="small fw-bold text-muted">Hydrotested Date:</span>
                                 <input type="date" id="hydroDate" class="form-control form-control-sm" style="width: 150px;" onchange="renderHydro()" title="Chọn ngày hydrotest">
+                                <span class="small fw-bold text-muted ms-2">Hydrotest plan:</span>
+                                <input type="text" id="hydroPlanFilter" class="form-control form-control-sm" placeholder="Search Plan..." style="width: 130px; font-size: 0.75rem;" oninput="debouncedRenderHydro()">
                                 <button class="btn btn-sm btn-outline-secondary" onclick="clearHydroFilters()" title="Clear Filters"><i class="fas fa-times me-1"></i>Clear</button>
                             </div>
                             <div class="dropdown" style="min-width: 140px;" id="hydroStatusDropdownContainer">
@@ -1523,7 +1525,7 @@
                                 <tr>
                                     <th class="hydro-sticky-col hydro-sticky-col-0" style="width:40px;">No.</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-1 sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:100px;">Hydrotested Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
-                                    <th class="hydro-sticky-col hydro-sticky-col-2" style="width:100px;">Skyline Date</th>
+                                    <th class="hydro-sticky-col hydro-sticky-col-2" style="width:100px;">Hydrotest plan</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-3" style="width:70px;">System</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-4" style="min-width:180px;">Test Package</th>
                                     <th style="min-width:220px;">Line No.</th>
@@ -3173,7 +3175,7 @@
 
                 const tpKey = findKey(['TESTPACK', 'TEST PACKAGE', 'TEST PACKGE', 'PACKGE', 'PACKAGENO']);
                 const dateKey = findKey(['HYDROTESTPLAN', 'HYDROTESTDATE', 'ALIGMENT', 'ALIGNMENT', 'DATE'], ['SKYLINE']);
-                const skylineKey = findKey(['SKYLINE']);
+                const skylineKey = findKey(['HYDROTESTPLAN', 'TESTPLAN', 'SKYLINE']);
                 const lineKey = findKey(['LINENO', 'LINE_NO', 'LINE'], ['SKYLINE', 'DATE', 'ALIGNMENT']);
                 const spoolKey = findKey(['SPOOLNO', 'SPOOL_NO', 'SPOOL']);
                 const sysKey = findKey(['SYSTEM', 'SYS']);
@@ -6101,9 +6103,16 @@
             // Bộ lọc search input
             const searchQuery = document.getElementById('hydroSearchInput') ? document.getElementById('hydroSearchInput').value.toLowerCase().trim() : '';
 
+            // Bộ lọc Hydrotest plan
+            const hydroPlanVal = document.getElementById('hydroPlanFilter') ? document.getElementById('hydroPlanFilter').value.toLowerCase().trim() : '';
+
             let sorted = cachedHydroList.filter(h => {
                 if (hydroSystemVal && !h.sys.toLowerCase().includes(hydroSystemVal)) return false;
                 if (sSys && !h.sys.toLowerCase().includes(sSys)) return false;
+                if (hydroPlanVal) {
+                    const planStr = (h.skylineDateStr || '').toLowerCase();
+                    if (!planStr.includes(hydroPlanVal)) return false;
+                }
                 if (testPkgArray.length > 0) {
                     const hk = (h.testPack || '').toLowerCase();
                     if (!testPkgArray.some(p => hk.includes(p))) return false;
@@ -6220,7 +6229,7 @@
 
             // Header row
             ws.addRow([
-                'No.','Hydrotested Date','Skyline Date','System','Test Package','Line No.','Spools',
+                'No.','Hydrotested Date','Hydrotest plan','System','Test Package','Line No.','Spools',
                 'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
                 'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
                 'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
@@ -7102,6 +7111,9 @@
         function clearHydroFilters() {
             const hDate = document.getElementById('hydroDate');
             if (hDate) hDate.value = '';
+            
+            const hpFilter = document.getElementById('hydroPlanFilter');
+            if (hpFilter) hpFilter.value = '';
             
             const searchInput = document.getElementById('hydroSearchInput');
             if (searchInput) searchInput.value = '';
@@ -8557,7 +8569,7 @@
                     const tp = (row[tpIdx] || '').toString().trim().toUpperCase();
                     if (!tp) continue;
 
-                    const skylineDate = (row[skylineIdx] || '').toString().trim();
+                    const skylineDate = (row[testPlanIdx] || '').toString().trim();
                     const testPlanDate = (row[testPlanIdx] || '').toString().trim();
                     const statusFab = (row[statusFabIdx] || '').toString().trim();
                     const hydroDate = (row[hydroIdx] || '').toString().trim();
