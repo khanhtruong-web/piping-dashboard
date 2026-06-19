@@ -3,5 +3,15 @@
 *.py
 *.ps1
 *.js
+*.xlsx
+*.md
+!README.md
+*.txt
+js_data_cache.json
+_package.json
 Launch_InspectorAI.bat
 node_modules/
+scratch/
+.agents/
+chromeprofile/
+.git/
