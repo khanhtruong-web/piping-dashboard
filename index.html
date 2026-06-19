@@ -1845,6 +1845,7 @@
                                 <div class="text-muted small fw-bold">NDT BACKLOG</div>
                                 <h3 class="mb-0 fw-bold text-danger mt-1" id="lblDetailNdtBacklog">0</h3>
                                 <div class="text-muted small mt-1" id="lblDetailNdtBacklogPct">0%</div>
+                                <div class="mt-1 border-top pt-1 text-muted" id="lblDetailNdtBacklogDetail" style="font-size: 0.65rem; line-height: 1.1;">RT: 0 | PAUT: 0 | MT: 0 | PT: 0</div>
                             </div>
                         </div>
                     </div>
@@ -1935,6 +1936,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="btnExportDailyBacklogExcel"><i class="fas fa-exclamation-triangle me-2"></i>Export Backlog</button>
                     <button type="button" class="btn btn-success" id="btnExportDailyDetailExcel"><i class="fas fa-file-excel me-2"></i>Export Excel</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
@@ -4242,6 +4244,19 @@
             document.getElementById('lblDetailNdtBacklog').innerText = ndtBacklogCount.toLocaleString();
             document.getElementById('lblDetailNdtBacklogPct').innerText = ndtRequestCount > 0 ? Math.round(ndtBacklogCount / ndtRequestCount * 100) + '%' : '0%';
 
+            // Tính chi tiết số mối backlog cho mỗi phương pháp NDT
+            const rtBack = dayJoints.filter(d => d.reqRT && !d.hasRT).length;
+            const pautBack = dayJoints.filter(d => d.reqPAUT && !d.hasPAUT).length;
+            const mtBack = dayJoints.filter(d => d.reqMT && !d.hasMT).length;
+            const ptBack = dayJoints.filter(d => d.reqPT && !d.hasPT).length;
+
+            document.getElementById('lblDetailNdtBacklogDetail').innerHTML = `
+                RT: <strong class="${rtBack > 0 ? 'text-danger' : 'text-success'}">${rtBack}</strong> | 
+                PAUT: <strong class="${pautBack > 0 ? 'text-danger' : 'text-success'}">${pautBack}</strong> | 
+                MT: <strong class="${mtBack > 0 ? 'text-danger' : 'text-success'}">${mtBack}</strong> | 
+                PT: <strong class="${ptBack > 0 ? 'text-danger' : 'text-success'}">${ptBack}</strong>
+            `;
+
             const typeCounts = {};
             dayJoints.forEach(d => {
                 const rem = d.jointRem || 'BLANK';
@@ -4358,13 +4373,14 @@
 
             // Cập nhật nút export Excel
             document.getElementById('btnExportDailyDetailExcel').onclick = () => exportDailyDetailExcel(periodStr, groupUnit);
+            document.getElementById('btnExportDailyBacklogExcel').onclick = () => exportDailyBacklogExcel(periodStr, groupUnit);
 
             const modalElement = document.getElementById('dailyDetailModal');
             const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modal.show();
         }
 
-        function exportDailyDetailExcel(periodStr, groupUnit = 'date') {
+        async function exportDailyDetailExcel(periodStr, groupUnit = 'date') {
             const subconFilter = document.getElementById('dailyFilterSubcon') ? document.getElementById('dailyFilterSubcon').value : '';
             
             const getStartOfWeek = (timestamp) => {
@@ -4384,13 +4400,11 @@
             };
 
             let dayJoints = filteredData.filter(d => {
-                // Lọc theo subcon
                 if (subconFilter) {
                     const sub = (d.isSub || '').toUpperCase();
                     if (!sub.includes(subconFilter.toUpperCase())) return false;
                 }
                 
-                // Lọc theo khoảng thời gian
                 let label = '';
                 if (!d.wDate) {
                     label = 'No Date';
@@ -4426,112 +4440,133 @@
                 typeCounts[rem] = (typeCounts[rem] || 0) + 1;
             });
 
-            let html = `
-            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-            <head>
-            <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
-            <!--[if gte mso 9]>
-            <xml>
-             <x:ExcelWorkbook>
-              <x:ExcelWorksheets>
-               <x:ExcelWorksheet>
-                <x:Name>Fabrication Summary</x:Name>
-                <x:WorksheetOptions>
-                 <x:DisplayGridlines/>
-                </x:WorksheetOptions>
-               </x:ExcelWorksheet>
-              </x:ExcelWorksheets>
-             </x:ExcelWorkbook>
-            </xml>
-            <![endif]-->
-            <style>
-                body { font-family: 'Segoe UI', Arial, sans-serif; }
-                table { border-collapse: collapse; margin-bottom: 20px; }
-                th { background-color: #1565c0; color: #ffffff; font-weight: bold; border: 1px solid #cccccc; padding: 8px; text-align: center; }
-                td { border: 1px solid #cccccc; padding: 6px; }
-                .kpi-title { font-weight: bold; background-color: #e3f2fd; }
-                .kpi-val { text-align: center; font-weight: bold; }
-                .title-hdr { font-size: 16px; font-weight: bold; color: #1565c0; padding: 10px 0; }
-                .text-center { text-align: center; }
-                .text-success { color: #2e7d32; font-weight: bold; }
-                .text-danger { color: #c62828; font-weight: bold; }
-                .text-warning { color: #f9a825; font-weight: bold; }
-            </style>
-            </head>
-            <body>
-                <div class="title-hdr">DAILY FABRICATION DETAIL REPORT - ${periodStr}${subconText.toUpperCase()}</div>
-                
-                <table>
-                    <tr>
-                        <th colspan="4" style="background-color: #0d47a1; color: #ffffff;">FABRICATION & NDT SUMMARY (PIVOT SUMMARY)</th>
-                    </tr>
-                    <tr>
-                        <td class="kpi-title" width="200">Weld Completion (Joints)</td>
-                        <td class="kpi-val" width="100">${totalWeld}</td>
-                        <td class="kpi-title" width="200">NDT Request (Joints)</td>
-                        <td class="kpi-val" width="100">${ndtRequestCount}</td>
-                    </tr>
-                    <tr>
-                        <td class="kpi-title">Fit-up ACC (Joints)</td>
-                        <td class="kpi-val">${fitupAccCount}</td>
-                        <td class="kpi-title">NDT Completed (Joints)</td>
-                        <td class="kpi-val text-success">${ndtCompletedCount}</td>
-                    </tr>
-                    <tr>
-                        <td class="kpi-title">Fit-up ACC Rate (%)</td>
-                        <td class="kpi-val">${totalWeld > 0 ? Math.round(fitupAccCount / totalWeld * 100) + '%' : '0%'}</td>
-                        <td class="kpi-title">NDT Completion Rate (%)</td>
-                        <td class="kpi-val">${ndtRequestCount > 0 ? Math.round(ndtCompletedCount / ndtRequestCount * 100) + '%' : '0%'}</td>
-                    </tr>
-                    <tr>
-                        <td class="kpi-title">Visual ACC (Joints)</td>
-                        <td class="kpi-val">${visualAccCount}</td>
-                        <td class="kpi-title">NDT Backlog (Joints)</td>
-                        <td class="kpi-val text-danger">${ndtBacklogCount}</td>
-                    </tr>
-                    <tr>
-                        <td class="kpi-title">Visual ACC Rate (%)</td>
-                        <td class="kpi-val">${totalWeld > 0 ? Math.round(visualAccCount / totalWeld * 100) + '%' : '0%'}</td>
-                        <td class="kpi-title">NDT Backlog Rate (%)</td>
-                        <td class="kpi-val">${ndtRequestCount > 0 ? Math.round(ndtBacklogCount / ndtRequestCount * 100) + '%' : '0%'}</td>
-                    </tr>
-                </table>
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Fabrication Detail');
 
-                <table>
-                    <tr>
-                        <th colspan="2" style="background-color: #2e7d32; color: #ffffff;">WELD TYPE BREAKDOWN (TV COLUMN)</th>
-                    </tr>
-                    ${Object.entries(typeCounts).map(([type, count]) => `
-                    <tr>
-                        <td width="200" style="font-weight: bold;">${type}</td>
-                        <td width="100" class="text-center">${count}</td>
-                    </tr>`).join('')}
-                </table>
+            const thinBorder = {
+                top: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+                bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+                left: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+                right: { style: 'thin', color: { argb: 'FFDDDDDD' } }
+            };
+            const headerFill = (argb) => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
 
-                <br/>
-                <div class="title-hdr">NDT DETAILS LIST (RT, PAUT, MT, PT)</div>
+            // Title
+            ws.addRow([`DAILY FABRICATION DETAIL REPORT - ${periodStr.toUpperCase()}${subconText.toUpperCase()}`]);
+            ws.mergeCells('A1:K1');
+            ws.getCell('A1').font = { size: 14, bold: true, color: { argb: 'FF1565C0' } };
+            ws.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
+            ws.getRow(1).height = 30;
+
+            ws.addRow([]); // Blank row
+
+            // Section 1: Summary Table
+            ws.addRow(['FABRICATION & NDT SUMMARY (PIVOT SUMMARY)', '', '', '']);
+            ws.mergeCells('A3:D3');
+            const summaryHdr = ws.getCell('A3');
+            summaryHdr.fill = headerFill('FF0D47A1');
+            summaryHdr.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            summaryHdr.alignment = { horizontal: 'center' };
+
+            const summaryRows = [
+                ['Weld Completion (Joints)', totalWeld, 'NDT Request (Joints)', ndtRequestCount],
+                ['Fit-up ACC (Joints)', fitupAccCount, 'NDT Completed (Joints)', ndtCompletedCount],
+                ['Fit-up ACC Rate (%)', totalWeld > 0 ? (fitupAccCount / totalWeld) : 0, 'NDT Completion Rate (%)', ndtRequestCount > 0 ? (ndtCompletedCount / ndtRequestCount) : 0],
+                ['Visual ACC (Joints)', visualAccCount, 'NDT Backlog (Joints)', ndtBacklogCount],
+                ['Visual ACC Rate (%)', totalWeld > 0 ? (visualAccCount / totalWeld) : 0, 'NDT Backlog Rate (%)', ndtRequestCount > 0 ? (ndtBacklogCount / ndtRequestCount) : 0]
+            ];
+
+            summaryRows.forEach(r => {
+                ws.addRow([r[0], r[1], r[2], r[3]]);
+            });
+
+            // Format Summary table
+            for (let r = 4; r <= 8; r++) {
+                const row = ws.getRow(r);
+                row.getCell(1).fill = headerFill('FFE3F2FD');
+                row.getCell(1).font = { bold: true };
+                row.getCell(1).border = thinBorder;
                 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>NDT Method</th>
-                            <th>Joint No.</th>
-                            <th>Spool No.</th>
-                            <th>Line No.</th>
-                            <th>Size</th>
-                            <th>Weld Type</th>
-                            <th>Config</th>
-                            <th>Report No.</th>
-                            <th>Report Date</th>
-                            <th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+                row.getCell(2).font = { bold: true };
+                row.getCell(2).alignment = { horizontal: 'center' };
+                row.getCell(2).border = thinBorder;
+                if (r === 6 || r === 8) {
+                    row.getCell(2).numFmt = '0%';
+                }
+
+                row.getCell(3).fill = headerFill('FFE3F2FD');
+                row.getCell(3).font = { bold: true };
+                row.getCell(3).border = thinBorder;
+
+                row.getCell(4).font = { bold: true };
+                row.getCell(4).alignment = { horizontal: 'center' };
+                row.getCell(4).border = thinBorder;
+                if (r === 6 || r === 8) {
+                    row.getCell(4).numFmt = '0%';
+                }
+                
+                // Color text for Completed / Backlog
+                if (r === 5) row.getCell(4).font = { bold: true, color: { argb: 'FF2E7D32' } };
+                if (r === 7) row.getCell(4).font = { bold: true, color: { argb: 'FFC62828' } };
+            }
+
+            ws.addRow([]); // Blank row
+
+            // Section 2: Weld Type Breakdown Table
+            ws.addRow(['WELD TYPE BREAKDOWN (TV COLUMN)', '']);
+            ws.mergeCells('A10:B10');
+            const breakdownHdr = ws.getCell('A10');
+            breakdownHdr.fill = headerFill('FF2E7D32');
+            breakdownHdr.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            breakdownHdr.alignment = { horizontal: 'center' };
+
+            let breakRowIdxStart = 11;
+            Object.entries(typeCounts).forEach(([type, count]) => {
+                ws.addRow([type, count]);
+            });
+            let breakRowIdxEnd = ws.rowCount;
+
+            for (let r = breakRowIdxStart; r <= breakRowIdxEnd; r++) {
+                const row = ws.getRow(r);
+                row.getCell(1).font = { bold: true };
+                row.getCell(1).border = thinBorder;
+                row.getCell(2).alignment = { horizontal: 'center' };
+                row.getCell(2).border = thinBorder;
+            }
+
+            ws.addRow([]); // Blank row
+
+            // Section 3: NDT Details List
+            ws.addRow(['NDT DETAILS LIST (RT, PAUT, MT, PT)', '', '', '', '', '', '', '', '', '', '']);
+            const ndtListHdrIdx = ws.rowCount;
+            ws.mergeCells(`A${ndtListHdrIdx}:K${ndtListHdrIdx}`);
+            const ndtListHdr = ws.getCell(`A${ndtListHdrIdx}`);
+            ndtListHdr.fill = headerFill('FF1565C0');
+            ndtListHdr.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            ndtListHdr.alignment = { horizontal: 'center' };
+
+            // Header columns
+            ws.addRow(['No', 'NDT Method', 'Joint No.', 'Spool No.', 'Line No.', 'Size', 'Weld Type', 'Config', 'Report No.', 'Report Date', 'Result']);
+            const colHdrIdx = ws.rowCount;
+            const colHdrRow = ws.getRow(colHdrIdx);
+            colHdrRow.height = 24;
+            for (let c = 1; c <= 11; c++) {
+                const cell = colHdrRow.getCell(c);
+                cell.fill = headerFill('FF37474F');
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = thinBorder;
+            }
 
             let index = 1;
             const methods = ['RT', 'PAUT', 'MT', 'PT'];
+            let detailStartIdx = ws.rowCount + 1;
+            
+            let totalRt = 0, accRt = 0, rejRt = 0, waitRt = 0;
+            let totalPaut = 0, accPaut = 0, rejPaut = 0, waitPaut = 0;
+            let totalMt = 0, accMt = 0, rejMt = 0, waitMt = 0;
+            let totalPt = 0, accPt = 0, rejPt = 0, waitPt = 0;
+
             methods.forEach(method => {
                 let list = [];
                 if (method === 'RT') list = dayJoints.filter(d => d.reqRT || d.hasRT);
@@ -4543,76 +4578,279 @@
                     let repNo = '';
                     let repDate = '';
                     let res = '';
-                    let resStyle = '';
 
                     if (method === 'RT') {
                         repNo = d.rtRep || '';
                         repDate = d.rtDate ? new Date(d.rtDate).toLocaleDateString('en-GB') : '';
                         res = d.rtRes || '';
+                        totalRt++;
+                        if (!repNo) waitRt++; else if (res === 'ACC') accRt++; else if (res === 'REJ') rejRt++;
                     } else if (method === 'PAUT') {
                         repNo = d.pautRep || '';
                         repDate = d.pautDate ? new Date(d.pautDate).toLocaleDateString('en-GB') : '';
                         res = d.pautRes || '';
+                        totalPaut++;
+                        if (!repNo) waitPaut++; else if (res === 'ACC') accPaut++; else if (res === 'REJ') rejPaut++;
                     } else if (method === 'MT') {
                         repNo = d.mtRep || '';
                         repDate = d.mtDate ? new Date(d.mtDate).toLocaleDateString('en-GB') : '';
                         res = d.mtRes || '';
+                        totalMt++;
+                        if (!repNo) waitMt++; else if (res === 'ACC') accMt++; else if (res === 'REJ') rejMt++;
                     } else if (method === 'PT') {
                         repNo = d.ptRep || '';
                         repDate = d.ptDate ? new Date(d.ptDate).toLocaleDateString('en-GB') : '';
                         res = d.ptRes || '';
+                        totalPt++;
+                        if (!repNo) waitPt++; else if (res === 'ACC') accPt++; else if (res === 'REJ') rejPt++;
                     }
 
                     if (!repNo) {
                         repNo = 'PENDING';
                         repDate = '-';
                         res = 'WAIT NDT';
-                        resStyle = 'style="color: #f57f17; font-weight: bold;"';
-                    } else {
-                        if (res === 'ACC') resStyle = 'style="color: #2e7d32; font-weight: bold;"';
-                        else if (res === 'REJ') resStyle = 'style="color: #c62828; font-weight: bold;"';
                     }
 
-                    html += `
-                        <tr>
-                            <td class="text-center">${index++}</td>
-                            <td class="text-center" style="font-weight: bold; background-color: #f9f9f9;">${method}</td>
-                            <td style="font-weight: bold;">${d.joint || '-'}</td>
-                            <td>${d.spool || '-'}</td>
-                            <td>${d.line || '-'}</td>
-                            <td class="text-center">${d.size || '-'}</td>
-                            <td class="text-center">${d.weldType || '-'}</td>
-                            <td class="text-center">${d.configCol || '-'}</td>
-                            <td class="text-center">${repNo}</td>
-                            <td class="text-center">${repDate}</td>
-                            <td class="text-center" ${resStyle}>${res || '-'}</td>
-                        </tr>
-                    `;
+                    ws.addRow([
+                        index++,
+                        method,
+                        d.joint || '-',
+                        d.spool || '-',
+                        d.line || '-',
+                        d.size || '-',
+                        d.weldType || '-',
+                        d.configCol || '-',
+                        repNo,
+                        repDate,
+                        res
+                    ]);
                 });
             });
 
-            if (index === 1) {
-                html += `<tr><td colspan="11" class="text-center">No NDT Requests available for this period.</td></tr>`;
+            let detailEndIdx = ws.rowCount;
+
+            // Format detail table rows
+            for (let r = detailStartIdx; r <= detailEndIdx; r++) {
+                const row = ws.getRow(r);
+                row.height = 20;
+                for (let c = 1; c <= 11; c++) {
+                    const cell = row.getCell(c);
+                    cell.border = thinBorder;
+                    cell.alignment = { vertical: 'middle', horizontal: (c === 3 || c === 4 || c === 5) ? 'left' : 'center' };
+                }
+                
+                // Color result text
+                const resVal = row.getCell(11).value;
+                if (resVal === 'ACC') {
+                    row.getCell(11).font = { bold: true, color: { argb: 'FF2E7D32' } };
+                } else if (resVal === 'REJ') {
+                    row.getCell(11).font = { bold: true, color: { argb: 'FFC62828' } };
+                } else if (resVal === 'WAIT NDT') {
+                    row.getCell(11).font = { bold: true, color: { argb: 'FFF57F17' } };
+                }
+                
+                // Highlight PENDING Report No
+                if (row.getCell(9).value === 'PENDING') {
+                    row.getCell(9).font = { bold: true, color: { argb: 'FFC62828' } };
+                }
             }
 
-            html += `
-                    </tbody>
-                </table>
-            </body>
-            </html>
-            `;
+            // Grand Total Footer in Excel Detail Table
+            const totalNdtJoints = totalRt + totalPaut + totalMt + totalPt;
+            const totalAcc = accRt + accPaut + accMt + accPt;
+            const totalRej = rejRt + rejPaut + rejMt + rejPt;
+            const totalWait = waitRt + waitPaut + waitMt + waitPt;
 
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            ws.addRow([
+                `GRAND TOTAL: ${totalNdtJoints} Joints`, '', '', '', '', '', '', '', '', '', 
+                `ACC: ${totalAcc} | REJ: ${totalRej} | WAIT: ${totalWait}`
+            ]);
+            const footerIdx = ws.rowCount;
+            ws.mergeCells(`A${footerIdx}:H${footerIdx}`);
+            ws.mergeCells(`I${footerIdx}:K${footerIdx}`);
+
+            const fCell1 = ws.getCell(`A${footerIdx}`);
+            fCell1.font = { bold: true };
+            fCell1.alignment = { vertical: 'middle', horizontal: 'left' };
+            fCell1.fill = headerFill('FFFFF3E0');
+            fCell1.border = thinBorder;
+
+            const fCell2 = ws.getCell(`I${footerIdx}`);
+            fCell2.font = { bold: true };
+            fCell2.alignment = { vertical: 'middle', horizontal: 'right' };
+            fCell2.fill = headerFill('FFFFF3E0');
+            fCell2.border = thinBorder;
+
+            // Set column widths
+            const colWidths = [6, 12, 12, 35, 30, 10, 12, 15, 18, 15, 12];
+            colWidths.forEach((w, i) => {
+                ws.getColumn(i + 1).width = w;
+            });
+
+            // Save workbook
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const cleanPeriod = periodStr.replace(/\//g, '-');
             const cleanSub = subconFilter ? `_${subconFilter}` : '';
-            a.href = url;
-            a.download = `Daily_Detail_${cleanPeriod}${cleanSub}.xls`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            saveAs(blob, `Daily_Detail_${cleanPeriod}${cleanSub}.xlsx`);
+        }
+
+        async function exportDailyBacklogExcel(periodStr, groupUnit = 'date') {
+            const subconFilter = document.getElementById('dailyFilterSubcon') ? document.getElementById('dailyFilterSubcon').value : '';
+            
+            const getStartOfWeek = (timestamp) => {
+                if (!timestamp) return new Date(0);
+                const d = new Date(timestamp);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                const monday = new Date(d.setDate(diff));
+                monday.setHours(0,0,0,0);
+                return monday;
+            };
+
+            const getStartOfMonth = (timestamp) => {
+                if (!timestamp) return new Date(0);
+                const d = new Date(timestamp);
+                return new Date(d.getFullYear(), d.getMonth(), 1);
+            };
+
+            let dayJoints = filteredData.filter(d => {
+                if (subconFilter) {
+                    const sub = (d.isSub || '').toUpperCase();
+                    if (!sub.includes(subconFilter.toUpperCase())) return false;
+                }
+                
+                let label = '';
+                if (!d.wDate) {
+                    label = 'No Date';
+                } else if (groupUnit === 'date') {
+                    label = d.wDateStr || 'No Date';
+                } else if (groupUnit === 'week') {
+                    const monday = getStartOfWeek(d.wDate);
+                    label = `W/C ${monday.toLocaleDateString('en-GB')}`;
+                } else if (groupUnit === 'month') {
+                    const monthStart = getStartOfMonth(d.wDate);
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    label = `${monthNames[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
+                }
+                return label === periodStr;
+            });
+
+            const methods = ['RT', 'PAUT', 'MT', 'PT'];
+            let backlogList = [];
+            methods.forEach(method => {
+                let list = [];
+                if (method === 'RT') list = dayJoints.filter(d => d.reqRT && !d.hasRT);
+                else if (method === 'PAUT') list = dayJoints.filter(d => d.reqPAUT && !d.hasPAUT);
+                else if (method === 'MT') list = dayJoints.filter(d => d.reqMT && !d.hasMT);
+                else if (method === 'PT') list = dayJoints.filter(d => d.reqPT && !d.hasPT);
+
+                list.forEach(d => {
+                    backlogList.push({
+                        method: method,
+                        joint: d.joint || '-',
+                        spool: d.spool || '-',
+                        line: d.line || '-',
+                        size: d.size || '-',
+                        weldType: d.weldType || '-',
+                        configCol: d.configCol || '-'
+                    });
+                });
+            });
+
+            if (backlogList.length === 0) {
+                alert("No backlog data to export");
+                return;
+            }
+
+            const subconText = subconFilter ? ` - Subcon: ${subconFilter}` : '';
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('NDT Backlog');
+
+            const thinBorder = {
+                top: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+                bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+                left: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+                right: { style: 'thin', color: { argb: 'FFDDDDDD' } }
+            };
+            const headerFill = (argb) => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
+
+            // Title
+            ws.addRow([`DAILY NDT BACKLOG REPORT - ${periodStr.toUpperCase()}${subconText.toUpperCase()}`]);
+            ws.mergeCells('A1:K1');
+            ws.getCell('A1').font = { size: 14, bold: true, color: { argb: 'FFC62828' } };
+            ws.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
+            ws.getRow(1).height = 30;
+
+            ws.addRow([]); // Blank row
+
+            // Table Header
+            ws.addRow(['No', 'NDT Method', 'Joint No.', 'Spool No.', 'Line No.', 'Size', 'Weld Type', 'Config', 'Report No.', 'Report Date', 'Result']);
+            const colHdrIdx = ws.rowCount;
+            const colHdrRow = ws.getRow(colHdrIdx);
+            colHdrRow.height = 24;
+            for (let c = 1; c <= 11; c++) {
+                const cell = colHdrRow.getCell(c);
+                cell.fill = headerFill('FFC62828');
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = thinBorder;
+            }
+
+            let detailStartIdx = ws.rowCount + 1;
+            backlogList.forEach((d, idx) => {
+                ws.addRow([
+                    idx + 1,
+                    d.method,
+                    d.joint,
+                    d.spool,
+                    d.line,
+                    d.size,
+                    d.weldType,
+                    d.configCol,
+                    'PENDING',
+                    '-',
+                    'WAIT NDT'
+                ]);
+            });
+            let detailEndIdx = ws.rowCount;
+
+            // Style table rows
+            for (let r = detailStartIdx; r <= detailEndIdx; r++) {
+                const row = ws.getRow(r);
+                row.height = 20;
+                for (let c = 1; c <= 11; c++) {
+                    const cell = row.getCell(c);
+                    cell.border = thinBorder;
+                    cell.alignment = { vertical: 'middle', horizontal: (c === 3 || c === 4 || c === 5) ? 'left' : 'center' };
+                }
+                
+                // Color result text and PENDING Report
+                row.getCell(9).font = { bold: true, color: { argb: 'FFC62828' } };
+                row.getCell(11).font = { bold: true, color: { argb: 'FFF57F17' } };
+            }
+
+            // Grand Total
+            ws.addRow([`GRAND TOTAL BACKLOG: ${backlogList.length} Joints`, '', '', '', '', '', '', '', '', '', '']);
+            const footerIdx = ws.rowCount;
+            ws.mergeCells(`A${footerIdx}:K${footerIdx}`);
+            const fCell = ws.getCell(`A${footerIdx}`);
+            fCell.font = { bold: true, color: { argb: 'FFC62828' } };
+            fCell.alignment = { vertical: 'middle', horizontal: 'left' };
+            fCell.fill = headerFill('FFFFECEE');
+            fCell.border = thinBorder;
+
+            const colWidths = [6, 12, 12, 35, 30, 10, 12, 15, 18, 15, 12];
+            colWidths.forEach((w, i) => {
+                ws.getColumn(i + 1).width = w;
+            });
+
+            // Save workbook
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const cleanPeriod = periodStr.replace(/\//g, '-');
+            const cleanSub = subconFilter ? `_${subconFilter}` : '';
+            saveAs(blob, `Daily_Backlog_${cleanPeriod}${cleanSub}.xlsx`);
         }
 
         function updateDailyChart() {
