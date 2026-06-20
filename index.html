@@ -1120,7 +1120,7 @@
                                     <span><i class="fas fa-chart-bar me-2"></i>NDT Status by Size</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
-                                    <input type="text" id="filterSize" class="form-control form-control-sm" placeholder="Size..." style="width: 65px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
+                                    <input type="text" id="filterSize" class="form-control form-control-sm" placeholder="Type Weld..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
                                     <input type="text" id="filterMat" class="form-control form-control-sm" placeholder="Material..." style="width: 75px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
                                     <input type="text" id="filterLoc" class="form-control form-control-sm" placeholder="Location..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
                                     <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="clearBacklogSizeFilters()" title="Clear Filters" style="font-size: 0.72rem; height: 26px; border-color: #ced4da; color: #495057;"><i class="fas fa-times"></i></button>
@@ -1129,7 +1129,7 @@
                             </div>
                             <div style="max-height:600px; overflow-y:auto;">
                                 <table class="backlog-tbl" id="backlogSizeTable">
-                                    <thead><tr><th>Pipe Size</th><th>Material</th><th>Thickness</th><th>Location</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>Total</th></tr></thead>
+                                    <thead><tr><th>Type Weld</th><th>Material</th><th>Thickness</th><th>Location</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>Total</th></tr></thead>
                                     <tbody id="backlogSizeBody"></tbody>
                                     <tfoot id="backlogSizeFoot"></tfoot>
                                 </table>
@@ -6492,16 +6492,16 @@
                 let bPT = (d.reqPT && !d.hasPT) ? 1 : 0;
     
                 if (bRT || bPAUT || bMT || bPT) {
-                    let sStr = d.size || "Unknown";
+                    let sStr = d.tv || "Unknown";
                     let matStr = d.mat || "N/A";
-                    let thickStr = d.thick || "N/A"; // Lấy thông tin từ cột AH (RevForJointNo), tương ứng với d.thick
-                    let locStr = d.jointRem || "N/A"; // Lấy thông tin từ cột AY (TV), tương ứng với d.jointRem
+                    let thickStr = d.thick || "N/A";
+                    let locStr = d.location || "N/A";
                     let key = `${sStr}|${matStr}|${thickStr}|${locStr}`;
                     
                     if (!sizeMap[key]) {
                         sizeMap[key] = { 
                             size: sStr, 
-                            val: d.sizeVal, 
+                            val: 0, 
                             mat: matStr,
                             thick: thickStr,
                             loc: locStr,
@@ -6521,7 +6521,7 @@
             });
 
             const sizeArr = Object.values(sizeMap).sort((a, b) => {
-                if (a.val !== b.val) return a.val - b.val;
+                if (a.size !== b.size) return a.size.localeCompare(b.size);
                 if (a.mat !== b.mat) return a.mat.localeCompare(b.mat);
                 if (a.thick !== b.thick) return a.thick.localeCompare(b.thick);
                 return a.loc.localeCompare(b.loc);
@@ -9577,10 +9577,136 @@
                     <tbody>${rows}</tbody>
                 </table></div>`;
 
+            const btnExport = document.getElementById('btnExportJointPending');
+            if (btnExport) {
+                if (pending > 0 || repair > 0) {
+                    btnExport.style.display = 'inline-block';
+                    btnExport.onclick = () => exportJointPendingExcel(tpKey, lineKey);
+                } else {
+                    btnExport.style.display = 'none';
+                }
+            }
+
             const modalEl = document.getElementById('ndrJointModal');
             let bsModal = bootstrap.Modal.getInstance(modalEl);
             if (!bsModal) bsModal = new bootstrap.Modal(modalEl, { size: 'xl' });
             bsModal.show();
+        }
+
+        async function exportJointPendingExcel(tpKey, lineKey) {
+            const joints = filteredData.filter(d =>
+                (d.testPkg || '').toString().trim() === tpKey &&
+                (d.line || '').toString().trim() === lineKey
+            );
+            
+            const pendingJoints = joints.filter(d => {
+                const matrixMap = new Map(FULL_MATRIX.map(m => [m.sys + '|' + m.spec, m]));
+                const rule = matrixMap.get(d.system + '|' + d.spec) || DEFAULT_RULE;
+                const wtc = classifyWeldType(d.weldType);
+                const needsRT = (wtc === 'BW' || wtc === 'DEL') && (rule.rtBw || 0) > 0;
+                const needsMT = (rule.mtBw || rule.mtSw || rule.mtFw || 0) > 0;
+
+                const isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT));
+                const isRej  = (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ');
+                const isPend = !isDone && !isRej;
+                return isPend || isRej;
+            });
+
+            if (pendingJoints.length === 0) {
+                alert("Không có mối hàn pending hay repair nào để xuất!");
+                return;
+            }
+
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Pending Joints');
+            
+            const thinBdr = { 
+                top: {style:'thin', color:{argb:'FFDDDDDD'}}, 
+                bottom: {style:'thin', color:{argb:'FFDDDDDD'}}, 
+                left: {style:'thin', color:{argb:'FFDDDDDD'}}, 
+                right: {style:'thin', color:{argb:'FFDDDDDD'}} 
+            };
+            const hFill = (argb) => ({ type:'pattern', pattern:'solid', fgColor:{argb} });
+
+            ws.addRow([`PENDING & REPAIR JOINTS REPORT — LINE: ${lineKey} (${tpKey})`]);
+            ws.mergeCells('A1:Q1');
+            ws.getRow(1).getCell(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+            ws.getRow(1).getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+            ws.getRow(1).getCell(1).fill = hFill('FF1E3C72');
+            ws.getRow(1).height = 30;
+
+            ws.addRow([
+                'No.', 'Joint No.', 'Spool', 'Weld Type', 'Size', 'Thk', 'Material', 
+                'RT', 'PAUT', 'MT', 'PT', 'PWHT', 'PMI', 'Hardness', 'Ferrite', 'Status', 'Location'
+            ]);
+            ws.getRow(2).height = 25;
+            ws.getRow(2).eachCell((cell) => {
+                cell.font = { bold: true, size: 9, color: { argb: 'FFFFFFFF' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.fill = hFill('FF37474F');
+                cell.border = thinBdr;
+            });
+
+            pendingJoints.forEach((d, idx) => {
+                const isRej  = (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ');
+                const statusText = isRej ? 'REPAIR' : 'PENDING';
+
+                const row = ws.addRow([
+                    idx + 1,
+                    d.joint || '-',
+                    d.spool || '-',
+                    d.weldType || '-',
+                    d.size || '-',
+                    d.thick || '-',
+                    d.mat || '-',
+                    d.rtRes || '-',
+                    d.pautRes || '-',
+                    d.mtRes || '-',
+                    d.ptRes || '-',
+                    d.pwhtRes || '-',
+                    d.pmiRep ? 'ACC' : '-',
+                    d.hardnessRep ? 'ACC' : '-',
+                    d.ferriteRep ? 'ACC' : '-',
+                    statusText,
+                    d.location || '-'
+                ]);
+
+                row.eachCell((cell, col) => {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = thinBdr;
+
+                    if (col >= 8 && col <= 15) {
+                        const val = cell.value;
+                        if (val === 'ACC' || val === 'OK') {
+                            cell.fill = hFill('FFD4EDDA');
+                            cell.font = { bold: true, size: 9, color: { argb: 'FF0F5132' } };
+                        } else if (val === 'REJ') {
+                            cell.fill = hFill('FFF8D7DA');
+                            cell.font = { bold: true, size: 9, color: { argb: 'FF842029' } };
+                        }
+                    }
+
+                    if (col === 16) {
+                        if (cell.value === 'REPAIR') {
+                            cell.fill = hFill('FFF8D7DA');
+                            cell.font = { bold: true, size: 9, color: { argb: 'FF842029' } };
+                        } else {
+                            cell.fill = hFill('FFFFF3CD');
+                            cell.font = { bold: true, size: 9, color: { argb: 'FF664D03' } };
+                        }
+                    }
+                });
+            });
+
+            ws.columns = [
+                {width: 5}, {width: 14}, {width: 14}, {width: 12}, {width: 8}, {width: 8}, {width: 12},
+                {width: 8}, {width: 8}, {width: 8}, {width: 8}, {width: 8}, {width: 8}, {width: 10}, {width: 10},
+                {width: 12}, {width: 25}
+            ];
+
+            const buffer = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 
+                `Pending_Joints_${lineKey}_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
 async function exportNdtRandomExcel() {
@@ -9794,6 +9920,7 @@ async function exportNdtRandomExcel() {
                 </div>
                 <div class="modal-body p-3" id="ndrJointModalBody"></div>
                 <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-sm btn-warning text-dark fw-bold me-auto" id="btnExportJointPending" style="display:none;"><i class="fas fa-file-excel me-1"></i>Export Pending Excel</button>
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
