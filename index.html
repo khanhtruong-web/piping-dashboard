@@ -6492,10 +6492,10 @@
                 let bPT = (d.reqPT && !d.hasPT) ? 1 : 0;
     
                 if (bRT || bPAUT || bMT || bPT) {
-                    let sStr = d.tv || "Unknown";
+                    let sStr = d.size || "Unknown";
                     let matStr = d.mat || "N/A";
                     let thickStr = d.thick || "N/A";
-                    let locStr = d.weldType || "N/A";
+                    let locStr = d.tv || "N/A";
                     let key = `${sStr}|${matStr}|${thickStr}|${locStr}`;
                     
                     if (!sizeMap[key]) {
