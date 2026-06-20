@@ -1120,16 +1120,16 @@
                                     <span><i class="fas fa-chart-bar me-2"></i>NDT Status by Size</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-1">
-                                    <input type="text" id="filterSize" class="form-control form-control-sm" placeholder="Type Weld..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
+                                    <input type="text" id="filterSize" class="form-control form-control-sm" placeholder="Pipe Size..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
                                     <input type="text" id="filterMat" class="form-control form-control-sm" placeholder="Material..." style="width: 75px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
-                                    <input type="text" id="filterLoc" class="form-control form-control-sm" placeholder="Location..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
+                                    <input type="text" id="filterLoc" class="form-control form-control-sm" placeholder="Type Weld..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
                                     <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="clearBacklogSizeFilters()" title="Clear Filters" style="font-size: 0.72rem; height: 26px; border-color: #ced4da; color: #495057;"><i class="fas fa-times"></i></button>
                                     <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardBacklogBySize')" title="Focus mode"></i>
                                 </div>
                             </div>
                             <div style="max-height:600px; overflow-y:auto;">
                                 <table class="backlog-tbl" id="backlogSizeTable">
-                                    <thead><tr><th>Type Weld</th><th>Material</th><th>Thickness</th><th>Location</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>Total</th></tr></thead>
+                                    <thead><tr><th>Pipe Size</th><th>Material</th><th>Thickness</th><th>Type Weld</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>Total</th></tr></thead>
                                     <tbody id="backlogSizeBody"></tbody>
                                     <tfoot id="backlogSizeFoot"></tfoot>
                                 </table>
@@ -6430,7 +6430,7 @@
                 }
                 const sizeText = row.cells[0] ? row.cells[0].innerText.toLowerCase() : '';
                 const matText = row.cells[1] ? row.cells[1].innerText.toLowerCase() : '';
-                const locText = row.cells[3] ? row.cells[3].innerText.toLowerCase() : ''; // Index 2 là Thickness, Index 3 là Location
+                const locText = row.cells[3] ? row.cells[3].innerText.toLowerCase() : ''; // Index 2 là Thickness, Index 3 là Type Weld
                 
                 const matchSize = sizeQuery === '' || sizeText.includes(sizeQuery);
                 const matchMat = matQuery === '' || matText.includes(matQuery);
@@ -6495,7 +6495,7 @@
                     let sStr = d.tv || "Unknown";
                     let matStr = d.mat || "N/A";
                     let thickStr = d.thick || "N/A";
-                    let locStr = d.location || "N/A";
+                    let locStr = d.weldType || "N/A";
                     let key = `${sStr}|${matStr}|${thickStr}|${locStr}`;
                     
                     if (!sizeMap[key]) {
