@@ -1373,7 +1373,6 @@
                                 <div class="d-flex flex-wrap gap-3 justify-content-center small text-muted mt-2 pt-1 border-top">
                                     <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#7e57c2;"></span>NDT Requested</span>
                                     <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#66bb6a;"></span>NDT Completed</span>
-                                    <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#ffa726;"></span>NDT Remaining</span>
                                     <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#ef5350;"></span>NDT Backlog</span>
                                     <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#26c6da;"></span>NDT Repair</span>
                                     <span><span class="d-inline-block me-1" style="width:14px; height:3px; background-color:#3949ab; display:inline-block; vertical-align:middle;"></span>Cumulative NDT S-Curve</span>
@@ -4976,8 +4975,6 @@
                         V: 0,
                         ndtReq: 0,
                         ndtCpl: 0,
-                        ndtBacklog: 0,
-                        ndtRem: 0,
                         repair: 0
                     };
                 }
@@ -4985,19 +4982,20 @@
                 groupMap[key].W++;
                 if (d.fitupAcc === 'ACC') groupMap[key].FIT++;
                 if (d.visualACC === 'ACC') groupMap[key].V++;
-                if (d.ndtRequest) groupMap[key].ndtReq++;
-                
-                const isNdtRequest = !!d.ndtRequest;
-                const statusStr = (d.statusCol || '').trim().toUpperCase();
-                if (isNdtRequest && statusStr === 'COMPLETED') groupMap[key].ndtCpl++;
-                if (isNdtRequest && statusStr === 'NOT COMPLETE') groupMap[key].ndtBacklog++;
-                
-                let remains = 0;
-                if (d.reqRT && !d.hasRT) remains++;
-                if (d.reqPAUT && !d.hasPAUT) remains++;
-                if (d.reqMT && !d.hasMT) remains++;
-                if (d.reqPT && !d.hasPT) remains++;
-                groupMap[key].ndtRem += remains;
+                if (d.ndtRequest) {
+                    groupMap[key].ndtReq++;
+                    
+                    const statusStr = (d.statusCol || '').trim().toUpperCase();
+                    let allReportsPresent = true;
+                    if (d.reqRT && !d.hasRT) allReportsPresent = false;
+                    if (d.reqPAUT && !d.hasPAUT) allReportsPresent = false;
+                    if (d.reqMT && !d.hasMT) allReportsPresent = false;
+                    if (d.reqPT && !d.hasPT) allReportsPresent = false;
+                    
+                    if (statusStr === 'COMPLETED' && allReportsPresent) {
+                        groupMap[key].ndtCpl++;
+                    }
+                }
 
                 if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') {
                     groupMap[key].repair++;
@@ -5023,8 +5021,7 @@
             // 2. Data for NDT Chart
             const ndtReqVals = validGroups.map(g => g.ndtReq);
             const ndtCplVals = validGroups.map(g => g.ndtCpl);
-            const ndtRemVals = validGroups.map(g => g.ndtRem);
-            const ndtBacklogVals = validGroups.map(g => g.ndtBacklog);
+            const ndtBacklogVals = validGroups.map((g, i) => g.ndtReq - g.ndtCpl);
             const ndtRepairVals = validGroups.map(g => g.repair);
 
             let ndtReqCumSum = 0;
@@ -5239,16 +5236,7 @@
                                 yAxisID: 'y',
                                 datalabels: { display: false }
                             },
-                            {
-                                label: 'NDT Remaining',
-                                data: ndtRemVals,
-                                backgroundColor: 'rgba(255, 167, 38, 0.75)',
-                                borderColor: '#ffa726',
-                                borderWidth: 1,
-                                borderRadius: 4,
-                                yAxisID: 'y',
-                                datalabels: { display: false }
-                            },
+
                             {
                                 label: 'NDT Backlog',
                                 data: ndtBacklogVals,
