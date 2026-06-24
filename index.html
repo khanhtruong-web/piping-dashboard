@@ -5129,7 +5129,24 @@
                                 fill: false,
                                 tension: 0.25,
                                 yAxisID: 'y1',
-                                datalabels: { display: false }
+                                pointRadius: 3,
+                                pointBackgroundColor: '#d32f2f',
+                                datalabels: {
+                                    display: function(context) {
+                                        const idx = context.dataIndex;
+                                        const total = context.dataset.data.length;
+                                        if (total <= 10) return true;
+                                        if (idx === total - 1) return true;
+                                        const step = Math.max(1, Math.floor(total / 8));
+                                        return idx % step === 0;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 4,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#b71c1c',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             }
                         ]
                     },
@@ -5224,7 +5241,21 @@
                                 borderWidth: 1,
                                 borderRadius: 4,
                                 yAxisID: 'y',
-                                datalabels: { display: false }
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'NDT Completed',
@@ -5234,7 +5265,21 @@
                                 borderWidth: 1,
                                 borderRadius: 4,
                                 yAxisID: 'y',
-                                datalabels: { display: false }
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
 
                             {
@@ -5245,7 +5290,21 @@
                                 borderWidth: 1,
                                 borderRadius: 4,
                                 yAxisID: 'y',
-                                datalabels: { display: false }
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'NDT Repair',
@@ -5255,7 +5314,21 @@
                                 borderWidth: 1,
                                 borderRadius: 4,
                                 yAxisID: 'y',
-                                datalabels: { display: false }
+                                datalabels: {
+                                    display: function(context) {
+                                        const val = context.dataset.data[context.dataIndex];
+                                        if (!val || val <= 0) return false;
+                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                                        return barWidth >= 16;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 2,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#424242',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             },
                             {
                                 label: 'Cumulative NDT Req (S-Curve)',
@@ -5267,7 +5340,24 @@
                                 fill: false,
                                 tension: 0.25,
                                 yAxisID: 'y1',
-                                datalabels: { display: false }
+                                pointRadius: 3,
+                                pointBackgroundColor: '#3949ab',
+                                datalabels: {
+                                    display: function(context) {
+                                        const idx = context.dataIndex;
+                                        const total = context.dataset.data.length;
+                                        if (total <= 10) return true;
+                                        if (idx === total - 1) return true;
+                                        const step = Math.max(1, Math.floor(total / 8));
+                                        return idx % step === 0;
+                                    },
+                                    anchor: 'end',
+                                    align: 'top',
+                                    offset: 4,
+                                    font: { size: 9, weight: 'bold' },
+                                    color: '#1a237e',
+                                    formatter: function(value) { return value.toLocaleString(); }
+                                }
                             }
                         ]
                     },
