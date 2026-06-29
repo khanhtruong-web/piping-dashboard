@@ -706,9 +706,9 @@
             <!-- UPLOAD DATABASE MAIN -->
             <div class="mb-3">
                 <label class="filter-label">Upload Data (Master DB)</label>
-                <input type="file" id="fileUpload" class="form-control form-control-sm" accept=".csv, .xlsx, .xls">
+                <input type="file" id="fileUpload" class="form-control form-control-sm" accept=".xlsx, .xls">
                 <!-- Hidden input for specific field uploads -->
-                <input type="file" id="fieldFileUpload" class="d-none" accept=".csv, .xlsx, .xls" onchange="handleFieldFileUpload(event)">
+                <input type="file" id="fieldFileUpload" class="d-none" accept=".xlsx, .xls" onchange="handleFieldFileUpload(event)">
                 <div id="dataListContainer" class="mt-2 file-status-box" style="display:none;">
                     <span id="activeFileName" class="text-truncate fw-bold text-success w-100" style="max-width: 170px;"></span>
                     <button class="btn-del-file" onclick="clearDatabase()" title="Xóa dữ liệu bộ nhớ"><i class="fas fa-trash-alt"></i></button>
@@ -726,14 +726,14 @@
             <!-- UPLOAD BATCH FILTER -->
             <div class="mb-3 p-2 border rounded" style="background-color: #e3f2fd;">
                 <label class="filter-label text-primary" title="Tải file Excel chứa cột Spool hoặc Line để kiểm tra tiến độ tự động"><i class="fas fa-search-plus me-1"></i>Batch Check by Excel</label>
-                <input type="file" id="batchFileUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls" disabled>
+                <input type="file" id="batchFileUpload" class="form-control form-control-sm mb-1" accept=".xlsx, .xls" disabled>
                 <small class="text-muted" style="font-size: 0.65rem;">Tải file chứa danh sách Spool/Line để lọc hàng loạt</small>
             </div>
 
             <!-- UPLOAD HYDROTEST PLAN VỚI NÚT XÓA -->
             <div class="mb-3 p-2 border rounded" style="background-color: #e0f7fa;">
                 <label class="filter-label text-info" title="Tải file Excel Hydrotest Plan để tự động đối chiếu NDT"><i class="fas fa-tint me-1"></i>Hydrotest Plan</label>
-                <input type="file" id="hydroUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls" disabled>
+                <input type="file" id="hydroUpload" class="form-control form-control-sm mb-1" accept=".xlsx, .xls" disabled>
                 <div id="hydroListContainer" style="display:none;" class="mt-1 file-status-box fw-bold text-info">
                     <span id="activeHydroName" class="text-truncate w-100"></span>
                     <button class="btn-del-file" onclick="clearHydroData()" title="Xóa dữ liệu Hydrotest"><i class="fas fa-trash-alt"></i></button>
@@ -744,7 +744,7 @@
             <!-- TÍNH NĂNG MỚI: TẢI / XÓA CUSTOM NDT MATRIX -->
             <div class="mb-3 p-2 border rounded" style="background-color: #fff3e0;">
                 <label class="filter-label text-warning text-dark" title="Thay đổi mảng %NDT mặc định của hệ thống"><i class="fas fa-table me-1"></i> Custom NDT Matrix</label>
-                <input type="file" id="matrixUpload" class="form-control form-control-sm mb-1" accept=".csv, .xlsx, .xls">
+                <input type="file" id="matrixUpload" class="form-control form-control-sm mb-1" accept=".xlsx, .xls">
                 <div id="matrixListContainer" style="display:none;" class="mt-1 file-status-box fw-bold text-warning text-dark">
                     <span id="activeMatrixName" class="text-truncate w-100"></span>
                     <button class="btn-del-file" onclick="clearMatrixData()" title="Xóa Matrix Custom để quay lại cấu hình Gốc"><i class="fas fa-trash-alt"></i></button>
@@ -2289,7 +2289,7 @@
         }
 
         function getDashboardContext() {
-            if (filteredData.length === 0) return "Chưa có dữ liệu. Vui lòng upload file CSV hoặc Excel.";
+            if (filteredData.length === 0) return "Chưa có dữ liệu. Vui lòng upload file Excel (.xlsx).";
             const sum = getSummary();
             const rate = sum.ndtCount > 0 ? (sum.rejCount/sum.ndtCount*100) : 0;
             
@@ -2759,7 +2759,18 @@
         function parseExDate(v) {
             if (!v) return null;
             if (v instanceof Date) return v;
-            if (typeof v === 'number') return new Date(Math.round((v - 25569) * 86400000));
+            if (typeof v === 'number') {
+                // Excel serial -> ngày lịch, AN TOÀN TIMEZONE.
+                // Lấy Y/M/D từ phần nguyên của serial rồi dựng Date ở NỬA ĐÊM GIỜ ĐỊA PHƯƠNG,
+                // bỏ phần giờ trong ngày để không bị lệch 1 ngày khi đổi múi giờ (vd UTC+7).
+                if (typeof XLSX !== 'undefined' && XLSX.SSF && XLSX.SSF.parse_date_code) {
+                    const dc = XLSX.SSF.parse_date_code(v);
+                    if (dc && dc.y) return new Date(dc.y, dc.m - 1, dc.d);
+                }
+                const days = Math.floor(v);
+                const u = new Date(Math.round((days - 25569) * 86400000));
+                return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate());
+            }
             let s = String(v).trim();
             if (s === "") return null;
             
@@ -3067,22 +3078,43 @@
 
         // HÀM CHUNG DÙNG CHO CÁC UPLOADER (Tránh lặp code)
         function readExcelCommon(file, callback) {
-            if (file.name.endsWith('.csv')) {
-                Papa.parse(file, { header: true, skipEmptyLines: true, encoding: "UTF-8", complete: res => callback(res.data) });
-            } else {
-                const reader = new FileReader(); 
-                reader.onload = e => {
-                    try {
-                        const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                        callback(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" }));
-                    } catch(err) {
-                        alert("Lỗi đọc File Excel: " + err);
-                        hideLoading();
-                    }
-                }; 
-                reader.onerror = () => { alert("Không đọc được file."); hideLoading(); }
-                reader.readAsArrayBuffer(file);
+            // CHỈ ĐỌC EXCEL (.xlsx/.xls). Đã bỏ CSV vì CSV làm sai định dạng ngày tháng (đảo ngày/tháng & lệch múi giờ).
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                alert("Hệ thống chỉ hỗ trợ file Excel (.xlsx/.xls). File CSV làm sai định dạng ngày tháng nên đã bị loại bỏ. Vui lòng tải lên file .xlsx gốc.");
+                hideLoading();
+                return;
             }
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    // File dữ liệu rất lớn (vài chục MB / ~100k dòng). Đọc với tùy chọn TIẾT KIỆM RAM
+                    // (bỏ style/formula/HTML/text + dense) để tránh hết bộ nhớ khiến sheet bị rỗng -> "Dữ liệu trống".
+                    // Vẫn để ngày ở dạng serial số (raw) cho parseExDate xử lý (an toàn timezone).
+                    let workbook = XLSX.read(new Uint8Array(e.target.result), {
+                        type: 'array',
+                        dense: true,
+                        cellFormula: false,
+                        cellHTML: false,
+                        cellText: false,
+                        cellStyles: false
+                    });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let json = firstSheet ? XLSX.utils.sheet_to_json(firstSheet, { defval: "" }) : [];
+                    workbook = null; // giải phóng workbook (cỡ GB) trước khi xử lý dữ liệu
+                    if (!json.length) {
+                        alert("Không đọc được dữ liệu từ file Excel. File có thể quá lớn gây thiếu bộ nhớ, hoặc sheet đầu tiên trống. Hãy đóng bớt tab trình duyệt rồi thử lại.");
+                        hideLoading();
+                        return;
+                    }
+                    callback(json);
+                } catch(err) {
+                    console.error('Excel read error:', err);
+                    alert("Lỗi đọc File Excel (có thể do file quá lớn/thiếu bộ nhớ): " + err);
+                    hideLoading();
+                }
+            };
+            reader.onerror = () => { alert("Không đọc được file."); hideLoading(); }
+            reader.readAsArrayBuffer(file);
         }
 
         // 1. TÍNH NĂNG UPLOAD & XÓA MATRIX TÙY CHỈNH NDT %
@@ -3140,7 +3172,7 @@
             renderHydro();
         }
 
-        // HANDLE FILE UPLOAD MAIN (CSV & EXCEL)
+        // HANDLE FILE UPLOAD MAIN (EXCEL .xlsx/.xls only)
         document.getElementById('fileUpload').addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
@@ -5603,7 +5635,31 @@
                     const rev = j.rev;
                     const isDEL = (j.wtClass === 'DEL');
                     const isFW = (j.wtClass === 'FW');
-                    const isRej = !isDEL && (d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ');
+                    
+                    let isRej = !isDEL && (d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ');
+                    if (isRej) {
+                        const rejMethods = [];
+                        if (d.rtRes==='REJ') rejMethods.push('rtRes');
+                        if (d.pautRes==='REJ') rejMethods.push('pautRes');
+                        if (d.mtRes==='REJ') rejMethods.push('mtRes');
+                        if (d.ptRes==='REJ') rejMethods.push('ptRes');
+                        
+                        const targetJointName = (d.joint || '').toString().trim() + '#R1';
+                        const allRepaired = rejMethods.every(m => {
+                            return joints.some(otherJ => {
+                                const other = otherJ.data;
+                                const sameDwg = (other.dwg || '').toString().trim().toUpperCase() === (d.dwg || '').toString().trim().toUpperCase();
+                                const sameSpool = (other.spool || '').toString().trim().toUpperCase() === (d.spool || '').toString().trim().toUpperCase();
+                                const otherJointName = (other.joint || '').toString().trim();
+                                const isRepairJoint = otherJointName === targetJointName || otherJointName.startsWith(targetJointName);
+                                return sameDwg && sameSpool && isRepairJoint && other[m] === 'ACC';
+                            });
+                        });
+                        if (allRepaired) {
+                            isRej = false;
+                        }
+                    }
+
                     const isPend = !isDEL && (((d.reqRT&&(!d.hasRT || d.rtRes==='')) || 
                                     (d.reqPAUT&&(!d.hasPAUT || d.pautRes==='')) || 
                                     (d.reqMT&&(!d.hasMT || d.mtRes==='')) || 
@@ -8265,15 +8321,15 @@
                     return;
                 }
 
-                let selectedFile = latestFiles.find(f => f.ext === 'csv');
+                // CHỈ ĐỌC .XLSX: ưu tiên file .xlsx, rồi tới Google Sheet (sẽ export ra .xlsx). Bỏ qua CSV.
+                let selectedFile = latestFiles.find(f => f.ext === 'xlsx')
+                    || latestFiles.find(f => f.ext === 'spreadsheet')
+                    || latestFiles.find(f => f.ext !== 'csv')
+                    || null;
                 if (!selectedFile) {
-                    selectedFile = latestFiles.find(f => f.ext === 'spreadsheet');
-                }
-                if (!selectedFile) {
-                    selectedFile = latestFiles.find(f => f.ext === 'xlsx');
-                }
-                if (!selectedFile) {
-                    selectedFile = latestFiles[0];
+                    updateGDriveSyncUI(false, "Không tìm thấy file .xlsx trong thư mục (đã bỏ hỗ trợ CSV). Vui lòng tải lên file .xlsx.");
+                    if (!isAuto) hideLoading();
+                    return;
                 }
 
                 updateGDriveSyncUI(true, `Đang tải: ${selectedFile.name}...`);
@@ -8285,7 +8341,8 @@
                 const isGoogleSheet = selectedFile.mimeType === 'application/vnd.google-apps.spreadsheet';
                 
                 if (isGoogleSheet) {
-                    downloadUrl = `https://www.googleapis.com/drive/v3/files/${selectedFile.id}/export?mimeType=text/csv`;
+                    // Xuất Google Sheet ra .xlsx (ngày giữ dạng serial, không nhập nhằng như CSV)
+                    downloadUrl = `https://www.googleapis.com/drive/v3/files/${selectedFile.id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`;
                 } else {
                     downloadUrl = `https://www.googleapis.com/drive/v3/files/${selectedFile.id}?alt=media`;
                 }
@@ -8298,16 +8355,11 @@
                     throw new Error(`Download HTTP error ${fileResponse.status}`);
                 }
 
-                const targetFileName = selectedFile.name.replace(/\.(xlsx|csv)$/i, '') + '.csv';
+                const targetFileName = selectedFile.name.replace(/\.(xlsx|csv)$/i, '') + '.xlsx';
 
                 let json = null;
-                if (isGoogleSheet || selectedFile.ext === 'csv') {
-                    updateGDriveSyncUI(true, "Đang parse dữ liệu CSV...");
-                    if (!isAuto) document.getElementById('loadingText').innerText = "Parsing CSV data...";
-                    const csvText = await fileResponse.text();
-                    const parseResult = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-                    json = parseResult.data;
-                } else if (selectedFile.ext === 'xlsx') {
+                {
+                    // CHỈ ĐỌC XLSX (Google Sheet đã được export ra .xlsx ở trên). Đã bỏ nhánh CSV.
                     updateGDriveSyncUI(true, "Đang chuyển đổi và parse dữ liệu XLSX...");
                     if (!isAuto) document.getElementById('loadingText').innerText = "Reading Excel file...";
                     const arrayBuffer = await fileResponse.arrayBuffer();
@@ -8352,8 +8404,9 @@
                     
                     // Load workbook đầy đủ để lấy toàn bộ dữ liệu của sheet đã chọn
                     if (!isAuto) document.getElementById('loadingText').innerText = "Parsing Excel sheet...";
-                    const workbook = XLSX.read(new Uint8Array(arrayBuffer), { 
+                    const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
                         type: 'array',
+                        dense: true,
                         cellFormula: false,
                         cellHTML: false,
                         cellText: false,
@@ -8485,6 +8538,39 @@
             if (w === 'FW' || w.includes('FILLET') || w.includes('ATTACH') || w.includes('SUPPORT') || w === 'AW' || w === 'PAD') return 'FW';
             if (w === 'DEL') return 'DEL';
             return 'BW';
+        }
+
+        function getJointBaseAndLevel(jointStr) {
+            const s = (jointStr || '').toString().trim().toUpperCase();
+            if (!s.includes('#')) {
+                return { base: s, level: 0 };
+            }
+            const parts = s.split('#');
+            const base = parts[0];
+            const suffix = parts.slice(1).join('#');
+            
+            let level = 0;
+            if (suffix.includes('RW')) {
+                level = 1;
+                const m = suffix.match(/RW(\d+)/);
+                if (m) {
+                    level = 1 + parseInt(m[1], 10);
+                }
+                const m2 = suffix.match(/RWR(\d+)/);
+                if (m2) {
+                    level = 2 + parseInt(m2[1], 10);
+                }
+                const m3 = suffix.match(/R(\d+)/);
+                if (m3 && !suffix.match(/RW\d+/)) {
+                    level = 2 + parseInt(m3[1], 10);
+                }
+            } else {
+                const m = suffix.match(/R(\d+)/);
+                if (m) {
+                    level = 2 + parseInt(m[1], 10);
+                }
+            }
+            return { base, level };
         }
 
         function getNdrHeader(keyLabel, isDetail = false) {
@@ -8752,10 +8838,12 @@
                         r1: 0, r2: 0, rs: 0, penTotal: 0,
                         hydroDone: 0, reinsDone: 0, leakDone: 0,
                         lineStats: {},
-                        locations: new Set(), remarks: new Set()
+                        locations: new Set(), remarks: new Set(),
+                        rawJoints: []
                     };
                 }
                 const g = groups[gk];
+                g.rawJoints.push(d);
                 if (!g.testPackages) g.testPackages = new Set();
                 if (d.testPkg) g.testPackages.add(d.testPkg.toString().trim().toUpperCase());
                 if (d.weldType && d.weldType.toString().trim()) g.actual++;
@@ -8856,10 +8944,35 @@
                 g.locationStr = g.locations.size > 0 ? Array.from(g.locations).join(', ') : '-';
                 g.remarkStr = g.remarks.size > 0 ? Array.from(g.remarks).join('; ') : '-';
                 
-                // Compliance: rtFinal >= 100 AND mtFinal >= 100 (or N/A), AND every individual line passed
+                // Kiểm tra xem có mối hàn nào bị lỗi REJ mà chưa được sửa chữa thành công hay không
+                let hasUnrepairedRej = false;
+                if (['BW', 'SW'].includes(g.wtClass)) {
+                    hasUnrepairedRej = g.rawJoints.some(d => {
+                        const wtClass = classifyWeldType(d.weldType);
+                        if (wtClass === 'DEL') return false;
+                        
+                        const methods = ['rtRes', 'pautRes', 'mtRes', 'ptRes'];
+                        return methods.some(m => {
+                            if (d[m] !== 'REJ') return false;
+                            
+                            const targetJointName = (d.joint || '').toString().trim() + '#R1';
+                            const isRepaired = g.rawJoints.some(other => {
+                                const sameDwg = (other.dwg || '').toString().trim().toUpperCase() === (d.dwg || '').toString().trim().toUpperCase();
+                                const sameSpool = (other.spool || '').toString().trim().toUpperCase() === (d.spool || '').toString().trim().toUpperCase();
+                                const otherJointName = (other.joint || '').toString().trim();
+                                const isRepairJoint = otherJointName === targetJointName || otherJointName.startsWith(targetJointName);
+                                return sameDwg && sameSpool && isRepairJoint && other[m] === 'ACC';
+                            });
+                            
+                            return !isRepaired;
+                        });
+                    });
+                }
+
+                // Compliance: rtFinal >= 100 AND mtFinal >= 100 (or N/A), AND every individual line passed, AND no active unrepaired NDT rejects
                 // Only evaluate BW, SW for compliance. DEL (deleted welds) and FW (support welds) are ignored.
                 if (['BW', 'SW'].includes(g.wtClass)) {
-                    g.isCompliant = linesAllCompliant && (g.rtFinal === -1 || g.rtFinal >= 100) && (g.mtFinal === -1 || g.mtFinal >= 100);
+                    g.isCompliant = !hasUnrepairedRej && linesAllCompliant && (g.rtFinal === -1 || g.rtFinal >= 100) && (g.mtFinal === -1 || g.mtFinal >= 100);
                 } else {
                     g.isCompliant = true; // Does not fail the Test Package
                 }
@@ -9530,8 +9643,28 @@
                 const needsRT = (wtc === 'BW' || wtc === 'DEL') && (rule.rtBw || 0) > 0;
                 const needsMT = (rule.mtBw || rule.mtSw || rule.mtFw || 0) > 0;
 
-                const isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT));
-                const isRej  = (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ');
+                // Kiểm tra xem tất cả các phương pháp bị lỗi REJ của joint này có được sửa bởi joint #R1 đạt ACC hay không
+                let allRepaired = false;
+                const rejMethods = [];
+                if (d.rtRes === 'REJ') rejMethods.push('rtRes');
+                if (d.pautRes === 'REJ') rejMethods.push('pautRes');
+                if (d.mtRes === 'REJ') rejMethods.push('mtRes');
+                if (d.ptRes === 'REJ') rejMethods.push('ptRes');
+                
+                if (rejMethods.length > 0) {
+                    const targetJointName = (d.joint || '').toString().trim() + '#R1';
+                    allRepaired = rejMethods.every(m => {
+                        return joints.some(other => {
+                            const sameSpool = (other.spool || '').toString().trim() === (d.spool || '').toString().trim();
+                            const otherJointName = (other.joint || '').toString().trim();
+                            const isRepairJoint = otherJointName === targetJointName || otherJointName.startsWith(targetJointName);
+                            return sameSpool && isRepairJoint && other[m] === 'ACC';
+                        });
+                    });
+                }
+
+                const isRej = rejMethods.length > 0 && !allRepaired;
+                const isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT)) || (rejMethods.length > 0 && allRepaired);
                 const isPend = !isDone && !isRej;
 
                 if (isRej) repair++; else if (isPend) pending++; else done++;
