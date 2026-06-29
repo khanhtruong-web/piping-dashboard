@@ -2958,11 +2958,11 @@
                     if (rawData.length > 0) renderNdtRandom();
                 });
                 
-                // Start background sync interval (every 3 minutes)
-                setInterval(async () => {
-                    await fetchGoogleSheetHydroData();
-                    if (rawData.length > 0) renderNdtRandom();
-                }, 180000);
+                // Background sync (mỗi 5 phút) — bỏ qua khi tab ẩn; hàm tự bỏ qua nếu dữ liệu sheet không đổi
+                setInterval(() => {
+                    if (document.hidden) return;
+                    fetchGoogleSheetHydroData();
+                }, 300000);
 
                 // TẢI CUSTOM NDT MATRIX NẾU CÓ TRONG LƯU TRỮ
                 const savedMatrix = await idb.load('customMatrix');
@@ -3473,6 +3473,7 @@
                 location: findKey(['Location', 'Area', 'Vị trí']),
                 tv: findKey(['TV']),
                 visualACC: findKey(['VisualACC', 'Visual ACC', 'Visual Acc']),
+                visualReportDate: findKey(['VisualReportDate', 'Visual Report Date']),
                 visualREJ: findKey(['VisualREJ', 'Visual REJ', 'Visual Rej']),
                 defectLoc: findKey(['DefectLocation', 'Defect Location']),
                 defectID: findKey(['DefectID', 'Defect ID']),
@@ -3511,8 +3512,8 @@
                 const diaInVal = parseFloat(getVal(r, 'diaIn')) || 0;
                 const sizeVal = diaInVal;
 
-                const wDateStr = getVal(r, 'wDate') || '';
-                const wDateObj = parseExDate(wDateStr);
+                // Ngày sản xuất: ưu tiên WeldingCompletedDate (AL). Fallback (Visual ACC -> VisualReportDate AP) xử lý sau khi có getStatus.
+                let wDateObj = parseExDate(getVal(r, 'wDate'));
                 
                 const clean = (val) => val ? val.toString().trim().toUpperCase() : '';
                 const getStatus = (val) => { 
@@ -3538,6 +3539,10 @@
 
                 const fitupVal = getStatus(getVal(r, 'fitupAcc'));
                 const visAccVal = getStatus(getVal(r, 'visualACC'));
+                // Nếu chưa có ngày hàn (AL) nhưng Visual đã 'ACC' -> dùng VisualReportDate (AP) làm ngày sản xuất (tránh đếm thiếu mối)
+                if (!wDateObj && visAccVal === 'ACC') {
+                    wDateObj = parseExDate(getVal(r, 'visualReportDate'));
+                }
 
                 processed.push({
                     id: i+1, isSub: clean(getVal(r, 'sub')), system: asString(getVal(r, 'sys')), dwg: asString(getVal(r, 'dwg')), rev: asString(getVal(r, 'rev')),
@@ -3550,7 +3555,7 @@
                     ferriteRep: hasRep(getVal(r, 'ferriteRep')) ? asString(getVal(r, 'ferriteRep')) : '',
                     ndtRate: asString(getVal(r, 'ndtRate')), spec: asString(getVal(r, 'spec')),
                     wDate: wDateObj ? wDateObj.getTime() : null, 
-                    wDateStr: wDateObj ? wDateObj.toLocaleDateString('en-GB') : (asString(wDateStr) !== '' ? asString(wDateStr) : 'No Date'), 
+                    wDateStr: wDateObj ? wDateObj.toLocaleDateString('en-GB') : 'No Date',
                     rtDate: parseExDate(getVal(r, 'rtDate'))?.getTime() || null, 
                     pautDate: parseExDate(getVal(r, 'pautDate'))?.getTime() || null,
                     rtRes: getStatus(getVal(r, 'rtRes')), 
@@ -3845,7 +3850,8 @@
                 const hasNdtReq1 = d.ndtRequest !== undefined ? d.ndtRequest : (d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
                 if (hasNdtReq1) {
                     s.ndtRequested++;
-                    const isNdtDone = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
+                    const allReports = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
+                    const isNdtDone = (String(d.statusCol || '').trim().toUpperCase() === 'COMPLETED') && allReports;
                     if (!isNdtDone) s.ndtBacklog++;
                 }
 
@@ -3857,6 +3863,38 @@
         }
 
         let cachedAnalytics = {};
+
+        // PERF: render theo tab đang xem. Mỗi tab có cờ "dirty"; chỉ dựng lại khi dữ liệu đổi & tab được mở.
+        let tabDirty = { '#home': false, '#hydro': false, '#daily': false, '#ndtRandomTab': false };
+        let tabListenerAttached = false;
+        function renderTabContent(tab) {
+            if (tab === '#hydro') {
+                renderHydro();
+            } else if (tab === '#daily') {
+                renderDailyLog();
+            } else if (tab === '#ndtRandomTab') {
+                renderNdtRandom();
+            } else { // '#home' — Overview & NDT (gồm charts + các bảng nặng)
+                renderNDTStatusTable();
+                renderFullReportTable();
+                updateCharts();
+                renderCompliance();
+                renderBacklogBySize();
+            }
+        }
+        function ensureTabListener() {
+            if (tabListenerAttached) return;
+            const btns = document.querySelectorAll('#myTab button[data-bs-toggle="tab"]');
+            if (!btns.length) return;
+            btns.forEach(btn => btn.addEventListener('shown.bs.tab', (e) => {
+                const tab = e.target.getAttribute('data-bs-target');
+                if (tabDirty[tab] && filteredData.length > 0) {
+                    renderTabContent(tab);
+                    tabDirty[tab] = false;
+                }
+            }));
+            tabListenerAttached = true;
+        }
 
         function processFilteredData() {
             const sum = { 
@@ -3913,7 +3951,8 @@
                 const hasNdtReq2 = d.ndtRequest !== undefined ? d.ndtRequest : (d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
                 if (hasNdtReq2) {
                     sum.ndtRequested++;
-                    const isNdtDone = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
+                    const allReports = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
+                    const isNdtDone = (String(d.statusCol || '').trim().toUpperCase() === 'COMPLETED') && allReports;
                     if (!isNdtDone) sum.ndtBacklog++;
                 }
 
@@ -4120,21 +4159,13 @@
             if (vBEl) vBEl.innerText = `Backlog: ${vBEl.title = visBacklog.toLocaleString()}`;
 
             buildHydroMap(); // Populate global hMap before rendering
-            
-            renderNDTStatusTable(); 
-            renderFullReportTable(); 
-            updateCharts(); 
-            renderCompliance(); 
-            renderBacklogBySize(); 
-            
-            // Only render expensive tabs if they are currently active
-            const activeTabObj = document.querySelector('.nav-link.active');
-            if (activeTabObj) {
-                const activeTab = activeTabObj.getAttribute('data-bs-target');
-                if (activeTab === '#hydro') renderHydro();
-                if (activeTab === '#daily') renderDailyLog();
-                if (activeTab === '#ndtRandomTab') renderNdtRandom();
-            }
+            ensureTabListener();
+
+            // PERF: chỉ render tab ĐANG MỞ; các tab khác đánh dấu dirty -> render khi chuyển tới (shown.bs.tab)
+            const activeTabObj = document.querySelector('#myTab .nav-link.active');
+            const activeTab = activeTabObj ? activeTabObj.getAttribute('data-bs-target') : '#home';
+            renderTabContent(activeTab);
+            ['#home', '#hydro', '#daily', '#ndtRandomTab'].forEach(t => { tabDirty[t] = (t !== activeTab); });
         }
 
 
@@ -7663,6 +7694,8 @@
                 dbRef.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data && data.timestamp) {
+                        if (window._lastCloudTs === data.timestamp) return; // bỏ qua echo cùng một mốc dữ liệu
+                        window._lastCloudTs = data.timestamp;
                         const syncTimeStr = new Date(data.timestamp).toLocaleTimeString();
                         
                         // Viewer mode: Auto update
@@ -8668,6 +8701,14 @@
                 if (!res.ok) throw new Error(`HTTP status ${res.status}`);
                 const csvText = await res.text();
                 
+                // Bỏ qua xử lý nặng nếu dữ liệu sheet KHÔNG đổi so với lần trước (poll 5 phút thường không đổi)
+                const _sig = csvText.length + ':' + csvText.slice(0, 256);
+                if (window._hydroCsvSig === _sig && sheetHydroDates && sheetHydroDates.size > 0) {
+                    updateSheetSyncIndicator(true);
+                    return;
+                }
+                window._hydroCsvSig = _sig;
+
                 if (typeof Papa === 'undefined') {
                     console.error("PapaParse library is not loaded.");
                     updateSheetSyncIndicator(false, "PapaParse missing");
@@ -8726,8 +8767,11 @@
                 console.log(`Successfully parsed ${sheetHydroDates.size} packages from Google Sheet.`);
                 rebuildHydroCache();
                 if (rawData.length > 0) {
-                    renderHydro();
-                    renderNdtRandom();
+                    // chỉ render tab đang mở; tab khác đánh dấu dirty để render khi user mở
+                    const _at = document.querySelector('#myTab .nav-link.active');
+                    const _tgt = _at ? _at.getAttribute('data-bs-target') : '';
+                    if (_tgt === '#hydro') renderHydro(); else tabDirty['#hydro'] = true;
+                    if (_tgt === '#ndtRandomTab') renderNdtRandom(); else tabDirty['#ndtRandomTab'] = true;
                 }
                 updateSheetSyncIndicator(true);
             } catch (err) {
