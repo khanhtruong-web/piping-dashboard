@@ -7889,6 +7889,22 @@
         let gapiInited = false;
         let gapiToken = null;
 
+        // Khôi phục token đăng nhập Google đã lưu (nếu còn hạn) -> KHÔNG phải đăng nhập lại mỗi lần mở app
+        function restoreGsToken() {
+            try {
+                const c = JSON.parse(localStorage.getItem('gsTokenCache') || 'null');
+                if (c && c.access_token && c.expiry > Date.now() + 120000) { // còn hạn (đệm 2 phút)
+                    gapiToken = { access_token: c.access_token, expires_in: Math.round((c.expiry - Date.now()) / 1000) };
+                    window.gapiToken = gapiToken;
+                    if (window.gapi && gapi.client && gapi.client.setToken) {
+                        try { gapi.client.setToken({ access_token: c.access_token }); } catch(e){}
+                    }
+                    return true;
+                }
+            } catch(e){}
+            return false;
+        }
+
         function configGoogleSheets() {
             const config = JSON.parse(localStorage.getItem('gsSyncConfig') || '{"sheetId":"", "apiKey":"", "clientId":"", "autoSync":true, "autoSave":true}');
             document.getElementById('gsSheetId').value = config.sheetId || '';
@@ -7912,6 +7928,8 @@
         function clearGSheetsConfig() {
             if(!confirm("Xóa cấu hình Google Sync? Dữ liệu trên Drive sẽ không bị ảnh hưởng.")) return;
             localStorage.removeItem('gsSyncConfig');
+            localStorage.removeItem('gsTokenCache');
+            localStorage.removeItem('gsLoggedIn');
             gapiToken = null;
             document.getElementById('gSheetsStatus').innerHTML = '<i class="fas fa-info-circle"></i> Chưa kết nối Drive';
             document.getElementById('btnGSheetsPull').style.display = 'none';
@@ -7940,6 +7958,7 @@
         async function initGSheetsClient() {
             const gsConfig = JSON.parse(localStorage.getItem('gsSyncConfig'));
             if(!gsConfig || !gsConfig.apiKey || !gsConfig.clientId) return;
+            restoreGsToken(); // khôi phục đăng nhập đã lưu (nếu còn hạn) trước khi init
 
             document.getElementById('gSheetsStatus').innerHTML = '<span class="text-warning"><i class="fas fa-spinner fa-spin"></i> Loading...</span>';
 
@@ -7976,6 +7995,8 @@
                     ],
                 }).then(() => {
                     gapiInited = true;
+                    // Nếu đã khôi phục được token đã lưu -> gắn vào gapi.client để dùng ngay, khỏi đăng nhập lại
+                    if (gapiToken && gapiToken.access_token) { try { gapi.client.setToken({ access_token: gapiToken.access_token }); } catch(e){} }
                     updateGSheetsUI();
                     if(gsConfig.autoSync) pullFromSheets(true);
                 }).catch(err => {
@@ -7992,6 +8013,11 @@
                         if (resp.error !== undefined) throw (resp);
                         gapiToken = resp;
                         window.gapiToken = resp;
+                        // Lưu token để khỏi phải đăng nhập lại mỗi lần mở app (trong thời hạn token ~1 giờ)
+                        try {
+                            localStorage.setItem('gsTokenCache', JSON.stringify({ access_token: resp.access_token, expiry: Date.now() + ((resp.expires_in || 3600) * 1000) }));
+                            localStorage.setItem('gsLoggedIn', '1');
+                        } catch(e){}
                         updateGSheetsUI();
                         if (window.pendingGDriveSync) {
                             window.pendingGDriveSync = false;
@@ -8010,8 +8036,9 @@
                     },
                 });
                 
-                // Cố gắng lấy token tự động nếu cho phép và đang ở chế độ Admin (không làm phiền Viewer)
-                if(isAdminMode && gsConfig.autoSync && !gapiToken) {
+                // Tự động lấy lại token (im lặng) nếu người dùng đã từng đăng nhập -> không phải bấm đăng nhập lại
+                const wasLoggedIn = localStorage.getItem('gsLoggedIn') === '1';
+                if(!gapiToken && (wasLoggedIn || (isAdminMode && gsConfig.autoSync))) {
                     setTimeout(() => { if(!gapiToken) tokenClient.requestAccessToken({prompt: ''}); }, 1000);
                 }
             };
@@ -8098,7 +8125,8 @@
         }
 
         function requestGSheetsToken() {
-            if(tokenClient) tokenClient.requestAccessToken({prompt: 'consent'});
+            // prompt:'' -> im lặng nếu đã cấp quyền trước đó (không bắt đồng ý lại mỗi lần)
+            if(tokenClient) tokenClient.requestAccessToken({prompt: ''});
         }
 
         async function pushToSheets(isAuto = false) {
