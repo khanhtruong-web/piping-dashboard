@@ -3474,6 +3474,7 @@
                 tv: findKey(['TV']),
                 visualACC: findKey(['VisualACC', 'Visual ACC', 'Visual Acc']),
                 visualReportDate: findKey(['VisualReportDate', 'Visual Report Date']),
+                fitUpReportDate: findKey(['FitUpReportDate', 'Fit-Up Report Date', 'FitUp Report Date']),
                 visualREJ: findKey(['VisualREJ', 'Visual REJ', 'Visual Rej']),
                 defectLoc: findKey(['DefectLocation', 'Defect Location']),
                 defectID: findKey(['DefectID', 'Defect ID']),
@@ -3543,6 +3544,9 @@
                 if (!wDateObj && visAccVal === 'ACC') {
                     wDateObj = parseExDate(getVal(r, 'visualReportDate'));
                 }
+                // Ngày báo cáo riêng cho từng hoạt động (để đếm theo NGÀY RIÊNG, không gộp theo ngày hàn)
+                const fitDateObj = parseExDate(getVal(r, 'fitUpReportDate'));   // FitUpReportDate (cột O)
+                const visDateObj = parseExDate(getVal(r, 'visualReportDate'));  // VisualReportDate (cột AP)
 
                 processed.push({
                     id: i+1, isSub: clean(getVal(r, 'sub')), system: asString(getVal(r, 'sys')), dwg: asString(getVal(r, 'dwg')), rev: asString(getVal(r, 'rev')),
@@ -3554,8 +3558,12 @@
                     pmiRep: hasRep(getVal(r, 'pmiRep')) ? asString(getVal(r, 'pmiRep')) : '', hardRep: asString(getVal(r, 'hardRep')), 
                     ferriteRep: hasRep(getVal(r, 'ferriteRep')) ? asString(getVal(r, 'ferriteRep')) : '',
                     ndtRate: asString(getVal(r, 'ndtRate')), spec: asString(getVal(r, 'spec')),
-                    wDate: wDateObj ? wDateObj.getTime() : null, 
+                    wDate: wDateObj ? wDateObj.getTime() : null,
                     wDateStr: wDateObj ? wDateObj.toLocaleDateString('en-GB') : 'No Date',
+                    fitDate: fitDateObj ? fitDateObj.getTime() : null,
+                    fitDateStr: fitDateObj ? fitDateObj.toLocaleDateString('en-GB') : null,
+                    visDate: visDateObj ? visDateObj.getTime() : null,
+                    visDateStr: visDateObj ? visDateObj.toLocaleDateString('en-GB') : null,
                     rtDate: parseExDate(getVal(r, 'rtDate'))?.getTime() || null, 
                     pautDate: parseExDate(getVal(r, 'pautDate'))?.getTime() || null,
                     rtRes: getStatus(getVal(r, 'rtRes')), 
@@ -4304,27 +4312,18 @@
                 return new Date(d.getFullYear(), d.getMonth(), 1);
             };
 
-            let dayJoints = filteredData.filter(d => {
-                // Lọc theo subcon
-                const sub = (d.isSub || '').toUpperCase();
-                if (!sub.includes(subconFilter.toUpperCase())) return false;
-                
-                // Lọc theo khoảng thời gian
-                let label = '';
-                if (!d.wDate) {
-                    label = 'No Date';
-                } else if (groupUnit === 'date') {
-                    label = d.wDateStr || 'No Date';
-                } else if (groupUnit === 'week') {
-                    const monday = getStartOfWeek(d.wDate);
-                    label = `W/C ${monday.toLocaleDateString('en-GB')}`;
-                } else if (groupUnit === 'month') {
-                    const monthStart = getStartOfMonth(d.wDate);
-                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    label = `${monthNames[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
-                }
-                return label === periodStr;
-            });
+            // Nhãn kỳ (date/week/month) cho 1 mốc thời gian -> lọc theo NGÀY RIÊNG của từng chỉ số
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const labelFor = (ts, dateStr) => {
+                if (!ts) return 'No Date';
+                if (groupUnit === 'date') return dateStr || 'No Date';
+                if (groupUnit === 'week') { const m = getStartOfWeek(ts); return `W/C ${m.toLocaleDateString('en-GB')}`; }
+                const m = getStartOfMonth(ts); return `${monthNames[m.getMonth()]} ${m.getFullYear()}`;
+            };
+
+            const subconJoints = filteredData.filter(d => (d.isSub || '').toUpperCase().includes(subconFilter.toUpperCase()));
+            // Welding Completion: mối HÀN trong kỳ (theo ngày hàn wDate)
+            const dayJoints = subconJoints.filter(d => labelFor(d.wDate, d.wDateStr) === periodStr);
 
             if (dayJoints.length === 0) {
                 alert("Không tìm thấy dữ liệu cho khoảng thời gian: " + periodStr);
@@ -4339,14 +4338,15 @@
             document.getElementById('dailyDetailModalTitle').innerHTML = `<i class="fas fa-info-circle me-2"></i>Daily Fabrication Detail - ${unitText}: ${periodStr}${subconText}`;
 
             const totalWeld = dayJoints.length;
-            const fitupAccCount = dayJoints.filter(d => d.fitupAcc === 'ACC').length;
-            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC').length;
+            // Fit-up ACC / Visual ACC: đếm theo NGÀY BÁO CÁO RIÊNG (FitUpReportDate / VisualReportDate), không theo ngày hàn
+            const fitupAccCount = subconJoints.filter(d => d.fitupAcc === 'ACC' && labelFor(d.fitDate, d.fitDateStr) === periodStr).length;
+            const visualAccCount = subconJoints.filter(d => d.visualACC === 'ACC' && labelFor(d.visDate, d.visDateStr) === periodStr).length;
 
             document.getElementById('lblDetailWeldComplete').innerText = totalWeld.toLocaleString();
             document.getElementById('lblDetailFitupAcc').innerText = fitupAccCount.toLocaleString();
-            document.getElementById('lblDetailFitupPct').innerText = totalWeld > 0 ? Math.round(fitupAccCount / totalWeld * 100) + '%' : '0%';
+            document.getElementById('lblDetailFitupPct').innerText = '(theo ngày báo cáo)';
             document.getElementById('lblDetailVisualAcc').innerText = visualAccCount.toLocaleString();
-            document.getElementById('lblDetailVisualPct').innerText = totalWeld > 0 ? Math.round(visualAccCount / totalWeld * 100) + '%' : '0%';
+            document.getElementById('lblDetailVisualPct').innerText = '(theo ngày báo cáo)';
 
             const ndtRequestCount = dayJoints.filter(d => d.ndtRequest).length;
             const ndtCompletedCount = dayJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
@@ -4543,8 +4543,12 @@
 
             const subconText = subconFilter ? ` - Subcon: ${subconFilter}` : '';
             const totalWeld = dayJoints.length;
-            const fitupAccCount = dayJoints.filter(d => d.fitupAcc === 'ACC').length;
-            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC').length;
+            // Fit-up/Visual ACC đếm theo NGÀY BÁO CÁO RIÊNG (đồng bộ với modal & biểu đồ)
+            const _mn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const _labelFor = (ts, dateStr) => { if(!ts) return 'No Date'; if(groupUnit==='date') return dateStr||'No Date'; if(groupUnit==='week'){const m=getStartOfWeek(ts);return `W/C ${m.toLocaleDateString('en-GB')}`;} const m=getStartOfMonth(ts); return `${_mn[m.getMonth()]} ${m.getFullYear()}`; };
+            const _subJoints = filteredData.filter(d => !subconFilter || (d.isSub||'').toUpperCase().includes(subconFilter.toUpperCase()));
+            const fitupAccCount = _subJoints.filter(d => d.fitupAcc === 'ACC' && _labelFor(d.fitDate, d.fitDateStr) === periodStr).length;
+            const visualAccCount = _subJoints.filter(d => d.visualACC === 'ACC' && _labelFor(d.visDate, d.visDateStr) === periodStr).length;
             const ndtRequestCount = dayJoints.filter(d => d.ndtRequest).length;
             const ndtCompletedCount = dayJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
             const ndtBacklogCount = dayJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'NOT COMPLETE').length;
@@ -5000,80 +5004,58 @@
                 return new Date(d.getFullYear(), d.getMonth(), 1);
             };
 
-            const groupMap = {};
+            // ĐÚNG: mỗi chỉ số đếm theo NGÀY RIÊNG (Welding theo wDate, Fit-up theo fitDate, Visual theo visDate)
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const keyFor = (ts, dateStr) => {
+                if (!ts) return null;
+                if (groupUnit === 'date') return { key: dateStr, label: dateStr, ts: ts };
+                if (groupUnit === 'week') { const m = getStartOfWeek(ts); return { key: 'W' + m.getTime(), label: `W/C ${m.toLocaleDateString('en-GB')}`, ts: m.getTime() }; }
+                const m = getStartOfMonth(ts); return { key: 'M' + m.getTime(), label: `${monthNames[m.getMonth()]} ${m.getFullYear()}`, ts: m.getTime() };
+            };
+
+            const weldMap = {};   // theo ngày hàn (wDate): W, ndtReq, ndtCpl, repair
+            const fitMap = {};    // theo FitUpReportDate, điều kiện Fit-up ACC
+            const visMap = {};    // theo VisualReportDate, điều kiện Visual ACC
+            const keyMeta = {};   // key -> {label, ts}
+            const touch = (k) => { if (!keyMeta[k.key]) keyMeta[k.key] = { label: k.label, ts: k.ts }; };
 
             chartData.forEach(d => {
-                let key = '';
-                let label = '';
-                let ts = 0;
-
-                if (!d.wDate) {
-                    key = 'No Date';
-                    label = 'No Date';
-                    ts = 0;
-                } else if (groupUnit === 'date') {
-                    key = d.wDateStr || 'No Date';
-                    label = key;
-                    ts = d.wDate;
-                } else if (groupUnit === 'week') {
-                    const monday = getStartOfWeek(d.wDate);
-                    key = monday.getTime().toString();
-                    label = `W/C ${monday.toLocaleDateString('en-GB')}`;
-                    ts = monday.getTime();
-                } else if (groupUnit === 'month') {
-                    const monthStart = getStartOfMonth(d.wDate);
-                    key = monthStart.getTime().toString();
-                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    label = `${monthNames[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
-                    ts = monthStart.getTime();
-                }
-
-                if (!groupMap[key]) {
-                    groupMap[key] = {
-                        key: key,
-                        label: label,
-                        ts: ts,
-                        W: 0,
-                        FIT: 0,
-                        V: 0,
-                        ndtReq: 0,
-                        ndtCpl: 0,
-                        repair: 0
-                    };
-                }
-
-                groupMap[key].W++;
-                if (d.fitupAcc === 'ACC') groupMap[key].FIT++;
-                if (d.visualACC === 'ACC') groupMap[key].V++;
-                if (d.ndtRequest) {
-                    groupMap[key].ndtReq++;
-                    
-                    const statusStr = (d.statusCol || '').trim().toUpperCase();
-                    let allReportsPresent = true;
-                    if (d.reqRT && !d.hasRT) allReportsPresent = false;
-                    if (d.reqPAUT && !d.hasPAUT) allReportsPresent = false;
-                    if (d.reqMT && !d.hasMT) allReportsPresent = false;
-                    if (d.reqPT && !d.hasPT) allReportsPresent = false;
-                    
-                    if (statusStr === 'COMPLETED' && allReportsPresent) {
-                        groupMap[key].ndtCpl++;
+                const kw = keyFor(d.wDate, d.wDateStr);
+                if (kw) {
+                    if (!weldMap[kw.key]) weldMap[kw.key] = { W: 0, ndtReq: 0, ndtCpl: 0, repair: 0 };
+                    touch(kw);
+                    const g = weldMap[kw.key];
+                    g.W++;
+                    if (d.ndtRequest) {
+                        g.ndtReq++;
+                        const statusStr = (d.statusCol || '').trim().toUpperCase();
+                        let allReportsPresent = true;
+                        if (d.reqRT && !d.hasRT) allReportsPresent = false;
+                        if (d.reqPAUT && !d.hasPAUT) allReportsPresent = false;
+                        if (d.reqMT && !d.hasMT) allReportsPresent = false;
+                        if (d.reqPT && !d.hasPT) allReportsPresent = false;
+                        if (statusStr === 'COMPLETED' && allReportsPresent) g.ndtCpl++;
                     }
+                    if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') g.repair++;
                 }
-
-                if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') {
-                    groupMap[key].repair++;
+                if (d.fitupAcc === 'ACC') {
+                    const kf = keyFor(d.fitDate, d.fitDateStr);
+                    if (kf) { fitMap[kf.key] = (fitMap[kf.key] || 0) + 1; touch(kf); }
+                }
+                if (d.visualACC === 'ACC') {
+                    const kv = keyFor(d.visDate, d.visDateStr);
+                    if (kv) { visMap[kv.key] = (visMap[kv.key] || 0) + 1; touch(kv); }
                 }
             });
 
-            const sortedGroups = Object.values(groupMap).sort((a, b) => a.ts - b.ts);
-            const validGroups = sortedGroups.filter(g => g.key !== 'No Date');
+            // Trục X = hợp tất cả các ngày, sắp xếp tăng dần
+            const orderedKeys = Object.keys(keyMeta).sort((a, b) => keyMeta[a].ts - keyMeta[b].ts);
+            const labels = orderedKeys.map(k => keyMeta[k].label);
 
-            const labels = validGroups.map(g => g.label);
-
-            // 1. Data for Welding Chart
-            const wCompletedVals = validGroups.map(g => g.W);
-            const fitupAccVals = validGroups.map(g => g.FIT);
-            const visualAccVals = validGroups.map(g => g.V);
+            // 1. Welding chart — mỗi series lấy từ map theo ngày riêng của nó
+            const wCompletedVals = orderedKeys.map(k => weldMap[k] ? weldMap[k].W : 0);
+            const fitupAccVals = orderedKeys.map(k => fitMap[k] || 0);
+            const visualAccVals = orderedKeys.map(k => visMap[k] || 0);
 
             let wCumSum = 0;
             const wCumVals = wCompletedVals.map(v => {
@@ -5081,11 +5063,11 @@
                 return wCumSum;
             });
 
-            // 2. Data for NDT Chart
-            const ndtReqVals = validGroups.map(g => g.ndtReq);
-            const ndtCplVals = validGroups.map(g => g.ndtCpl);
-            const ndtBacklogVals = validGroups.map((g, i) => g.ndtReq - g.ndtCpl);
-            const ndtRepairVals = validGroups.map(g => g.repair);
+            // 2. NDT chart — theo wDate (giữ tới khi chốt mô hình NDT)
+            const ndtReqVals = orderedKeys.map(k => weldMap[k] ? weldMap[k].ndtReq : 0);
+            const ndtCplVals = orderedKeys.map(k => weldMap[k] ? weldMap[k].ndtCpl : 0);
+            const ndtBacklogVals = ndtReqVals.map((v, i) => v - ndtCplVals[i]);
+            const ndtRepairVals = orderedKeys.map(k => weldMap[k] ? weldMap[k].repair : 0);
 
             let ndtReqCumSum = 0;
             const ndtReqCumVals = ndtReqVals.map(v => {
