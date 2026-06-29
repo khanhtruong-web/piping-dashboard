@@ -5028,13 +5028,9 @@
                     g.W++;
                     if (d.ndtRequest) {
                         g.ndtReq++;
-                        const statusStr = (d.statusCol || '').trim().toUpperCase();
-                        let allReportsPresent = true;
-                        if (d.reqRT && !d.hasRT) allReportsPresent = false;
-                        if (d.reqPAUT && !d.hasPAUT) allReportsPresent = false;
-                        if (d.reqMT && !d.hasMT) allReportsPresent = false;
-                        if (d.reqPT && !d.hasPT) allReportsPresent = false;
-                        if (statusStr === 'COMPLETED' && allReportsPresent) g.ndtCpl++;
+                        // NDT Cpl = mối có Status (cột DJ) = 'Completed' (đã xác nhận; bỏ điều kiện "đủ báo cáo").
+                        // -> ndtBacklog = ndtReq - ndtCpl = mối có request & Status='Not Complete', khớp modal.
+                        if ((d.statusCol || '').trim().toUpperCase() === 'COMPLETED') g.ndtCpl++;
                     }
                     if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') g.repair++;
                 }
