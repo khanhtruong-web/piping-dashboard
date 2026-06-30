@@ -3550,7 +3550,9 @@
                 }
                 // Ngày báo cáo riêng cho từng hoạt động (để đếm theo NGÀY RIÊNG, không gộp theo ngày hàn)
                 const fitDateObj = parseExDate(getVal(r, 'fitUpReportDate'));   // FitUpReportDate (cột O)
-                const visDateObj = parseExDate(getVal(r, 'visualReportDate'));  // VisualReportDate (cột AP)
+                // VisualReportDate (AP) CHỈ tính khi kết quả Visual = 'ACC' (visual đã đậu).
+                // -> mọi chỗ nhóm theo visDate (Visual ACC, NDT) chỉ tính mối đã đậu visual.
+                const visDateObj = (visAccVal === 'ACC') ? parseExDate(getVal(r, 'visualReportDate')) : null;
 
                 processed.push({
                     id: i+1, isSub: clean(getVal(r, 'sub')), system: asString(getVal(r, 'sys')), dwg: asString(getVal(r, 'dwg')), rev: asString(getVal(r, 'rev')),
