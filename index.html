@@ -2964,6 +2964,10 @@
                     fetchGoogleSheetHydroData();
                 }, 300000);
 
+                // Tự đồng bộ Drive theo khung giờ (sáng/chiều). Kiểm tra đồng hồ mỗi 3 phút (rất nhẹ);
+                // thực tế gọi Drive nhiều nhất ~15 phút/lần và CHỈ trong khung giờ -> app không bị nặng/đơ.
+                setInterval(checkScheduledGDriveSync, 180000);
+
                 // TẢI CUSTOM NDT MATRIX NẾU CÓ TRONG LƯU TRỮ
                 const savedMatrix = await idb.load('customMatrix');
                 if (savedMatrix && savedMatrix.data) {
@@ -8282,6 +8286,28 @@
         }
 
         const GDRIVE_FOLDER_ID = '1Kdhn9ALMIpmiaien5wdflJWHHlo-3Ffm';
+
+        // ===== TỰ ĐỘNG ĐỒNG BỘ DRIVE THEO KHUNG GIỜ (sáng & chiều) =====
+        // Chỉ QUÉT Drive (gọi nhẹ lấy danh sách file ~vài KB) trong 2 khung giờ dưới đây; ngoài khung KHÔNG làm gì.
+        // CHỈ tải file (nặng) khi thấy file tên ngày MỚI HƠN -> app vẫn mượt, không đơ.
+        const SYNC_WINDOWS = [
+            { start: '08:45', end: '11:00' },  // ca sáng (data thường có ~9h)
+            { start: '13:45', end: '16:00' }   // ca chiều (data thường có ~14h)
+        ];
+        let _lastDriveCheckTs = 0;
+        function checkScheduledGDriveSync() {
+            try {
+                if (localStorage.getItem('adminMode') !== 'true' || !gapiToken) return; // chỉ Admin đã đăng nhập Google
+                const now = new Date();
+                const hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+                const inWindow = SYNC_WINDOWS.some(w => hhmm >= w.start && hhmm <= w.end);
+                if (!inWindow) return;                                          // ngoài khung giờ -> bỏ qua
+                if (Date.now() - _lastDriveCheckTs < 15 * 60 * 1000) return;    // tối thiểu 15 phút/lần trong khung
+                _lastDriveCheckTs = Date.now();
+                console.log('[Auto-Sync] Trong khung giờ -> kiểm tra Drive tìm file ngày mới...');
+                syncFromGDriveFolder(true); // tự bỏ qua nếu KHÔNG có file tên ngày mới hơn (không tải lại vô ích)
+            } catch (e) { console.warn('[Auto-Sync] error:', e); }
+        }
 
         async function syncFromGDriveFolder(isAuto = false) {
             const gsConfig = JSON.parse(localStorage.getItem('gsSyncConfig') || '{}');
