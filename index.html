@@ -2539,26 +2539,26 @@
             const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
 
             let stats = {};
+            // Mỗi mối đếm vào ô ngày theo NGÀY RIÊNG (đồng bộ với charts):
+            // W theo ngày hàn; Fit-up theo FitUpReportDate; Visual & NDT theo VisualReportDate; NDT Cpl = Status='Completed'.
+            const calKey = (ts) => { if (!ts) return null; const o = new Date(ts); return `${o.getFullYear()}-${o.getMonth()}-${o.getDate()}`; };
+            const ensure = (key) => { if (!stats[key]) stats[key] = { joints: 0, ndt: 0, repair: 0, fitup: 0, visual: 0, ndtReq: 0, rtReq: 0, pautReq: 0, mtReq: 0, ptReq: 0 }; return stats[key]; };
             filteredData.forEach(d => {
-                if(d.wDate) {
-                    let dateObj = new Date(d.wDate);
-                    let key = `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()}`;
-                    if(!stats[key]) stats[key] = { joints: 0, ndt: 0, repair: 0, fitup: 0, visual: 0, ndtReq: 0, rtReq: 0, pautReq: 0, mtReq: 0, ptReq: 0 };
-                    
-                    stats[key].joints++;
-                    if (d.fitupAcc === 'ACC') stats[key].fitup++;
-                    if (d.visualACC === 'ACC') stats[key].visual++;
-                    if (d.hasRT || d.hasPAUT || d.hasMT || d.hasPT) stats[key].ndt++;
-                    if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') stats[key].repair++;
-                    
-                    // NDT Requests (Cột BB NDTRequest)
-                    if (d.ndtRequest) stats[key].ndtReq++;
-                    
-                    // NNDT chi tiết (RT, PAUT, MT, PT còn nợ)
-                    if (d.reqRT && !d.hasRT) stats[key].rtReq++;
-                    if (d.reqPAUT && !d.hasPAUT) stats[key].pautReq++;
-                    if (d.reqMT && !d.hasMT) stats[key].mtReq++;
-                    if (d.reqPT && !d.hasPT) stats[key].ptReq++;
+                const kW = calKey(d.wDate); if (kW) ensure(kW).joints++;                                  // W theo ngày hàn
+                if (d.fitupAcc === 'ACC') { const k = calKey(d.fitDate); if (k) ensure(k).fitup++; }        // Fit-up theo FitUpReportDate
+                if (d.visualACC === 'ACC') { const k = calKey(d.visDate); if (k) ensure(k).visual++; }      // Visual theo VisualReportDate
+                const kN = calKey(d.visDate);                                                              // NDT theo VisualReportDate
+                if (kN) {
+                    const s = ensure(kN);
+                    if (d.ndtRequest) {
+                        s.ndtReq++;
+                        if ((d.statusCol || '').trim().toUpperCase() === 'COMPLETED') s.ndt++;             // NDT Cpl = Status='Completed'
+                    }
+                    if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') s.repair++;
+                    if (d.reqRT && !d.hasRT) s.rtReq++;
+                    if (d.reqPAUT && !d.hasPAUT) s.pautReq++;
+                    if (d.reqMT && !d.hasMT) s.mtReq++;
+                    if (d.reqPT && !d.hasPT) s.ptReq++;
                 }
             });
 
@@ -4352,9 +4352,11 @@
             document.getElementById('lblDetailVisualAcc').innerText = visualAccCount.toLocaleString();
             document.getElementById('lblDetailVisualPct').innerText = '(theo ngày báo cáo)';
 
-            const ndtRequestCount = dayJoints.filter(d => d.ndtRequest).length;
-            const ndtCompletedCount = dayJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
-            const ndtBacklogCount = dayJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'NOT COMPLETE').length;
+            // NDT đếm theo VisualReportDate (đã chốt): mối có ngày visual rơi vào kỳ này
+            const ndtJoints = subconJoints.filter(d => labelFor(d.visDate, d.visDateStr) === periodStr);
+            const ndtRequestCount = ndtJoints.filter(d => d.ndtRequest).length;
+            const ndtCompletedCount = ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
+            const ndtBacklogCount = ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'NOT COMPLETE').length;
 
             document.getElementById('lblDetailNdtRequest').innerText = ndtRequestCount.toLocaleString();
             document.getElementById('lblDetailNdtCompleted').innerText = ndtCompletedCount.toLocaleString();
@@ -4362,11 +4364,11 @@
             document.getElementById('lblDetailNdtBacklog').innerText = ndtBacklogCount.toLocaleString();
             document.getElementById('lblDetailNdtBacklogPct').innerText = ndtRequestCount > 0 ? Math.round(ndtBacklogCount / ndtRequestCount * 100) + '%' : '0%';
 
-            // Tính chi tiết số mối backlog cho mỗi phương pháp NDT
-            const rtBack = dayJoints.filter(d => d.reqRT && !d.hasRT).length;
-            const pautBack = dayJoints.filter(d => d.reqPAUT && !d.hasPAUT).length;
-            const mtBack = dayJoints.filter(d => d.reqMT && !d.hasMT).length;
-            const ptBack = dayJoints.filter(d => d.reqPT && !d.hasPT).length;
+            // Chi tiết số mối còn nợ mỗi pp NDT (theo VisualReportDate)
+            const rtBack = ndtJoints.filter(d => d.reqRT && !d.hasRT).length;
+            const pautBack = ndtJoints.filter(d => d.reqPAUT && !d.hasPAUT).length;
+            const mtBack = ndtJoints.filter(d => d.reqMT && !d.hasMT).length;
+            const ptBack = ndtJoints.filter(d => d.reqPT && !d.hasPT).length;
 
             document.getElementById('lblDetailNdtBacklogDetail').innerHTML = `
                 RT: <strong class="${rtBack > 0 ? 'text-danger' : 'text-success'}">${rtBack}</strong> | 
@@ -4553,9 +4555,10 @@
             const _subJoints = filteredData.filter(d => !subconFilter || (d.isSub||'').toUpperCase().includes(subconFilter.toUpperCase()));
             const fitupAccCount = _subJoints.filter(d => d.fitupAcc === 'ACC' && _labelFor(d.fitDate, d.fitDateStr) === periodStr).length;
             const visualAccCount = _subJoints.filter(d => d.visualACC === 'ACC' && _labelFor(d.visDate, d.visDateStr) === periodStr).length;
-            const ndtRequestCount = dayJoints.filter(d => d.ndtRequest).length;
-            const ndtCompletedCount = dayJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
-            const ndtBacklogCount = dayJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'NOT COMPLETE').length;
+            const _ndtJoints = _subJoints.filter(d => _labelFor(d.visDate, d.visDateStr) === periodStr); // NDT theo VisualReportDate
+            const ndtRequestCount = _ndtJoints.filter(d => d.ndtRequest).length;
+            const ndtCompletedCount = _ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
+            const ndtBacklogCount = _ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'NOT COMPLETE').length;
 
             const typeCounts = {};
             dayJoints.forEach(d => {
@@ -5017,34 +5020,45 @@
                 const m = getStartOfMonth(ts); return { key: 'M' + m.getTime(), label: `${monthNames[m.getMonth()]} ${m.getFullYear()}`, ts: m.getTime() };
             };
 
-            const weldMap = {};   // theo ngày hàn (wDate): W, ndtReq, ndtCpl, repair
-            const fitMap = {};    // theo FitUpReportDate, điều kiện Fit-up ACC
-            const visMap = {};    // theo VisualReportDate, điều kiện Visual ACC
+            const weldMap = {};   // Welding Completed: theo ngày hàn (wDate)
+            const fitMap = {};    // Fit-up ACC: theo FitUpReportDate
+            const visMap = {};    // Visual ACC: theo VisualReportDate
+            const ndtMap = {};    // NDT (req/cpl/repair): theo VisualReportDate (đã chốt)
             const keyMeta = {};   // key -> {label, ts}
             const touch = (k) => { if (!keyMeta[k.key]) keyMeta[k.key] = { label: k.label, ts: k.ts }; };
 
             chartData.forEach(d => {
+                // Welding Completed theo ngày hàn
                 const kw = keyFor(d.wDate, d.wDateStr);
                 if (kw) {
-                    if (!weldMap[kw.key]) weldMap[kw.key] = { W: 0, ndtReq: 0, ndtCpl: 0, repair: 0 };
+                    if (!weldMap[kw.key]) weldMap[kw.key] = { W: 0 };
                     touch(kw);
-                    const g = weldMap[kw.key];
-                    g.W++;
-                    if (d.ndtRequest) {
-                        g.ndtReq++;
-                        // NDT Cpl = mối có Status (cột DJ) = 'Completed' (đã xác nhận; bỏ điều kiện "đủ báo cáo").
-                        // -> ndtBacklog = ndtReq - ndtCpl = mối có request & Status='Not Complete', khớp modal.
-                        if ((d.statusCol || '').trim().toUpperCase() === 'COMPLETED') g.ndtCpl++;
-                    }
-                    if (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') g.repair++;
+                    weldMap[kw.key].W++;
                 }
+                // Fit-up ACC theo FitUpReportDate
                 if (d.fitupAcc === 'ACC') {
                     const kf = keyFor(d.fitDate, d.fitDateStr);
                     if (kf) { fitMap[kf.key] = (fitMap[kf.key] || 0) + 1; touch(kf); }
                 }
+                // Visual ACC theo VisualReportDate
                 if (d.visualACC === 'ACC') {
                     const kv = keyFor(d.visDate, d.visDateStr);
                     if (kv) { visMap[kv.key] = (visMap[kv.key] || 0) + 1; touch(kv); }
+                }
+                // NDT theo VisualReportDate: Req (NDTRequest), Cpl (Status='Completed'), Repair (kết quả REJ)
+                const isRej = d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ';
+                if (d.ndtRequest || isRej) {
+                    const kn = keyFor(d.visDate, d.visDateStr);
+                    if (kn) {
+                        if (!ndtMap[kn.key]) ndtMap[kn.key] = { req: 0, cpl: 0, repair: 0 };
+                        touch(kn);
+                        const n = ndtMap[kn.key];
+                        if (d.ndtRequest) {
+                            n.req++;
+                            if ((d.statusCol || '').trim().toUpperCase() === 'COMPLETED') n.cpl++;
+                        }
+                        if (isRej) n.repair++;
+                    }
                 }
             });
 
@@ -5063,11 +5077,11 @@
                 return wCumSum;
             });
 
-            // 2. NDT chart — theo wDate (giữ tới khi chốt mô hình NDT)
-            const ndtReqVals = orderedKeys.map(k => weldMap[k] ? weldMap[k].ndtReq : 0);
-            const ndtCplVals = orderedKeys.map(k => weldMap[k] ? weldMap[k].ndtCpl : 0);
+            // 2. NDT chart — theo VisualReportDate (Req/Cpl/Backlog/Repair)
+            const ndtReqVals = orderedKeys.map(k => ndtMap[k] ? ndtMap[k].req : 0);
+            const ndtCplVals = orderedKeys.map(k => ndtMap[k] ? ndtMap[k].cpl : 0);
             const ndtBacklogVals = ndtReqVals.map((v, i) => v - ndtCplVals[i]);
-            const ndtRepairVals = orderedKeys.map(k => weldMap[k] ? weldMap[k].repair : 0);
+            const ndtRepairVals = orderedKeys.map(k => ndtMap[k] ? ndtMap[k].repair : 0);
 
             let ndtReqCumSum = 0;
             const ndtReqCumVals = ndtReqVals.map(v => {
