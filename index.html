@@ -1379,6 +1379,31 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- NDT Method Chart Container (báo cáo theo pp RT/PAUT/MT/PT theo ngày hàn) -->
+                        <div class="col-12" id="cardNdtMethodDaily">
+                            <div class="glass-card p-3 bg-white border" style="border-radius: 8px;">
+                                <div class="chart-header text-primary border-0 pb-1 mb-2 d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold text-primary mb-0"><i class="fas fa-vials me-2"></i>NDT Method — Báo cáo theo PP (RT/PAUT/MT/PT) mỗi ngày</h6>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small" style="font-size:0.65rem;"><i class="fas fa-arrows-alt-h me-1"></i>Drag to pan · Ctrl+Scroll to zoom</span>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="if(chartInstances.ndtMethod) chartInstances.ndtMethod.resetZoom()" style="font-size:0.7rem; padding: 1px 6px;" title="Reset Zoom / Pan"><i class="fas fa-undo me-1"></i>Reset</button>
+                                        <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardNdtMethodDaily')" style="font-size:0.75rem; padding: 2px 8px;"><i class="fas fa-chevron-left me-1"></i> Back</button>
+                                        <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardNdtMethodDaily')" title="Expand NDT Method chart"></i>
+                                    </div>
+                                </div>
+                                <div class="chart-container-wrap" style="position: relative; height: 400px; width: 100%;">
+                                    <canvas id="chartNdtMethodDaily"></canvas>
+                                </div>
+                                <div class="d-flex flex-wrap gap-3 justify-content-center small text-muted mt-2 pt-1 border-top">
+                                    <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#1565c0;"></span>RT</span>
+                                    <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#43a047;"></span>PAUT</span>
+                                    <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#f57c00;"></span>MT</span>
+                                    <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#7b1fa2;"></span>PT</span>
+                                    <span class="text-muted" style="font-style:italic;">(cột = báo cáo/ngày · đường nét đứt = lũy kế)</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5026,6 +5051,7 @@
             const fitMap = {};    // Fit-up ACC: theo FitUpReportDate
             const visMap = {};    // Visual ACC: theo VisualReportDate
             const ndtMap = {};    // NDT (req/cpl/repair): theo VisualReportDate (đã chốt)
+            const methodMap = {}; // NDT Method: báo cáo RT/PAUT/MT/PT theo ngày hàn (wDate)
             const keyMeta = {};   // key -> {label, ts}
             const touch = (k) => { if (!keyMeta[k.key]) keyMeta[k.key] = { label: k.label, ts: k.ts }; };
 
@@ -5036,6 +5062,15 @@
                     if (!weldMap[kw.key]) weldMap[kw.key] = { W: 0 };
                     touch(kw);
                     weldMap[kw.key].W++;
+                    // NDT Method: trong mối CÓ NDT request, đếm báo cáo đã có theo từng pp (theo ngày hàn)
+                    if (d.ndtRequest) {
+                        if (!methodMap[kw.key]) methodMap[kw.key] = { RT: 0, PAUT: 0, MT: 0, PT: 0 };
+                        const mm = methodMap[kw.key];
+                        if (d.hasRT) mm.RT++;
+                        if (d.hasPAUT) mm.PAUT++;
+                        if (d.hasMT) mm.MT++;
+                        if (d.hasPT) mm.PT++;
+                    }
                 }
                 // Fit-up ACC theo FitUpReportDate
                 if (d.fitupAcc === 'ACC') {
@@ -5091,9 +5126,18 @@
                 return ndtReqCumSum;
             });
 
+            // 3. NDT Method chart — báo cáo theo pp/ngày (cột) + lũy kế (đường), theo ngày hàn
+            const rtVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].RT : 0);
+            const pautVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].PAUT : 0);
+            const mtVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].MT : 0);
+            const ptVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].PT : 0);
+            const _cum = (arr) => { let s = 0; return arr.map(v => (s += v)); };
+            const rtCum = _cum(rtVals), pautCum = _cum(pautVals), mtCum = _cum(mtVals), ptCum = _cum(ptVals);
+
             // Destroy old charts if exist
             if (chartInstances.dailyWelding) chartInstances.dailyWelding.destroy();
             if (chartInstances.dailyNdt) chartInstances.dailyNdt.destroy();
+            if (chartInstances.ndtMethod) chartInstances.ndtMethod.destroy();
             if (chartInstances.dailyProduction) {
                 chartInstances.dailyProduction.destroy();
                 chartInstances.dailyProduction = null;
@@ -5490,6 +5534,69 @@
                                         minRange: 3
                                     }
                                 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Render NDT Method Chart — báo cáo RT/PAUT/MT/PT mỗi ngày (cột) + lũy kế (đường nét đứt)
+            const canvasNdtMethod = document.getElementById('chartNdtMethodDaily');
+            if (canvasNdtMethod) {
+                const _methods = [
+                    { key: 'RT',   color: '#1565c0', bg: 'rgba(21,101,192,0.75)',  bars: rtVals,   cum: rtCum },
+                    { key: 'PAUT', color: '#43a047', bg: 'rgba(67,160,71,0.75)',   bars: pautVals, cum: pautCum },
+                    { key: 'MT',   color: '#f57c00', bg: 'rgba(245,124,0,0.75)',   bars: mtVals,   cum: mtCum },
+                    { key: 'PT',   color: '#7b1fa2', bg: 'rgba(123,31,162,0.75)',  bars: ptVals,   cum: ptCum }
+                ];
+                const _mDs = [];
+                _methods.forEach(m => _mDs.push({
+                    label: m.key, data: m.bars, backgroundColor: m.bg, borderColor: m.color,
+                    borderWidth: 1, borderRadius: 3, yAxisID: 'y',
+                    datalabels: {
+                        display: function(context) {
+                            const val = context.dataset.data[context.dataIndex];
+                            if (!val || val <= 0) return false;
+                            const meta = context.chart.getDatasetMeta(context.datasetIndex);
+                            const bw = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
+                            return bw >= 14;
+                        },
+                        anchor: 'end', align: 'top', offset: 1, font: { size: 8, weight: 'bold' }, color: '#424242',
+                        formatter: function(v) { return v.toLocaleString(); }
+                    }
+                }));
+                _methods.forEach(m => _mDs.push({
+                    label: m.key + ' (lũy kế)', data: m.cum, type: 'line', borderColor: m.color,
+                    backgroundColor: 'transparent', borderWidth: 2, borderDash: [4, 3], fill: false,
+                    tension: 0.25, yAxisID: 'y1', pointRadius: 0, datalabels: { display: false }
+                }));
+                chartInstances.ndtMethod = new Chart(canvasNdtMethod.getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: labels, datasets: _mDs },
+                    options: {
+                        maintainAspectRatio: false, responsive: true,
+                        interaction: { mode: 'nearest', intersect: true },
+                        onClick: (event, els) => {
+                            if (els && els.length > 0) {
+                                const label = chartInstances.ndtMethod.data.labels[els[0].index];
+                                showDailyDetail(label, document.getElementById('chartGroupUnit').value);
+                            }
+                        },
+                        scales: {
+                            x: {
+                                min: labels.length > (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) ? labels.length - (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) : 0,
+                                max: labels.length - 1, grid: { display: false }
+                            },
+                            y: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Báo cáo / ngày', font: { weight: 'bold' } }, grid: { color: 'rgba(0,0,0,0.05)' }, grace: '10%', afterFit: function(s) { s.width = 65; } },
+                            y1: { type: 'linear', position: 'right', title: { display: true, text: 'Lũy kế báo cáo', font: { weight: 'bold' } }, grid: { drawOnChartArea: false }, grace: '5%', afterFit: function(s) { s.width = 80; } }
+                        },
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y.toLocaleString(); } } },
+                            zoom: {
+                                pan: { enabled: true, mode: 'x', modifierKey: null },
+                                zoom: { wheel: { enabled: true, modifierKey: 'ctrl' }, pinch: { enabled: true }, mode: 'x' },
+                                limits: { x: { min: 0, max: labels.length - 1, minRange: 3 } }
                             }
                         }
                     }
