@@ -1465,8 +1465,9 @@
                         <!-- Cột 1: Hydrotest Status (Tóm tắt & Tỷ lệ) -->
                         <div class="col-12">
                             <div class="glass-card shadow-sm h-100" style="border: 1px solid rgba(2, 136, 209, 0.15); background: rgba(255, 255, 255, 0.65);">
-                                <div class="chart-header text-info py-2" style="border-bottom: 1px solid rgba(0,0,0,0.05); min-height: auto;">
-                                    <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-tint me-2"></i>Hydrotest Status</span>
+                                <div class="chart-header text-info py-2 d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-bottom: 1px solid rgba(0,0,0,0.05); min-height: auto;">
+                                    <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-tint me-2"></i>Hydrotest Status <span class="text-muted fw-normal" style="font-size:0.62rem;">(bấm cột để lọc)</span></span>
+                                    <button id="hydroStatusClearBtn" class="btn btn-sm btn-outline-danger align-items-center" style="display:none; font-size:0.68rem; padding:1px 8px; line-height:1.4;" onclick="clearHydroStatusFilter()" title="Bỏ lọc tình trạng gói test"><i class="fas fa-times me-1"></i>Clear: <span id="hydroStatusClearLabel" class="ms-1 fw-bold"></span></button>
                                 </div>
                                 <div class="p-3">
                                     <div class="row align-items-center">
@@ -4225,10 +4226,12 @@
 
             const dailyMap = {};
             dailyFilteredData.forEach(d => {
-                const dateKey = d.wDateStr || 'No Date';
+                const isVisualAcc = d.visualACC === 'ACC';
+                const dateKey = (isVisualAcc && d.visDateStr) ? d.visDateStr : (d.wDateStr || 'No Date');
+                const ts = (isVisualAcc && d.visDate) ? d.visDate : (d.wDate || 0);
                 const sub = (d.isSub || 'Unknown').toUpperCase();
                 if (!dailyMap[dateKey]) {
-                    dailyMap[dateKey] = { date: dateKey, pos_j: 0, pos_di: 0, ptsc_j: 0, ptsc_di: 0, south_j: 0, south_di: 0, ts: d.wDate || 0 };
+                    dailyMap[dateKey] = { date: dateKey, pos_j: 0, pos_di: 0, ptsc_j: 0, ptsc_di: 0, south_j: 0, south_di: 0, ts: ts };
                 }
                 if (sub.includes('POS')) {
                     dailyMap[dateKey].pos_j++; dailyMap[dateKey].pos_di += d.sizeVal;
@@ -4290,9 +4293,11 @@
 
             const dailyMap = {};
             dailyFilteredData.forEach(d => {
-                const dateKey = d.wDateStr || 'No Date';
+                const isVisualAcc = d.visualACC === 'ACC';
+                const dateKey = (isVisualAcc && d.visDateStr) ? d.visDateStr : (d.wDateStr || 'No Date');
+                const ts = (isVisualAcc && d.visDate) ? d.visDate : (d.wDate || 0);
                 const sub = (d.isSub || 'Unknown').toUpperCase();
-                if (!dailyMap[dateKey]) dailyMap[dateKey] = { date: dateKey, pos_j: 0, pos_di: 0, ptsc_j: 0, ptsc_di: 0, south_j: 0, south_di: 0, ts: d.wDate || 0 };
+                if (!dailyMap[dateKey]) dailyMap[dateKey] = { date: dateKey, pos_j: 0, pos_di: 0, ptsc_j: 0, ptsc_di: 0, south_j: 0, south_di: 0, ts: ts };
                 if (sub.includes('POS')) { dailyMap[dateKey].pos_j++; dailyMap[dateKey].pos_di += d.sizeVal; } 
                 else if (sub.includes('SOUTHWEST')) { dailyMap[dateKey].south_j++; dailyMap[dateKey].south_di += d.sizeVal; }
                 else { dailyMap[dateKey].ptsc_j++; dailyMap[dateKey].ptsc_di += d.sizeVal; }
@@ -4356,8 +4361,13 @@
             };
 
             const subconJoints = filteredData.filter(d => (d.isSub || '').toUpperCase().includes(subconFilter.toUpperCase()));
-            // Welding Completion: mối HÀN trong kỳ (theo ngày hàn wDate)
-            const dayJoints = subconJoints.filter(d => labelFor(d.wDate, d.wDateStr) === periodStr);
+            // Xác định ngày biểu diễn của mối hàn (nếu visual ACC dùng visDate/visDateStr, ngược lại dùng wDate/wDateStr)
+            const dayJoints = subconJoints.filter(d => {
+                const isVisualAcc = d.visualACC === 'ACC';
+                const targetDate = (isVisualAcc && d.visDate) ? d.visDate : d.wDate;
+                const targetDateStr = (isVisualAcc && d.visDateStr) ? d.visDateStr : d.wDateStr;
+                return labelFor(targetDate, targetDateStr) === periodStr;
+            });
 
             if (dayJoints.length === 0) {
                 alert("Không tìm thấy dữ liệu cho khoảng thời gian: " + periodStr);
@@ -4556,16 +4566,20 @@
                     if (!sub.includes(subconFilter.toUpperCase())) return false;
                 }
                 
+                const isVisualAcc = d.visualACC === 'ACC';
+                const targetDate = (isVisualAcc && d.visDate) ? d.visDate : d.wDate;
+                const targetDateStr = (isVisualAcc && d.visDateStr) ? d.visDateStr : d.wDateStr;
+                
                 let label = '';
-                if (!d.wDate) {
+                if (!targetDate) {
                     label = 'No Date';
                 } else if (groupUnit === 'date') {
-                    label = d.wDateStr || 'No Date';
+                    label = targetDateStr || 'No Date';
                 } else if (groupUnit === 'week') {
-                    const monday = getStartOfWeek(d.wDate);
+                    const monday = getStartOfWeek(targetDate);
                     label = `W/C ${monday.toLocaleDateString('en-GB')}`;
                 } else if (groupUnit === 'month') {
-                    const monthStart = getStartOfMonth(d.wDate);
+                    const monthStart = getStartOfMonth(targetDate);
                     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                     label = `${monthNames[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
                 }
@@ -5059,13 +5073,17 @@
             const touch = (k) => { if (!keyMeta[k.key]) keyMeta[k.key] = { label: k.label, ts: k.ts }; };
 
             chartData.forEach(d => {
-                // Welding Completed theo ngày hàn
-                const kw = keyFor(d.wDate, d.wDateStr);
+                // Welding Completed theo ngày biểu diễn mới (ngày visual nếu visual ACC, ngược lại ngày hàn)
+                const isVisualAcc = d.visualACC === 'ACC';
+                const targetDate = (isVisualAcc && d.visDate) ? d.visDate : d.wDate;
+                const targetDateStr = (isVisualAcc && d.visDateStr) ? d.visDateStr : d.wDateStr;
+                
+                const kw = keyFor(targetDate, targetDateStr);
                 if (kw) {
                     if (!weldMap[kw.key]) weldMap[kw.key] = { W: 0 };
                     touch(kw);
                     weldMap[kw.key].W++;
-                    // NDT Method: trong mối CÓ NDT request, đếm báo cáo đã có theo từng pp (theo ngày hàn)
+                    // NDT Method: trong mối CÓ NDT request, đếm báo cáo đã có theo từng pp (theo ngày biểu diễn mới)
                     if (d.ndtRequest) {
                         if (!methodMap[kw.key]) methodMap[kw.key] = { RT: 0, PAUT: 0, MT: 0, PT: 0 };
                         const mm = methodMap[kw.key];
@@ -6084,7 +6102,7 @@
             </tr>`;
         }
 
-        function renderHydroTfoot(displayedItems) {
+        function renderHydroTfoot(displayedItems, chartList) {
             const tfoot = document.getElementById('hydroTfoot');
             if (!tfoot) return;
             if (!displayedItems || displayedItems.length === 0) {
@@ -6152,7 +6170,7 @@
                 <td colspan="11"></td>
             </tr>`;
 
-            updateHydroCharts(displayedItems, totals);
+            updateHydroCharts(chartList || displayedItems, totals);
         }
 
         function updateHydroCharts(displayedItems, totals) {
@@ -6206,6 +6224,14 @@
                 `;
             }
 
+            // Làm nổi cột đang được lọc (khi chỉ chọn 1 trạng thái) — các cột khác mờ đi
+            const _hsChecked = Array.from(document.querySelectorAll('.hydro-status-filter:checked')).map(b => b.value);
+            const _hsIdx = { 'Hydrotested': 0, 'Ready for Hydrotest': 1, 'Remaining': 2 };
+            const _hsActive = (_hsChecked.length === 1) ? _hsIdx[_hsChecked[0]] : -1;
+            const _hsBg = ['rgba(30, 60, 114, 0.85)', 'rgba(17, 153, 142, 0.85)', 'rgba(108, 117, 125, 0.85)'];
+            const _hsBgDim = ['rgba(30, 60, 114, 0.18)', 'rgba(17, 153, 142, 0.18)', 'rgba(108, 117, 125, 0.18)'];
+            const _hsColors = _hsBg.map((c, i) => (_hsActive === -1 || _hsActive === i) ? c : _hsBgDim[i]);
+
             if (chartInstances.hydroStatus) chartInstances.hydroStatus.destroy();
             const maxVal = Math.max(doneHydro, readyHydro, remainingHydro);
             chartInstances.hydroStatus = new Chart(document.getElementById('hydroStatusChart'), {
@@ -6215,11 +6241,7 @@
                     datasets: [{
                         label: 'Packages',
                         data: [doneHydro, readyHydro, remainingHydro],
-                        backgroundColor: [
-                            'rgba(30, 60, 114, 0.75)',
-                            'rgba(17, 153, 142, 0.75)',
-                            'rgba(108, 117, 125, 0.75)'
-                        ],
+                        backgroundColor: _hsColors,
                         borderColor: [
                             '#1e3c72',
                             '#11998e',
@@ -6232,6 +6254,13 @@
                 options: {
                     maintainAspectRatio: false,
                     responsive: true,
+                    onClick: (evt, els) => {
+                        if (!els || !els.length) return;
+                        const vals = ['Hydrotested', 'Ready for Hydrotest', 'Remaining'];
+                        const target = vals[els[0].index];
+                        if (target && typeof filterHydroByStatus === 'function') filterHydroByStatus(target);
+                    },
+                    onHover: (evt, els) => { if (evt && evt.native && evt.native.target) evt.native.target.style.cursor = (els && els.length) ? 'pointer' : 'default'; },
                     layout: { padding: { top: 25 } },
                     plugins: {
                         legend: { display: false },
@@ -6267,6 +6296,43 @@
                 btn.firstElementChild.innerText = 'Status: All';
             } else {
                 btn.firstElementChild.innerText = 'Status: ' + checked.join(', ');
+            }
+            updateHydroClearBtn();
+        };
+
+        // === Bấm cột Hydrotest Status để lọc bảng theo trạng thái; bấm Clear để bỏ lọc ===
+        const HYDRO_STATUS_LABELS = { 'Hydrotested': 'Hydrotested', 'Ready for Hydrotest': 'Ready Hydro', 'Remaining': 'Remaining' };
+
+        window.filterHydroByStatus = function(target) {
+            const boxes = Array.from(document.querySelectorAll('.hydro-status-filter'));
+            if (!boxes.length) return;
+            const checkedVals = boxes.filter(b => b.checked).map(b => b.value);
+            const isSole = checkedVals.length === 1 && checkedVals[0] === target;
+            // Bấm lại đúng cột đang lọc -> bỏ lọc (hiện tất cả)
+            boxes.forEach(b => b.checked = isSole ? true : (b.value === target));
+            updateHydroStatusDropdownLabel();
+            renderHydro();
+        };
+
+        window.clearHydroStatusFilter = function() {
+            document.querySelectorAll('.hydro-status-filter').forEach(b => b.checked = true);
+            updateHydroStatusDropdownLabel();
+            renderHydro();
+        };
+
+        window.updateHydroClearBtn = function() {
+            const btn = document.getElementById('hydroStatusClearBtn');
+            if (!btn) return;
+            const boxes = Array.from(document.querySelectorAll('.hydro-status-filter'));
+            const checked = boxes.filter(b => b.checked);
+            // Chỉ hiện nút Clear khi đang lọc (không phải tất cả, và có ít nhất 1)
+            if (boxes.length && checked.length > 0 && checked.length < boxes.length) {
+                const names = checked.map(b => HYDRO_STATUS_LABELS[b.value] || b.value).join(', ');
+                const lbl = document.getElementById('hydroStatusClearLabel');
+                if (lbl) lbl.innerText = names;
+                btn.style.display = 'inline-flex';
+            } else {
+                btn.style.display = 'none';
             }
         };
 
@@ -6333,14 +6399,8 @@
                     else if (fSTT === 'DONE' && (h.status === 'Hydrotested' || h.status === 'Ready for Hydrotest')) match = true;
                     if (!match) return false;
                 }
-                // Lọc theo Multiple Status
-                if (statusFilters.length > 0) {
-                    let matchStatus = false;
-                    if (statusFilters.includes('Hydrotested') && h.status === 'Hydrotested') matchStatus = true;
-                    if (statusFilters.includes('Ready for Hydrotest') && h.status === 'Ready for Hydrotest') matchStatus = true;
-                    if (statusFilters.includes('Remaining') && h.status !== 'Hydrotested') matchStatus = true;
-                    if (!matchStatus) return false;
-                }
+                // (Bộ lọc Multiple Status áp dụng SAU — ở bước dựng bảng — để chart/banner luôn hiện đủ 3 cột trạng thái,
+                //  cho phép bấm cột này sang cột khác mà không bị "sập" biểu đồ.)
                 // Lọc theo search query
                 if (searchQuery) {
                     const matchQ = (h.testPack || '').toLowerCase().includes(searchQuery) ||
@@ -6377,15 +6437,24 @@
                 return hydroSortAsc ? (valA - valB) : (valB - valA);
             });
 
+            // Áp bộ lọc trạng thái CHỈ cho bảng (chart/banner vẫn dùng `sorted` đủ 3 trạng thái để bấm qua lại)
+            const matchHydroStatus = (h) => {
+                if (statusFilters.length === 0) return false;
+                if (statusFilters.includes('Hydrotested') && h.status === 'Hydrotested') return true;
+                if (statusFilters.includes('Ready for Hydrotest') && h.status === 'Ready for Hydrotest') return true;
+                if (statusFilters.includes('Remaining') && h.status !== 'Hydrotested') return true;
+                return false;
+            };
             const displayed = [];
-            const finalHtml = sorted.map((h, i) => {
+            let _hi = 0;
+            const finalHtml = sorted.filter(matchHydroStatus).map((h) => {
                 displayed.push(h);
-                return generateHydroRowHtml(h, i, true);
+                return generateHydroRowHtml(h, _hi++, true);
             }).join('');
 
-            tbody.innerHTML = (sorted.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
-            renderHydroTfoot(displayed);
-            window.lastFilteredHydroList = sorted;
+            tbody.innerHTML = (displayed.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
+            renderHydroTfoot(displayed, sorted);
+            window.lastFilteredHydroList = displayed;
             } catch(e) {
                 console.error(e);
                 tbody.innerHTML = `<tr><td colspan="28" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
