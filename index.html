@@ -1384,7 +1384,7 @@
                         <div class="col-12" id="cardNdtMethodDaily">
                             <div class="glass-card p-3 bg-white border" style="border-radius: 8px;">
                                 <div class="chart-header text-primary border-0 pb-1 mb-2 d-flex justify-content-between align-items-center">
-                                    <h6 class="fw-bold text-primary mb-0"><i class="fas fa-vials me-2"></i>NDT Method — Báo cáo theo PP (RT/PAUT/MT/PT) mỗi ngày</h6>
+                                    <h6 class="fw-bold text-primary mb-0"><i class="fas fa-vials me-2"></i>NDT Method — Reports Completed by Method (RT/PAUT/MT/PT) per Day</h6>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="text-muted small" style="font-size:0.65rem;"><i class="fas fa-arrows-alt-h me-1"></i>Drag to pan · Ctrl+Scroll to zoom</span>
                                         <button class="btn btn-sm btn-outline-warning" onclick="if(chartInstances.ndtMethod) chartInstances.ndtMethod.resetZoom()" style="font-size:0.7rem; padding: 1px 6px;" title="Reset Zoom / Pan"><i class="fas fa-undo me-1"></i>Reset</button>
@@ -1400,7 +1400,7 @@
                                     <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#43a047;"></span>PAUT</span>
                                     <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#f57c00;"></span>MT</span>
                                     <span><span class="d-inline-block rounded-circle me-1" style="width:10px; height:10px; background-color:#7b1fa2;"></span>PT</span>
-                                    <span class="text-muted" style="font-style:italic;">(cột = báo cáo/ngày · đường nét đứt = lũy kế)</span>
+                                    <span class="text-muted" style="font-style:italic;">(bars = reports completed per day)</span>
                                 </div>
                             </div>
                         </div>
@@ -5131,8 +5131,6 @@
             const pautVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].PAUT : 0);
             const mtVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].MT : 0);
             const ptVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].PT : 0);
-            const _cum = (arr) => { let s = 0; return arr.map(v => (s += v)); };
-            const rtCum = _cum(rtVals), pautCum = _cum(pautVals), mtCum = _cum(mtVals), ptCum = _cum(ptVals);
 
             // Destroy old charts if exist
             if (chartInstances.dailyWelding) chartInstances.dailyWelding.destroy();
@@ -5544,10 +5542,10 @@
             const canvasNdtMethod = document.getElementById('chartNdtMethodDaily');
             if (canvasNdtMethod) {
                 const _methods = [
-                    { key: 'RT',   color: '#1565c0', bg: 'rgba(21,101,192,0.75)',  bars: rtVals,   cum: rtCum },
-                    { key: 'PAUT', color: '#43a047', bg: 'rgba(67,160,71,0.75)',   bars: pautVals, cum: pautCum },
-                    { key: 'MT',   color: '#f57c00', bg: 'rgba(245,124,0,0.75)',   bars: mtVals,   cum: mtCum },
-                    { key: 'PT',   color: '#7b1fa2', bg: 'rgba(123,31,162,0.75)',  bars: ptVals,   cum: ptCum }
+                    { key: 'RT',   color: '#1565c0', bg: 'rgba(21,101,192,0.75)',  bars: rtVals },
+                    { key: 'PAUT', color: '#43a047', bg: 'rgba(67,160,71,0.75)',   bars: pautVals },
+                    { key: 'MT',   color: '#f57c00', bg: 'rgba(245,124,0,0.75)',   bars: mtVals },
+                    { key: 'PT',   color: '#7b1fa2', bg: 'rgba(123,31,162,0.75)',  bars: ptVals }
                 ];
                 const _mDs = [];
                 _methods.forEach(m => _mDs.push({
@@ -5556,19 +5554,13 @@
                     datalabels: {
                         display: function(context) {
                             const val = context.dataset.data[context.dataIndex];
-                            if (!val || val <= 0) return false;
-                            const meta = context.chart.getDatasetMeta(context.datasetIndex);
-                            const bw = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
-                            return bw >= 14;
+                            return !!val && val > 0;
                         },
-                        anchor: 'end', align: 'top', offset: 1, font: { size: 8, weight: 'bold' }, color: '#424242',
+                        anchor: 'end', align: 'top', offset: 2, rotation: -90,
+                        font: { size: 9, weight: 'bold' },
+                        color: function(context) { return context.dataset.borderColor || '#424242'; },
                         formatter: function(v) { return v.toLocaleString(); }
                     }
-                }));
-                _methods.forEach(m => _mDs.push({
-                    label: m.key + ' (lũy kế)', data: m.cum, type: 'line', borderColor: m.color,
-                    backgroundColor: 'transparent', borderWidth: 2, borderDash: [4, 3], fill: false,
-                    tension: 0.25, yAxisID: 'y1', pointRadius: 0, datalabels: { display: false }
                 }));
                 chartInstances.ndtMethod = new Chart(canvasNdtMethod.getContext('2d'), {
                     type: 'bar',
@@ -5587,8 +5579,7 @@
                                 min: labels.length > (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) ? labels.length - (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) : 0,
                                 max: labels.length - 1, grid: { display: false }
                             },
-                            y: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Báo cáo / ngày', font: { weight: 'bold' } }, grid: { color: 'rgba(0,0,0,0.05)' }, grace: '10%', afterFit: function(s) { s.width = 65; } },
-                            y1: { type: 'linear', position: 'right', title: { display: true, text: 'Lũy kế báo cáo', font: { weight: 'bold' } }, grid: { drawOnChartArea: false }, grace: '5%', afterFit: function(s) { s.width = 80; } }
+                            y: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Reports / day', font: { weight: 'bold' } }, grid: { color: 'rgba(0,0,0,0.05)' }, grace: '18%', afterFit: function(s) { s.width = 65; } }
                         },
                         plugins: {
                             legend: { display: true },
