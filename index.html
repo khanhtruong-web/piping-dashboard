@@ -5559,9 +5559,11 @@
                             const val = context.dataset.data[context.dataIndex];
                             return !!val && val > 0;
                         },
-                        anchor: 'end', align: 'top', offset: 2, rotation: -90,
-                        font: { size: 9, weight: 'bold' },
-                        color: function(context) { return context.dataset.borderColor || '#424242'; },
+                        anchor: 'end', align: 'top', offset: 3, rotation: -90, clamp: true,
+                        font: { size: 10, weight: 'bold' },
+                        color: function(context) { return context.dataset.borderColor || '#333'; },
+                        textStrokeColor: 'rgba(255,255,255,0.95)', textStrokeWidth: 3,
+                        textShadowBlur: 3, textShadowColor: 'rgba(255,255,255,0.85)',
                         formatter: function(v) { return v.toLocaleString(); }
                     }
                 }));
@@ -5582,7 +5584,7 @@
                                 min: labels.length > (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) ? labels.length - (groupUnit === 'date' ? 15 : (groupUnit === 'week' ? 10 : 12)) : 0,
                                 max: labels.length - 1, grid: { display: false }
                             },
-                            y: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Reports / day', font: { weight: 'bold' } }, grid: { color: 'rgba(0,0,0,0.05)' }, grace: '18%', afterFit: function(s) { s.width = 65; } }
+                            y: { type: 'linear', position: 'left', beginAtZero: true, title: { display: true, text: 'Reports / day', font: { weight: 'bold' } }, grid: { color: 'rgba(0,0,0,0.05)' }, grace: '22%', afterFit: function(s) { s.width = 65; } }
                         },
                         plugins: {
                             legend: { display: true },
