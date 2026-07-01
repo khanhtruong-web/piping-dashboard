@@ -1573,12 +1573,13 @@
                                     <th style="width:60px; text-align: center;">FE</th>
                                     <th style="width:60px; text-align: center;">HT</th>
                                     <th style="width:60px; text-align: center;">PWHT</th>
+                                    <th style="min-width:150px;">Hydrotest Status</th>
                                     <th style="min-width:220px;">Actual Status</th>
                                     <th style="width:120px;">Location</th>
                                     <th style="min-width:120px;">TV</th>
                                 </tr>
                             </thead>
-                            <tbody id="hydroBody"><tr><td colspan="27" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
+                            <tbody id="hydroBody"><tr><td colspan="28" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
                             <tfoot id="hydroTfoot"></tfoot>
                         </table>
                     </div>
@@ -5639,6 +5640,7 @@
                         sys: value.system || '-', testPack: k, line: '',
                         t: 0, d: 0, p: 0, r: 0, spools: new Set(), lines: new Set(), locations: new Set(), remarks: new Set(), jointMap: {},
                         actualStatus: value.statusFab || '',
+                        hydrotestStatus: value.hydrotestStatus || '',
                         signP04Date: value.signP04Date || ''
                     };
                 });
@@ -5651,7 +5653,7 @@
                     if (testPkgArray.length > 0 && !testPkgArray.some(p => k.toLowerCase().includes(p))) return;
 
                     if(!hMap[k]) {
-                        hMap[k] = {...h, t:0, d:0, p:0, r:0, spools: new Set(), lines: new Set(), locations: new Set(), remarks: new Set(), jointMap: {}, actualStatus: '', signP04Date: ''}; 
+                        hMap[k] = {...h, t:0, d:0, p:0, r:0, spools: new Set(), lines: new Set(), locations: new Set(), remarks: new Set(), jointMap: {}, actualStatus: '', hydrotestStatus: '', signP04Date: ''};
                     } else {
                         if (h.sys && h.sys !== '-') hMap[k].sys = h.sys;
                         if (h.line && !hMap[k].line) hMap[k].line = h.line;
@@ -5680,7 +5682,7 @@
                             dateTs: null, dateStr: 'No Plan Date', skylineDateStr: '-',
                             sys: d.system || '-', testPack: d.testPkg || '-', line: d.line || '-',
                             t: 0, d: 0, p: 0, r: 0, spools: new Set(), lines: new Set(), locations: new Set(), remarks: new Set(), jointMap: {},
-                            actualStatus: '', signP04Date: ''
+                            actualStatus: '', hydrotestStatus: '', signP04Date: ''
                         };
                         targetK = k;
                     }
@@ -5971,8 +5973,10 @@
                         h.sys = sheetData.system;
                     }
                     h.actualStatus = sheetData.statusFab || '';
+                    h.hydrotestStatus = sheetData.hydrotestStatus || '';
                 } else {
                     h.actualStatus = '';
+                    h.hydrotestStatus = '';
                 }
 
                 const isHydrotested = sheetHydroDates.size > 0 
@@ -6096,6 +6100,7 @@
                 <td ${getColStyle(h.hardnessStatus)}>${h.hardnessStatus}</td>
                 <td ${getColStyle(h.pwhtStatus)}>${h.pwhtStatus}</td>
 
+                <td class="text-start fw-bold" style="font-size:0.68rem; white-space:normal; word-wrap:break-word;">${h.hydrotestStatus || '-'}</td>
                 <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${h.actualStatus}</td>
                 <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
                 <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
@@ -6167,7 +6172,7 @@
                 <td class="text-center">${totals.rtAcc}</td>
                 <td class="text-center">${totals.pautReq}</td>
                 <td class="text-center">${totals.pautAcc}</td>
-                <td colspan="11"></td>
+                <td colspan="12"></td>
             </tr>`;
 
             updateHydroCharts(chartList || displayedItems, totals);
@@ -6340,7 +6345,7 @@
             const tbody = document.getElementById('hydroBody');
             try {
             if(hydroPlanData.length === 0 && filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="27" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="28" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
                 return;
             }
 
@@ -8949,6 +8954,7 @@
                 let hydroIdx = headers.findIndex(h => (h.includes('hydro test') || h.includes('hydrotest') || h.includes('hydro date')) && !h.includes('ready'));
                 let systemIdx = headers.findIndex(h => h === 'system');
                 let signP04Idx = headers.findIndex(h => h.includes('sign p04a') || h.includes('p04a') || h.includes('p04'));
+                let hydrotestStatusIdx = headers.findIndex(h => h.includes('hydrotest status') || h.includes('hydro test status'));
 
                 if (tpIdx === -1) tpIdx = 0;
                 if (skylineIdx === -1) skylineIdx = 13;
@@ -8960,6 +8966,7 @@
                 if (signP04Idx === -1) {
                     signP04Idx = rows[0].length > 26 ? 26 : -1;
                 }
+                if (hydrotestStatusIdx === -1) hydrotestStatusIdx = rows[0].length > 32 ? 32 : -1; // cột AG (HYDROTEST STATUS)
 
                 const newMap = new Map();
                 for (let i = 1; i < rows.length; i++) {
@@ -8973,6 +8980,7 @@
                     const hydroDate = (row[hydroIdx] || '').toString().trim();
                     const system = systemIdx !== -1 ? (row[systemIdx] || '').toString().trim() : '-';
                     const signP04Date = signP04Idx !== -1 ? (row[signP04Idx] || '').toString().trim() : '';
+                    const hydrotestStatus = hydrotestStatusIdx !== -1 ? (row[hydrotestStatusIdx] || '').toString().trim() : '';
 
                     newMap.set(tp, {
                         skylineDate,
@@ -8980,7 +8988,8 @@
                         statusFab,
                         hydroDate,
                         system,
-                        signP04Date
+                        signP04Date,
+                        hydrotestStatus
                     });
                 }
                 sheetHydroDates = newMap;
