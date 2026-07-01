@@ -6513,7 +6513,7 @@
                 'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
                 'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
                 'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
-                'Actual Status', 'Location', 'TV'
+                'Hydrotest Status', 'Actual Status', 'Location', 'TV'
             ]);
 
             // Style group header row colors
@@ -6522,9 +6522,10 @@
             for(let c=8; c<=12; c++) hdrClr[c] = 'FF00695C';
             for(let c=13; c<=16; c++) hdrClr[c] = 'FF1565C0';
             for(let c=17; c<=24; c++) hdrClr[c] = 'FF5E35B1';
-            hdrClr[25] = 'FF455A64';
-            hdrClr[26] = 'FF37474F';
+            hdrClr[25] = 'FF00838F';
+            hdrClr[26] = 'FF455A64';
             hdrClr[27] = 'FF37474F';
+            hdrClr[28] = 'FF37474F';
 
             ws.getRow(1).eachCell({includeEmpty:true}, (cell, col) => {
                 cell.font = { bold:true, size:10, color:{argb:'FFFFFFFF'} };
@@ -6551,11 +6552,11 @@
                     h.weldingJoints, h.welded, h.progress/100, h.jointComplete, h.jointNotComplete,
                     h.rtRequired, h.rtAcc, h.pautRequired, h.pautAcc,
                     h.rtStatus, h.pautStatus, h.mtStatus, h.ptStatus, h.pmiStatus, h.ferriteStatus, h.hardnessStatus, h.pwhtStatus,
-                    detail, locStr, remStr
+                    (h.hydrotestStatus || '-'), detail, locStr, remStr
                 ]);
 
                 row.eachCell({includeEmpty:true}, (cell, col) => {
-                    cell.alignment = { vertical:'middle', horizontal: col===25?'left':'center', wrapText: col===25 };
+                    cell.alignment = { vertical:'middle', horizontal: (col===25||col===26)?'left':'center', wrapText: (col===25||col===26) };
                     cell.border = thinBdr;
                     
                     if (col === 10) {
@@ -6582,9 +6583,21 @@
                         }
                     }
 
-                    // Detail column (25) - light background for non-clear
+                    // Hydrotest Status column (25) - màu theo Done / Not yet
+                    if (col===25) {
+                        const hv = (h.hydrotestStatus || '').toLowerCase();
+                        if (hv.includes('done') || hv.includes('complete') || hv.includes('ready') || hv.includes('ok')) {
+                            cell.fill = hFill('FFD4EDDA');
+                            cell.font = { size:9, bold:true, color:{argb:'FF0F5132'} };
+                        } else if (hv.trim().length > 0) {
+                            cell.fill = hFill('FFFFF3CD');
+                            cell.font = { size:9, bold:true, color:{argb:'FF664D03'} };
+                        }
+                    }
+
+                    // Actual Status column (26) - light background for non-clear
                     const hasDetail = detail.trim().length > 0;
-                    if (col===25 && hasDetail) {
+                    if (col===26 && hasDetail) {
                         const lowVal = detail.toLowerCase();
                         if (lowVal.includes('done') || lowVal.includes('complete') || lowVal.includes('ready')) {
                             cell.fill = hFill('FFD4EDDA');
@@ -6606,7 +6619,7 @@
                 {width:13}, {width:8}, {width:10}, {width:14}, {width:16},
                 {width:11}, {width:8}, {width:13}, {width:10},
                 {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8},
-                {width:50}, {width:18}, {width:25}
+                {width:20}, {width:50}, {width:18}, {width:25}
             ];
 
             const buffer = await wb.xlsx.writeBuffer();
