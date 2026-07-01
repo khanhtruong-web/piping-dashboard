@@ -2798,7 +2798,10 @@
             }
             let s = String(v).trim();
             if (s === "") return null;
-            
+            // Bỏ qua NHANH chuỗi KHÔNG phải ngày (TBA, No Plan Date, PENDING, N/A, "-"...): mọi ngày hợp lệ đều
+            // có chữ số. Tránh moment fallback lỏng lẻo (chậm + spam cảnh báo deprecation ra console mỗi lần).
+            if (!/\d/.test(s)) return null;
+
             // Xóa phần thời gian để strict format của moment hoạt động chính xác
             let datePart = s;
             if (s.includes(' ')) datePart = s.split(' ')[0];
