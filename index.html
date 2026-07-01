@@ -5126,7 +5126,7 @@
                 return ndtReqCumSum;
             });
 
-            // 3. NDT Method chart — báo cáo theo pp/ngày (cột) + lũy kế (đường), theo ngày hàn
+            // 3. NDT Method chart — RT/PAUT/MT/PT reports completed per day (bars), by welding date
             const rtVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].RT : 0);
             const pautVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].PAUT : 0);
             const mtVals = orderedKeys.map(k => methodMap[k] ? methodMap[k].MT : 0);
@@ -5538,7 +5538,7 @@
                 });
             }
 
-            // Render NDT Method Chart — báo cáo RT/PAUT/MT/PT mỗi ngày (cột) + lũy kế (đường nét đứt)
+            // Render NDT Method Chart — RT/PAUT/MT/PT reports completed per day (bars)
             const canvasNdtMethod = document.getElementById('chartNdtMethodDaily');
             if (canvasNdtMethod) {
                 const _methods = [
