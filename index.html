@@ -3604,7 +3604,7 @@
                 defectID: findKey(['DefectID', 'Defect ID']),
                 defectLenInfo: findKey(['DefectLengthInfo', 'Defect Length Info']),
                 typeOfDefect: findKey(['TypeOfDefect', 'Type Of Defect', 'Defect Type']),
-                fitupAcc: findKey(['FitUpACC', 'FitUp ACC', 'Fit-Up ACC']),
+                fitupAcc: findKey(['FitUpACC', 'FitUp ACC', 'Fit-Up ACC', 'FitUp Result', 'Fit-Up Result', 'Fit Up Result', 'Fit Up ACC']),
                 hardnessRep: findKey(['HardnessTestReportDate', 'HardnessTestReportNo', 'Hardness Report No', 'HardnessRep']),
                 ferriteRep: findKey(['FerriteTestReportNo', 'Ferrite Report No', 'FerriteRep']),
                 hardRep: findKey(['Hardness', 'HardnessReq']),
@@ -3662,7 +3662,7 @@
                     return s.length > 0 && s !== '(BLANK)' && s !== 'PENDING' && s !== 'TBA' && s !== 'WAIT' && !s.includes('N/A') && s !== '-' && s !== 'NULL';
                 };
 
-                const fitupVal = getStatus(getVal(r, 'fitupAcc'));
+                const fitupRaw = getStatus(getVal(r, 'fitupAcc'));
                 const visAccVal = getStatus(getVal(r, 'visualACC'));
                 // Nếu chưa có ngày hàn (AL) nhưng Visual đã 'ACC' -> dùng VisualReportDate (AP) làm ngày sản xuất (tránh đếm thiếu mối)
                 if (!wDateObj && visAccVal === 'ACC') {
@@ -3716,7 +3716,7 @@
                     defectID: asString(getVal(r, 'defectID')),
                     defectLenInfo: asString(getVal(r, 'defectLenInfo')),
                     typeOfDefect: asString(getVal(r, 'typeOfDefect')),
-                    fitupAcc: fitupVal,
+                    fitupAcc: fitupRaw || ((visAccVal === 'ACC' || visAccVal === 'REJ' || wDateObj) ? 'ACC' : ''),
                     visualACC: visAccVal,
                     hardnessRep: hasRep(getVal(r, 'hardnessRep')) ? asString(getVal(r, 'hardnessRep')) : '',
                     penalty: parseFloat(getVal(r, 'penalty')) || 0,
@@ -3727,7 +3727,7 @@
                         const v = getVal(r, 'ndtRequest'); 
                         if (!v) return false;
                         const s = v.toString().trim().toLowerCase();
-                        return s === '1' || s === 'x'; 
+                        return s === '1' || s === 'x' || s === 'yes' || s === 'y' || s === 'true' || s === 'v' || s === 'req'; 
                     })(),
                     pwhtRep: asString(getVal(r, 'pwhtRep')),
                     statusCol: asString(getVal(r, 'statusCol')),
@@ -4009,8 +4009,8 @@
                 if (d.fitupAcc === 'ACC') s.fitupAcc++;
                 if (d.wDate) s.weldedCompleted++;
 
-                // NDT Req: use ndtRequest (col BB) if available, fallback for old data
-                const hasNdtReq1 = d.ndtRequest !== undefined ? d.ndtRequest : (d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
+                // NDT Req: combine ndtRequest (col BB) with individual req flags
+                const hasNdtReq1 = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
                 if (hasNdtReq1) {
                     s.ndtRequested++;
                     const allReports = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
@@ -4118,8 +4118,8 @@
                 if (d.fitupAcc === 'ACC') sum.fitupAcc++;
                 if (d.wDate) sum.weldedCompleted++;
 
-                // NDT Req: use ndtRequest (col BB) if available, fallback for old data
-                const hasNdtReq2 = d.ndtRequest !== undefined ? d.ndtRequest : (d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
+                // NDT Req: combine ndtRequest (col BB) with individual req flags
+                const hasNdtReq2 = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
                 if (hasNdtReq2) {
                     sum.ndtRequested++;
                     const allReports = (!d.reqRT || d.hasRT) && (!d.reqPAUT || d.hasPAUT) && (!d.reqMT || d.hasMT) && (!d.reqPT || d.hasPT);
@@ -4511,9 +4511,9 @@
             document.getElementById('dailyDetailModalTitle').innerHTML = `<i class="fas fa-info-circle me-2"></i>Daily Fabrication Detail - ${unitText}: ${periodStr}${subconText}`;
 
             const totalWeld = dayJoints.length;
-            // Fit-up ACC / Visual ACC: đếm theo NGÀY BÁO CÁO RIÊNG (FitUpReportDate / VisualReportDate), không theo ngày hàn
-            const fitupAccCount = subconJoints.filter(d => d.fitupAcc === 'ACC' && labelFor(d.fitDate, d.fitDateStr) === periodStr).length;
-            const visualAccCount = subconJoints.filter(d => d.visualACC === 'ACC' && labelFor(d.visDate, d.visDateStr) === periodStr).length;
+            // Fit-up ACC / Visual ACC: đếm trong tập dayJoints (các mối thuộc kỳ này)
+            const fitupAccCount = dayJoints.filter(d => d.fitupAcc === 'ACC').length;
+            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC').length;
 
             document.getElementById('lblDetailWeldComplete').innerText = totalWeld.toLocaleString();
             document.getElementById('lblDetailFitupAcc').innerText = fitupAccCount.toLocaleString();
@@ -4521,11 +4521,14 @@
             document.getElementById('lblDetailVisualAcc').innerText = visualAccCount.toLocaleString();
             document.getElementById('lblDetailVisualPct').innerText = '(theo ngày báo cáo)';
 
-            // NDT đếm theo VisualReportDate (đã chốt): mối có ngày visual rơi vào kỳ này
-            const ndtJoints = subconJoints.filter(d => labelFor(d.visDate, d.visDateStr) === periodStr);
-            const ndtRequestCount = ndtJoints.filter(d => d.ndtRequest).length;
-            const ndtCompletedCount = ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
-            const ndtBacklogCount = ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'NOT COMPLETE').length;
+            // NDT đếm trong tập dayJoints (các mối thuộc kỳ này)
+            const ndtRequestCount = dayJoints.filter(d => d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT).length;
+            const ndtCompletedCount = dayJoints.filter(d => {
+                const hasReq = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
+                if (!hasReq) return false;
+                return (String(d.statusCol || '').trim().toUpperCase() === 'COMPLETED');
+            }).length;
+            const ndtBacklogCount = ndtRequestCount - ndtCompletedCount;
 
             document.getElementById('lblDetailNdtRequest').innerText = ndtRequestCount.toLocaleString();
             document.getElementById('lblDetailNdtCompleted').innerText = ndtCompletedCount.toLocaleString();
@@ -4533,11 +4536,11 @@
             document.getElementById('lblDetailNdtBacklog').innerText = ndtBacklogCount.toLocaleString();
             document.getElementById('lblDetailNdtBacklogPct').innerText = ndtRequestCount > 0 ? Math.round(ndtBacklogCount / ndtRequestCount * 100) + '%' : '0%';
 
-            // Chi tiết số mối còn nợ mỗi pp NDT (theo VisualReportDate)
-            const rtBack = ndtJoints.filter(d => d.reqRT && !d.hasRT).length;
-            const pautBack = ndtJoints.filter(d => d.reqPAUT && !d.hasPAUT).length;
-            const mtBack = ndtJoints.filter(d => d.reqMT && !d.hasMT).length;
-            const ptBack = ndtJoints.filter(d => d.reqPT && !d.hasPT).length;
+            // Chi tiết số mối còn nợ mỗi pp NDT
+            const rtBack = dayJoints.filter(d => d.reqRT && !d.hasRT).length;
+            const pautBack = dayJoints.filter(d => d.reqPAUT && !d.hasPAUT).length;
+            const mtBack = dayJoints.filter(d => d.reqMT && !d.hasMT).length;
+            const ptBack = dayJoints.filter(d => d.reqPT && !d.hasPT).length;
 
             document.getElementById('lblDetailNdtBacklogDetail').innerHTML = `
                 RT: <strong class="${rtBack > 0 ? 'text-danger' : 'text-success'}">${rtBack}</strong> | 
@@ -4722,16 +4725,16 @@
 
             const subconText = subconFilter ? ` - Subcon: ${subconFilter}` : '';
             const totalWeld = dayJoints.length;
-            // Fit-up/Visual ACC đếm theo NGÀY BÁO CÁO RIÊNG (đồng bộ với modal & biểu đồ)
-            const _mn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-            const _labelFor = (ts, dateStr) => { if(!ts) return 'No Date'; if(groupUnit==='date') return dateStr||'No Date'; if(groupUnit==='week'){const m=getStartOfWeek(ts);return `W/C ${m.toLocaleDateString('en-GB')}`;} const m=getStartOfMonth(ts); return `${_mn[m.getMonth()]} ${m.getFullYear()}`; };
-            const _subJoints = filteredData.filter(d => !subconFilter || (d.isSub||'').toUpperCase().includes(subconFilter.toUpperCase()));
-            const fitupAccCount = _subJoints.filter(d => d.fitupAcc === 'ACC' && _labelFor(d.fitDate, d.fitDateStr) === periodStr).length;
-            const visualAccCount = _subJoints.filter(d => d.visualACC === 'ACC' && _labelFor(d.visDate, d.visDateStr) === periodStr).length;
-            const _ndtJoints = _subJoints.filter(d => _labelFor(d.visDate, d.visDateStr) === periodStr); // NDT theo VisualReportDate
-            const ndtRequestCount = _ndtJoints.filter(d => d.ndtRequest).length;
-            const ndtCompletedCount = _ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'COMPLETED').length;
-            const ndtBacklogCount = _ndtJoints.filter(d => d.ndtRequest && (d.statusCol || '').trim().toUpperCase() === 'NOT COMPLETE').length;
+            // Fit-up/Visual ACC đếm trong tập dayJoints (đồng bộ với modal)
+            const fitupAccCount = dayJoints.filter(d => d.fitupAcc === 'ACC').length;
+            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC').length;
+            const ndtRequestCount = dayJoints.filter(d => d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT).length;
+            const ndtCompletedCount = dayJoints.filter(d => {
+                const hasReq = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
+                if (!hasReq) return false;
+                return (String(d.statusCol || '').trim().toUpperCase() === 'COMPLETED');
+            }).length;
+            const ndtBacklogCount = ndtRequestCount - ndtCompletedCount;
 
             const typeCounts = {};
             dayJoints.forEach(d => {
