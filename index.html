@@ -119,7 +119,7 @@
         .chart-full-height { height: 260px; }
         
         /* TABLE CONTAINER AUTO HEIGHT CHIẾM VỪA KHÍT NỘI DUNG, SCROLL KHI QUÁ 78vh */
-        .table-compact-container { max-height: 78vh; overflow-y: auto; border: 1px solid #c8e6c9; border-radius: 8px; background: #fff; }
+        .table-compact-container { max-height: 78vh; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #c8e6c9; border-radius: 8px; background: #fff; }
         .table-compact { margin-bottom: 0; width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
         .table-compact thead th { position: sticky; top: 0; background-color: #e8f5e9; color: var(--text-primary); z-index: 10; font-size: 0.72rem; text-transform: uppercase; border-bottom: 2px solid #81c784; padding: 14px 8px; text-align: center; }
         .table-compact tbody td { font-size: 0.75rem; padding: 10px 8px; vertical-align: middle; border-bottom: 1px solid #f1f1f1; white-space: normal; word-wrap: break-word; text-align: center; }
@@ -665,7 +665,9 @@
     </div>
 
     <!-- CỘT SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     <div class="sidebar">
+        <button class="btn-close-sidebar-mobile" onclick="toggleSidebar()" aria-label="Close Sidebar" title="Close Sidebar"><i class="fas fa-times"></i></button>
         <div class="sidebar-header" style="cursor: pointer; user-select: none;" ondblclick="promptAdminPasscode()"><i class="fas fa-tools me-2"></i> PIPING V19.0 - PRO</div>
 
         <!-- VIEWER CLOUD STATUS PANEL -->
@@ -839,7 +841,9 @@
 
         <div class="mb-3">
             <label class="filter-label">Weld Type</label>
-            <select id="filterWeldType" class="form-select form-select-sm" title="Lọc loại mối hàn"><option value="">All</option></select>
+            <div id="weldTypeContainer" class="p-2 border rounded" style="max-height: 150px; overflow-y: auto; font-size: 0.85rem; border-color: var(--border) !important; background-color: var(--primary-light, #f8fafc) !important; color: var(--sidebar-text) !important;">
+                <!-- Checkboxes populated dynamically -->
+            </div>
         </div>
 
         <div class="mb-3">
@@ -1122,14 +1126,15 @@
                                 <div class="d-flex align-items-center gap-1">
                                     <input type="text" id="filterSize" class="form-control form-control-sm" placeholder="Pipe Size..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
                                     <input type="text" id="filterMat" class="form-control form-control-sm" placeholder="Material..." style="width: 75px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
-                                    <input type="text" id="filterLoc" class="form-control form-control-sm" placeholder="Type Weld..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
+                                    <input type="text" id="filterLoc" class="form-control form-control-sm" placeholder="Joint Remarks..." style="width: 85px; font-size: 0.72rem; height: 26px;" oninput="applyBacklogSizeFilters()">
+                                    <button class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" onclick="exportBacklogSizeExcel()" title="Export Excel Pivot Table" style="font-size: 0.72rem; height: 26px; border-color: #2e7d32; color: #2e7d32; display: flex; align-items: center; gap: 4px;"><i class="fas fa-file-excel"></i>Export</button>
                                     <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="clearBacklogSizeFilters()" title="Clear Filters" style="font-size: 0.72rem; height: 26px; border-color: #ced4da; color: #495057;"><i class="fas fa-times"></i></button>
                                     <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardBacklogBySize')" title="Focus mode"></i>
                                 </div>
                             </div>
                             <div style="max-height:600px; overflow-y:auto;">
                                 <table class="backlog-tbl" id="backlogSizeTable">
-                                    <thead><tr><th>Pipe Size</th><th>Material</th><th>Thickness</th><th>Type Weld</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>Total</th></tr></thead>
+                                    <thead><tr><th>Pipe Size</th><th>Material</th><th>Thickness</th><th>Joint Remarks</th><th>RT</th><th>PAUT</th><th>MT</th><th>PT</th><th>Total</th></tr></thead>
                                     <tbody id="backlogSizeBody"></tbody>
                                     <tfoot id="backlogSizeFoot"></tfoot>
                                 </table>
@@ -2046,6 +2051,70 @@
     <script>
         Chart.register(ChartDataLabels);
         
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('toast-container-custom');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container-custom';
+                container.style.position = 'fixed';
+                container.style.bottom = '24px';
+                container.style.right = '24px';
+                container.style.zIndex = '99999';
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.gap = '12px';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.style.minWidth = '300px';
+            toast.style.maxWidth = '400px';
+            toast.style.padding = '14px 18px';
+            toast.style.borderRadius = '12px';
+            toast.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.25)';
+            toast.style.backdropFilter = 'blur(12px)';
+            toast.style.webkitBackdropFilter = 'blur(12px)';
+            toast.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            toast.style.color = '#ffffff';
+            toast.style.fontFamily = 'inherit';
+            toast.style.fontSize = '0.875rem';
+            toast.style.fontWeight = '500';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '12px';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(15px)';
+            toast.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+            let icon = '<i class="fas fa-check-circle text-white fa-lg"></i>';
+            let bg = 'rgba(16, 185, 129, 0.85)'; // Emerald
+            if (type === 'error') {
+                icon = '<i class="fas fa-times-circle text-white fa-lg"></i>';
+                bg = 'rgba(239, 68, 68, 0.85)'; // Red
+            } else if (type === 'warning') {
+                icon = '<i class="fas fa-exclamation-triangle text-white fa-lg"></i>';
+                bg = 'rgba(245, 158, 11, 0.85)'; // Amber
+            } else if (type === 'info') {
+                icon = '<i class="fas fa-info-circle text-white fa-lg"></i>';
+                bg = 'rgba(59, 130, 246, 0.85)'; // Blue
+            }
+            toast.style.backgroundColor = bg;
+            toast.innerHTML = `${icon} <div style="flex-grow: 1; line-height: 1.4;">${message}</div><button type="button" class="btn-close btn-close-white" style="font-size: 0.75rem; margin-left: auto;" onclick="this.parentElement.remove()" title="Close toast"></button>`;
+            
+            container.appendChild(toast);
+            
+            // Force reflow
+            toast.offsetHeight;
+            
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-15px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+        
         // --- BIẾN MATRIX CHUẨN DEFAULT KHÔNG ĐỔI ---
         const DEFAULT_MATRIX =[
             {"sys": "AI", "spec": "B2", "rtBw": 20, "mtBw": 10, "mtSw": 10, "mtFw": 0},
@@ -2682,13 +2751,15 @@
             let pendingNDT = 0, repairPending = 0, pwhtPending = 0;
             
             rawData.forEach(d => {
-                if(d.wDate && (now - d.wDate) > (7 * dayMs)) { 
+                // Áp dụng Logic Ngày nghiệm thu mới: Nếu visual ACC thì lấy visDate (ngày nghiệm thu), ngược lại giữ wDate (ngày hàn)
+                const targetDateVal = (d.visualACC === 'ACC' && d.visDate) ? d.visDate : d.wDate;
+                if(targetDateVal && (now - targetDateVal) > (7 * dayMs)) { 
                     let isNdtRequired = d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
                     let isNdtPending = (d.reqRT && !d.hasRT) || (d.reqPAUT && !d.hasPAUT) || (d.reqMT && !d.hasMT) || (d.reqPT && !d.hasPT);
                     if (isNdtRequired && isNdtPending) pendingNDT++;
                 }
                 if(d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ') repairPending++;
-                if(d.wDate && d.reqPwht && d.pwhtRes === '') pwhtPending++;
+                if(targetDateVal && d.reqPwht && d.pwhtRes === '') pwhtPending++;
             });
             
             // Xử lý System Generated Alerts
@@ -2959,7 +3030,24 @@
         // --- APP LOGIC ---
         function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
         function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
-        function toggleSidebar() { document.body.classList.toggle('collapsed'); }
+        function toggleSidebar() { 
+            if (window.innerWidth <= 1024) {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar) {
+                    sidebar.classList.toggle('mobile-open');
+                    if (overlay) {
+                        if (sidebar.classList.contains('mobile-open')) {
+                            overlay.classList.add('active');
+                        } else {
+                            overlay.classList.remove('active');
+                        }
+                    }
+                }
+            } else {
+                document.body.classList.toggle('collapsed'); 
+            }
+        }
 
         // AUTO LOAD ON STARTUP
         window.addEventListener('DOMContentLoaded', async () => {
@@ -2967,8 +3055,10 @@
             const urlParams = new URLSearchParams(window.location.search);
             const isAdminParam = urlParams.get('admin') === 'true' || urlParams.get('mode') === 'admin';
             const isLocalAdmin = localStorage.getItem('adminMode') === 'true';
+            const adminEmail = localStorage.getItem('adminEmail');
+            const isEmailMatched = adminEmail && adminEmail.toLowerCase().trim() === 'khanhdcn@gmail.com';
             
-            if (isAdminParam || isLocalAdmin) {
+            if (isAdminParam || (isLocalAdmin && (!adminEmail || isEmailMatched))) {
                 enterAdminMode();
             } else {
                 exitAdminMode();
@@ -3684,21 +3774,49 @@
         let hMap = {}; // Global hydro map
         let currentSummary = null;
 
+        window.toggleAllWeldTypes = function(isChecked) {
+            const chks = document.querySelectorAll('.filter-weld-type-chk');
+            chks.forEach(c => { c.checked = isChecked; });
+            applyFilters();
+        };
+
         function populateWeldTypeDropdown(data) {
             const wtSet = new Set();
             const matSet = new Set();
             const sizeSet = new Set();
             for(let i=0; i<data.length; i++) {
-                if(data[i].weldType) wtSet.add(data[i].weldType);
+                wtSet.add(data[i].weldType || '(Blank)');
                 if(data[i].mat) matSet.add(data[i].mat.toString().trim());
                 if(data[i].size) sizeSet.add(data[i].size.toString().trim());
             }
 
-            const wtSelect = document.getElementById('filterWeldType');
-            wtSelect.innerHTML = '<option value="">All</option>';
-            Array.from(wtSet).sort().forEach(wt => {
-                const opt = document.createElement('option'); opt.value = wt; opt.innerText = wt; wtSelect.appendChild(opt);
-            });
+            const wtContainer = document.getElementById('weldTypeContainer');
+            if (wtContainer) {
+                wtContainer.innerHTML = '';
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'd-flex gap-2 mb-2 pb-1 border-bottom';
+                actionsDiv.innerHTML = `
+                    <button type="button" class="btn btn-xs btn-link p-0 text-decoration-none fw-bold" onclick="toggleAllWeldTypes(true)" style="font-size:0.7rem;"><i class="fas fa-check-square me-1"></i>Tất cả</button>
+                    <button type="button" class="btn btn-xs btn-link p-0 text-decoration-none fw-bold text-danger" onclick="toggleAllWeldTypes(false)" style="font-size:0.7rem;"><i class="fas fa-square me-1"></i>Bỏ chọn</button>
+                `;
+                wtContainer.appendChild(actionsDiv);
+
+                const sortedWt = Array.from(wtSet).sort((a, b) => {
+                    if (a === '(Blank)') return 1;
+                    if (b === '(Blank)') return -1;
+                    return a.localeCompare(b);
+                });
+                
+                sortedWt.forEach(wt => {
+                    const div = document.createElement('div');
+                    div.className = 'form-check';
+                    div.innerHTML = `
+                        <input class="form-check-input filter-weld-type-chk" type="checkbox" value="${wt}" id="chkWT_${wt}" checked onchange="applyFilters()">
+                        <label class="form-check-label w-100" for="chkWT_${wt}">${wt}</label>
+                    `;
+                    wtContainer.appendChild(div);
+                });
+            }
 
             const matSelect = document.getElementById('filterMaterial');
             matSelect.innerHTML = '<option value="">All</option>';
@@ -3756,7 +3874,7 @@
                 const sSys = document.getElementById('sSystem').value.toLowerCase();
                 const sDwg = document.getElementById('sDwg').value.toLowerCase();
                 const sJoint = document.getElementById('sJoint').value.toLowerCase();
-                const fWeldType = document.getElementById('filterWeldType').value;
+                const selectedWeldTypes = Array.from(document.querySelectorAll('.filter-weld-type-chk:checked')).map(c => c.value);
                 const fSTT = document.getElementById('filterSTT').value;
                 const fMaterial = document.getElementById('filterMaterial').value.toLowerCase();
                 const fSizeOD = document.getElementById('filterSizeOD').value.toLowerCase();
@@ -3791,7 +3909,8 @@
                     if(tsPautStart && (!d.pautDate || d.pautDate < tsPautStart)) return false;
                     if(tsPautEnd && (!d.pautDate || d.pautDate > tsPautEnd)) return false;
 
-                    if(fWeldType && d.weldType !== fWeldType) return false;
+                    const wtVal = d.weldType || '(Blank)';
+                    if (!selectedWeldTypes.includes(wtVal)) return false;
                     if(fMaterial && (d.mat || '').toString().trim().toLowerCase() !== fMaterial) return false;
                     if(fSizeOD && (d.size || '').toString().trim().toLowerCase() !== fSizeOD) return false;
                     if(fRT && d.rtRes !== fRT) return false;
@@ -3965,7 +4084,15 @@
                 ndtBacklog: 0,
                 hydroDone: 0,
                 reinsDone: 0,
-                leakDone: 0
+                leakDone: 0,
+                rtCount: 0,
+                pautCount: 0,
+                mtCount: 0,
+                ptCount: 0,
+                pmiCount: 0,
+                hardCount: 0,
+                ferriteCount: 0,
+                pwhtCount: 0
             };
             const dateMap = {};
             const pwhtStats = { acc:0, pending:0, required: 0, remaining: 0 };
@@ -4050,6 +4177,15 @@
                     if(d.hasHardness) ndtStats.Hardness.d++;
                 }
                 
+                if (d.rtRep && d.rtRep.toString().trim()) sum.rtCount++;
+                if (d.pautRep && d.pautRep.toString().trim()) sum.pautCount++;
+                if (d.mtRep && d.mtRep.toString().trim()) sum.mtCount++;
+                if (d.ptRep && d.ptRep.toString().trim()) sum.ptCount++;
+                if (d.pmiRep && d.pmiRep.toString().trim()) sum.pmiCount++;
+                if (d.hardnessRep && d.hardnessRep.toString().trim()) sum.hardCount++;
+                if (d.ferriteRep && d.ferriteRep.toString().trim()) sum.ferriteCount++;
+                if (d.pwhtRep && d.pwhtRep.toString().trim()) sum.pwhtCount++;
+                
                 if(d.system) systemSet.add(d.system);
                 if(d.isSub) subconSet.add(d.isSub);
                 if(d.weldType) {
@@ -4075,7 +4211,7 @@
             currentSummary = sum;
         }
 
-""        // Utility: Debounce
+        // Utility: Debounce
         function debounce(func, wait) {
             let timeout;
             return function(...args) {
@@ -4148,14 +4284,6 @@
             };
             window.requestAnimationFrame(step);
         }
-
-        // Lazy tab rendering hook
-        document.addEventListener('shown.bs.tab', function (event) {
-            const target = event.target.getAttribute('data-bs-target');
-            if (target === '#hydro') renderHydro();
-            if (target === '#daily') renderDailyLog();
-            if (target === '#ndtRandomTab') renderNdtRandom();
-        });
 
         function updateDashboard() {
             const sum = cachedAnalytics.sum || getSummary();
@@ -5369,15 +5497,12 @@
                                 datalabels: {
                                     display: function(context) {
                                         const val = context.dataset.data[context.dataIndex];
-                                        if (!val || val <= 0) return false;
-                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
-                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
-                                        return barWidth >= 16;
+                                        return !!val && val > 0;
                                     },
                                     anchor: 'end',
                                     align: 'top',
                                     offset: 2,
-                                    font: { size: 9, weight: 'bold' },
+                                    font: { size: 8, weight: 'bold' },
                                     color: '#424242',
                                     formatter: function(value) { return value.toLocaleString(); }
                                 }
@@ -5393,15 +5518,12 @@
                                 datalabels: {
                                     display: function(context) {
                                         const val = context.dataset.data[context.dataIndex];
-                                        if (!val || val <= 0) return false;
-                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
-                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
-                                        return barWidth >= 16;
+                                        return !!val && val > 0;
                                     },
                                     anchor: 'end',
                                     align: 'top',
                                     offset: 2,
-                                    font: { size: 9, weight: 'bold' },
+                                    font: { size: 8, weight: 'bold' },
                                     color: '#424242',
                                     formatter: function(value) { return value.toLocaleString(); }
                                 }
@@ -5418,15 +5540,12 @@
                                 datalabels: {
                                     display: function(context) {
                                         const val = context.dataset.data[context.dataIndex];
-                                        if (!val || val <= 0) return false;
-                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
-                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
-                                        return barWidth >= 16;
+                                        return !!val && val > 0;
                                     },
                                     anchor: 'end',
                                     align: 'top',
                                     offset: 2,
-                                    font: { size: 9, weight: 'bold' },
+                                    font: { size: 8, weight: 'bold' },
                                     color: '#424242',
                                     formatter: function(value) { return value.toLocaleString(); }
                                 }
@@ -5442,15 +5561,12 @@
                                 datalabels: {
                                     display: function(context) {
                                         const val = context.dataset.data[context.dataIndex];
-                                        if (!val || val <= 0) return false;
-                                        const meta = context.chart.getDatasetMeta(context.datasetIndex);
-                                        const barWidth = meta.data[context.dataIndex] ? meta.data[context.dataIndex].width : 0;
-                                        return barWidth >= 16;
+                                        return !!val && val > 0;
                                     },
                                     anchor: 'end',
                                     align: 'top',
                                     offset: 2,
-                                    font: { size: 9, weight: 'bold' },
+                                    font: { size: 8, weight: 'bold' },
                                     color: '#424242',
                                     formatter: function(value) { return value.toLocaleString(); }
                                 }
@@ -6713,7 +6829,7 @@
                 }
                 const sizeText = row.cells[0] ? row.cells[0].innerText.toLowerCase() : '';
                 const matText = row.cells[1] ? row.cells[1].innerText.toLowerCase() : '';
-                const locText = row.cells[3] ? row.cells[3].innerText.toLowerCase() : ''; // Index 2 là Thickness, Index 3 là Type Weld
+                const locText = row.cells[3] ? row.cells[3].innerText.toLowerCase() : '';
                 
                 const matchSize = sizeQuery === '' || sizeText.includes(sizeQuery);
                 const matchMat = matQuery === '' || matText.includes(matQuery);
@@ -6748,7 +6864,7 @@
             rows.forEach(row => {
                 if (row.style.display !== 'none' && row.cells.length > 1) {
                     visibleCount++;
-                    tRt += parseInt(row.cells[4].innerText) || 0; // Index dịch chuyển do thêm cột Thickness
+                    tRt += parseInt(row.cells[4].innerText) || 0;
                     tPaut += parseInt(row.cells[5].innerText) || 0;
                     tMt += parseInt(row.cells[6].innerText) || 0;
                     tPt += parseInt(row.cells[7].innerText) || 0;
@@ -6778,7 +6894,7 @@
                     let sStr = d.size || "Unknown";
                     let matStr = d.mat || "N/A";
                     let thickStr = d.thick || "N/A";
-                    let locStr = d.tv || "N/A";
+                    let locStr = d.jointRem || "N/A";
                     let key = `${sStr}|${matStr}|${thickStr}|${locStr}`;
                     
                     if (!sizeMap[key]) {
@@ -6813,7 +6929,6 @@
             if (!tbody) return;
             
             let html = ''; let tRt = 0, tPaut = 0, tMt = 0, tPt = 0, tTotal = 0;
-            // Find max for heatmap scaling
             const maxVal = Math.max(...sizeArr.map(i => Math.max(i.rt, i.paut, i.mt, i.pt)), 1);
             const heatCls = (v) => v === 0 ? 'heat-0' : (v > maxVal * 0.6 ? 'heat-hi' : (v > maxVal * 0.25 ? 'heat-med' : 'heat-lo'));
             
@@ -6840,6 +6955,284 @@
                 tfoot.innerHTML = `<tr><td colspan="4">TOTAL</td><td>${tRt}</td><td>${tPaut}</td><td>${tMt}</td><td>${tPt}</td><td>${tTotal}</td></tr>`;
             }
             applyBacklogSizeFilters();
+        }
+
+        async function exportBacklogSizeExcel() {
+            if (filteredData.length === 0) return alert("Please load data first.");
+            
+            const tbody = document.getElementById('backlogSizeBody');
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll('tr');
+            const dataToExport = [];
+            
+            rows.forEach(row => {
+                if (row.style.display !== 'none' && row.cells.length > 1) {
+                    dataToExport.push({
+                        size: row.cells[0].innerText.trim(),
+                        material: row.cells[1].innerText.trim(),
+                        thickness: row.cells[2].innerText.trim(),
+                        jointRemarks: row.cells[3].innerText.trim(),
+                        rt: parseInt(row.cells[4].innerText) || 0,
+                        paut: parseInt(row.cells[5].innerText) || 0,
+                        mt: parseInt(row.cells[6].innerText) || 0,
+                        pt: parseInt(row.cells[7].innerText) || 0,
+                        total: parseInt(row.cells[8].innerText) || 0
+                    });
+                }
+            });
+            
+            if (dataToExport.length === 0) {
+                return alert("No visible data to export!");
+            }
+            
+            const sizeQuery = document.getElementById('filterSize') ? document.getElementById('filterSize').value.toLowerCase().trim() : '';
+            const matQuery = document.getElementById('filterMat') ? document.getElementById('filterMat').value.toLowerCase().trim() : '';
+            const locQuery = document.getElementById('filterLoc') ? document.getElementById('filterLoc').value.toLowerCase().trim() : '';
+            
+            const rawBacklog = [];
+            filteredData.forEach(d => {
+                let bRT = (d.reqRT && !d.hasRT) ? 1 : 0;
+                let bPAUT = (d.reqPAUT && !d.hasPAUT) ? 1 : 0;
+                let bMT = (d.reqMT && !d.hasMT) ? 1 : 0;
+                let bPT = (d.reqPT && !d.hasPT) ? 1 : 0;
+                
+                // RT/PAUT ACC cross-exclusion:
+                // If PAUT result is ACC, skip RT backlog for this joint
+                if (bRT && d.pautRes === 'ACC') bRT = 0;
+                // If RT result is ACC, skip PAUT backlog for this joint
+                if (bPAUT && d.rtRes === 'ACC') bPAUT = 0;
+                
+                if (bRT || bPAUT || bMT || bPT) {
+                    const sizeText = (d.size || "Unknown").toLowerCase().trim();
+                    const matText = (d.mat || "N/A").toLowerCase().trim();
+                    const locText = (d.tv || "N/A").toLowerCase().trim();
+                    
+                    const matchSize = sizeQuery === '' || sizeText.includes(sizeQuery);
+                    const matchMat = matQuery === '' || matText.includes(matQuery);
+                    const matchLoc = locQuery === '' || locText.includes(locQuery);
+                    
+                    if (matchSize && matchMat && matchLoc) {
+                        const wtClass = classifyWeldType(d.weldType);
+                        rawBacklog.push({
+                            weldNo: d.joint || '',
+                            spoolNo: d.spool || '',
+                            lineNo: d.line || '',
+                            dwgNo: d.dwg || '',
+                            size: d.size || '',
+                            mat: d.mat || '',
+                            thick: d.thick || '',
+                            jointRemarks: d.jointRem || '',
+                            location: wtClass,
+                            rtReq: bRT ? 'Yes' : 'No',
+                            rtRes: d.rtRes || '',
+                            pautReq: bPAUT ? 'Yes' : 'No',
+                            pautRes: d.pautRes || '',
+                            mtReq: bMT ? 'Yes' : 'No',
+                            mtRes: d.mtRes || '',
+                            ptReq: bPT ? 'Yes' : 'No',
+                            ptRes: d.ptRes || ''
+                        });
+                    }
+                }
+            });
+            
+            showLoading();
+            try {
+                const wb = new ExcelJS.Workbook();
+                
+                // SHEET 1: NDT Status by Size (Pivot Style Layout)
+                const ws = wb.addWorksheet('NDT Status by Size');
+                ws.views = [{ showGridLines: true }];
+                
+                const thinBdr = { 
+                    top: { style: 'thin', color: { argb: 'FFDDDDDD' } }, 
+                    bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } }, 
+                    left: { style: 'thin', color: { argb: 'FFDDDDDD' } }, 
+                    right: { style: 'thin', color: { argb: 'FFDDDDDD' } } 
+                };
+                const thickBdr = {
+                    top: { style: 'thin', color: { argb: 'FF000000' } },
+                    bottom: { style: 'double', color: { argb: 'FF000000' } }
+                };
+                const hFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } };
+                const subTotalFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEAEAEA' } };
+                const headerFont = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+                const boldFont = { name: 'Calibri', size: 11, bold: true };
+                
+                ws.addRow(['NDT STATUS BY SIZE REPORT (PIVOT STYLE)']);
+                ws.getCell('A1').font = { name: 'Calibri', size: 16, bold: true, color: { argb: 'FF1F4E78' } };
+                ws.addRow(['Export Date: ' + new Date().toLocaleString('en-US')]);
+                ws.addRow([]);
+                
+                const headers = ['Pipe Size', 'Material', 'Thickness', 'Joint Remarks', 'RT Backlog', 'PAUT Backlog', 'MT Backlog', 'PT Backlog', 'Grand Total'];
+                ws.addRow(headers);
+                
+                const headerRow = ws.getRow(4);
+                headerRow.height = 26;
+                headerRow.eachCell((cell) => {
+                    cell.fill = hFill;
+                    cell.font = headerFont;
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = thinBdr;
+                });
+                
+                let currentSize = '';
+                let tRt = 0, tPaut = 0, tMt = 0, tPt = 0, tTotal = 0;
+                let grRt = 0, grPaut = 0, grMt = 0, grPt = 0, grTotal = 0;
+                
+                dataToExport.sort((a, b) => {
+                    if (a.size !== b.size) return a.size.localeCompare(b.size);
+                    if (a.material !== b.material) return a.material.localeCompare(b.material);
+                    if (a.thickness !== b.thickness) return a.thickness.localeCompare(b.thickness);
+                    return (a.jointRemarks || '').localeCompare(b.jointRemarks || '');
+                });
+                
+                dataToExport.forEach((item, index) => {
+                    if (currentSize === '') {
+                        currentSize = item.size;
+                    }
+                    
+                    if (item.size !== currentSize) {
+                        const subRow = ws.addRow([
+                            `${currentSize} Total`, '', '', '', tRt, tPaut, tMt, tPt, tTotal
+                        ]);
+                        ws.mergeCells(subRow.number, 1, subRow.number, 4);
+                        subRow.height = 22;
+                        subRow.eachCell((cell, colNum) => {
+                            cell.font = boldFont;
+                            cell.fill = subTotalFill;
+                            cell.border = thinBdr;
+                            if (colNum >= 5) {
+                                cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                            } else {
+                                cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                            }
+                        });
+                        
+                        grRt += tRt; grPaut += tPaut; grMt += tMt; grPt += tPt; grTotal += tTotal;
+                        tRt = 0; tPaut = 0; tMt = 0; tPt = 0; tTotal = 0;
+                        currentSize = item.size;
+                    }
+                    
+                    tRt += item.rt; tPaut += item.paut; tMt += item.mt; tPt += item.pt; tTotal += item.total;
+                    const r = ws.addRow([
+                        item.size, item.material, item.thickness, item.jointRemarks,
+                        item.rt === 0 ? '-' : item.rt,
+                        item.paut === 0 ? '-' : item.paut,
+                        item.mt === 0 ? '-' : item.mt,
+                        item.pt === 0 ? '-' : item.pt,
+                        item.total
+                    ]);
+                    r.height = 20;
+                    r.eachCell((cell, colNum) => {
+                        cell.border = thinBdr;
+                        if (colNum >= 5) {
+                            cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                        } else {
+                            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                        }
+                    });
+                });
+                
+                if (currentSize !== '') {
+                    const subRow = ws.addRow([
+                        `${currentSize} Total`, '', '', '', tRt, tPaut, tMt, tPt, tTotal
+                    ]);
+                    ws.mergeCells(subRow.number, 1, subRow.number, 4);
+                    subRow.height = 22;
+                    subRow.eachCell((cell, colNum) => {
+                        cell.font = boldFont;
+                        cell.fill = subTotalFill;
+                        cell.border = thinBdr;
+                        if (colNum >= 5) {
+                            cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                        } else {
+                            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                        }
+                    });
+                    grRt += tRt; grPaut += tPaut; grMt += tMt; grPt += tPt; grTotal += tTotal;
+                }
+                
+                const grandRow = ws.addRow([
+                    'GRAND TOTAL', '', '', '', grRt, grPaut, grMt, grPt, grTotal
+                ]);
+                ws.mergeCells(grandRow.number, 1, grandRow.number, 4);
+                grandRow.height = 24;
+                grandRow.eachCell((cell, colNum) => {
+                    cell.font = boldFont;
+                    cell.border = thickBdr;
+                    if (colNum >= 5) {
+                        cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                    } else {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                    }
+                });
+                
+                ws.columns.forEach(col => {
+                    let maxLen = 0;
+                    col.eachCell({ includeEmpty: true }, (cell) => {
+                        if (cell.value) {
+                            const valStr = cell.value.toString();
+                            if (valStr.length > maxLen) maxLen = valStr.length;
+                        }
+                    });
+                    col.width = Math.max(maxLen + 4, 12);
+                });
+                
+                // SHEET 2: Raw Backlog Data (with Location column + RT/PAUT ACC cross-exclusion)
+                const wsRaw = wb.addWorksheet('NDT Raw Backlog');
+                wsRaw.views = [{ showGridLines: true }];
+                
+                const rawHeaders = [
+                    'Weld No', 'Spool No', 'Line No', 'Drawing No', 'Size', 'Material', 'Thickness', 'Joint Remarks', 'Location',
+                    'RT Backlog', 'RT Result', 'PAUT Backlog', 'PAUT Result', 'MT Backlog', 'MT Result', 'PT Backlog', 'PT Result'
+                ];
+                
+                wsRaw.addRow(['NDT RAW BACKLOG DETAIL']);
+                wsRaw.getCell('A1').font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FF1F4E78' } };
+                wsRaw.addRow(['Export Date: ' + new Date().toLocaleString('en-US')]);
+                wsRaw.addRow(rawHeaders);
+                
+                const rawHeaderRow = wsRaw.getRow(3);
+                rawHeaderRow.height = 24;
+                rawHeaderRow.eachCell((cell) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF595959' } };
+                    cell.font = headerFont;
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = thinBdr;
+                });
+                
+                rawBacklog.forEach(item => {
+                    const r = wsRaw.addRow([
+                        item.weldNo, item.spoolNo, item.lineNo, item.dwgNo, item.size, item.mat, item.thick, item.jointRemarks, item.location,
+                        item.rtReq, item.rtRes, item.pautReq, item.pautRes, item.mtReq, item.mtRes, item.ptReq, item.ptRes
+                    ]);
+                    r.height = 18;
+                    r.eachCell((cell) => {
+                        cell.border = thinBdr;
+                        cell.alignment = { vertical: 'middle' };
+                    });
+                });
+                
+                wsRaw.columns.forEach(col => {
+                    let maxLen = 0;
+                    col.eachCell({ includeEmpty: true }, (cell) => {
+                        if (cell.value) {
+                            const valStr = cell.value.toString();
+                            if (valStr.length > maxLen) maxLen = valStr.length;
+                        }
+                    });
+                    col.width = Math.max(maxLen + 4, 12);
+                });
+                
+                const buffer = await wb.xlsx.writeBuffer();
+                saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `NDT_Status_by_Size_Pivot_${new Date().toISOString().slice(0, 10)}.xlsx`);
+                
+            } catch (err) {
+                console.error("Export Pivot Excel error:", err);
+                alert("Export Excel error: " + err.message);
+            }
+            hideLoading();
         }
 
         function renderCompliance() {
@@ -7160,24 +7553,20 @@
             subset.forEach((d, i) => { html += `<tr><td>${start+i+1}</td><td>${d.isSub}</td><td>${d.system}</td><td>${d.dwg}</td><td>${d.rev || '-'}</td><td>${d.line}</td><td>${d.spool}</td><td>${d.joint}</td><td>${d.size}</td><td>${d.thick}</td><td>${d.mat}</td><td>${d.weldType}</td><td><small class="text-muted">${d.jointRem}</small></td><td class="fw-bold">${d.testPkg}</td><td>${d.rtRep || '-'}</td><td>${d.pautRep || '-'}</td><td>${d.mtRep || '-'}</td><td>${d.ptRep || '-'}</td><td>${d.pmiRep || '-'}</td><td>${d.hardnessRep || '-'}</td><td>${d.ferriteRep || '-'}</td><td>${d.pwhtRep || '-'}</td></tr>`; });
             tbody.innerHTML = html;
             
-            // Tính số lượng báo cáo động cho từng cột báo cáo
-            let rtCount = 0, pautCount = 0, mtCount = 0, ptCount = 0, pmiCount = 0, hardCount = 0, ferriteCount = 0, pwhtCount = 0;
-            filteredData.forEach(d => {
-                if (d.rtRep && d.rtRep.toString().trim()) rtCount++;
-                if (d.pautRep && d.pautRep.toString().trim()) pautCount++;
-                if (d.mtRep && d.mtRep.toString().trim()) mtCount++;
-                if (d.ptRep && d.ptRep.toString().trim()) ptCount++;
-                if (d.pmiRep && d.pmiRep.toString().trim()) pmiCount++;
-                if (d.hardnessRep && d.hardnessRep.toString().trim()) hardCount++;
-                if (d.ferriteRep && d.ferriteRep.toString().trim()) ferriteCount++;
-                if (d.pwhtRep && d.pwhtRep.toString().trim()) pwhtCount++;
-            });
-
             const max = Math.ceil(filteredData.length/rowsPerPage)||1;
             document.getElementById('pageInfoFull').innerText = `Page ${pageFull}/${max}`;
             document.getElementById('btnPrevFull').disabled = (pageFull===1); document.getElementById('btnNextFull').disabled = (pageFull===max);
             
             const s = currentSummary || getSummary();
+            const rtCount = s.rtCount || 0;
+            const pautCount = s.pautCount || 0;
+            const mtCount = s.mtCount || 0;
+            const ptCount = s.ptCount || 0;
+            const pmiCount = s.pmiCount || 0;
+            const hardCount = s.hardCount || 0;
+            const ferriteCount = s.ferriteCount || 0;
+            const pwhtCount = s.pwhtCount || 0;
+
             // Bố trí Grand Total theo cột, hiển thị màu sắc chuyên nghiệp
             document.getElementById('tableFullFoot').innerHTML = `<tr>
                 <th colspan="8" style="text-align:left; background:#e8f5e9; color:#2e7d32; font-weight:800; padding:10px 8px; border-top: 2px solid #81c784; position: sticky; bottom: 0; z-index: 10;">GRAND TOTAL (${s.total.toLocaleString()} Joints)</th>
@@ -7947,6 +8336,7 @@
                                     rebuildHydroCache();
                                     applyFilters();
                                     calculateReminders();
+                                    showToast(`🔔 Hệ thống vừa tự động cập nhật dữ liệu mới từ Cloud: <strong>${displayFileName}</strong>`, 'info');
                                 }
                                 
                                 if (syncMsg) {
@@ -8118,7 +8508,11 @@
             localStorage.removeItem('gsSyncConfig');
             localStorage.removeItem('gsTokenCache');
             localStorage.removeItem('gsLoggedIn');
+            localStorage.removeItem('adminMode');
+            localStorage.removeItem('adminEmail');
+            localStorage.removeItem('googleUserEmail');
             gapiToken = null;
+            exitAdminMode();
             document.getElementById('gSheetsStatus').innerHTML = '<i class="fas fa-info-circle"></i> Chưa kết nối Drive';
             document.getElementById('btnGSheetsPull').style.display = 'none';
             document.getElementById('btnGSheetsPush').style.display = 'none';
@@ -8196,8 +8590,8 @@
             const initTokenClient = () => {
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: gsConfig.clientId,
-                    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly',
-                    callback: (resp) => {
+                    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/userinfo.email openid',
+                    callback: async (resp) => {
                         if (resp.error !== undefined) throw (resp);
                         gapiToken = resp;
                         window.gapiToken = resp;
@@ -8206,6 +8600,30 @@
                             localStorage.setItem('gsTokenCache', JSON.stringify({ access_token: resp.access_token, expiry: Date.now() + ((resp.expires_in || 3600) * 1000) }));
                             localStorage.setItem('gsLoggedIn', '1');
                         } catch(e){}
+
+                        // Fetch Google Email to verify and persist Admin mode
+                        try {
+                            const emailResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                                headers: { 'Authorization': `Bearer ${resp.access_token}` }
+                            });
+                            if (emailResponse.ok) {
+                                const userInfo = await emailResponse.json();
+                                const email = userInfo.email;
+                                console.log("[Google Auth] email:", email);
+                                if (email) {
+                                    localStorage.setItem('googleUserEmail', email);
+                                    if (email.toLowerCase().trim() === 'khanhdcn@gmail.com') {
+                                        localStorage.setItem('adminMode', 'true');
+                                        localStorage.setItem('adminEmail', email);
+                                        enterAdminMode();
+                                        showToast("Duy trì đăng nhập Admin cho khanhdcn@gmail.com", "success");
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.warn("[Google Auth] Fetch email error:", e);
+                        }
+
                         updateGSheetsUI();
                         if (window.pendingGDriveSync) {
                             window.pendingGDriveSync = false;
@@ -8439,19 +8857,18 @@
         // GOOGLE DRIVE SYNC ONLINE MODULE (Viewer auto-bypass, GSheet Native Export Support)
         // ============================================================
         function parseDateFromFileName(fileName, mimeType = '') {
-            const match = fileName.trim().match(/^QC[\s\._-]+(\d{1,2})[\s\._-]+([A-Za-z]{3})[\s\._-]+(\d{2,4})(?:\.(xlsx|csv))?$/i);
+            const match = fileName.trim().match(/^QC[\s\._-]+(\d{1,2})[\s\._-]+([A-Za-z]{3})[\s\._-]+(\d{2,4})/i);
             if (!match) return null;
             const day = parseInt(match[1], 10);
             const monthStr = match[2].toLowerCase();
             let year = parseInt(match[3], 10);
-            let ext = match[4] ? match[4].toLowerCase() : '';
-            if (!ext) {
-                if (mimeType === 'application/vnd.google-apps.spreadsheet') {
-                    ext = 'spreadsheet';
-                } else {
-                    ext = 'xlsx';
-                }
-            }
+            
+            let ext = '';
+            const lowerName = fileName.toLowerCase();
+            if (lowerName.includes('.xlsx')) ext = 'xlsx';
+            else if (lowerName.includes('.csv')) ext = 'csv';
+            else if (mimeType === 'application/vnd.google-apps.spreadsheet') ext = 'spreadsheet';
+            else ext = 'xlsx';
 
             if (year < 100) {
                 year += 2000;
@@ -8494,8 +8911,6 @@
         const GDRIVE_FOLDER_ID = '1Kdhn9ALMIpmiaien5wdflJWHHlo-3Ffm';
 
         // ===== TỰ ĐỘNG ĐỒNG BỘ DRIVE THEO KHUNG GIỜ (sáng & chiều) =====
-        // Chỉ QUÉT Drive (gọi nhẹ lấy danh sách file ~vài KB) trong 2 khung giờ dưới đây; ngoài khung KHÔNG làm gì.
-        // CHỈ tải file (nặng) khi thấy file tên ngày MỚI HƠN -> app vẫn mượt, không đơ.
         const SYNC_WINDOWS = [
             { start: '08:45', end: '11:00' },  // ca sáng (data thường có ~9h)
             { start: '13:45', end: '16:00' }   // ca chiều (data thường có ~14h)
@@ -8503,30 +8918,38 @@
         let _lastDriveCheckTs = 0;
         function checkScheduledGDriveSync() {
             try {
-                if (localStorage.getItem('adminMode') !== 'true' || !gapiToken) return; // chỉ Admin đã đăng nhập Google
+                const isLocalAdmin = localStorage.getItem('adminMode') === 'true';
+                const adminEmail = localStorage.getItem('adminEmail');
+                const isAdminVerified = isLocalAdmin && adminEmail && adminEmail.toLowerCase().trim() === 'khanhdcn@gmail.com';
+                
+                if (!isAdminVerified) return; // Chỉ tự động quét Drive khi đúng admin khanhdcn@gmail.com
+                
+                const gsConfig = JSON.parse(localStorage.getItem('gsSyncConfig') || '{}');
+                const hasGToken = !!(gapiToken && gapiToken.access_token);
+                const hasApiKey = !!gsConfig.apiKey;
+                if (!hasGToken && !hasApiKey) return;
+
                 const now = new Date();
                 const hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
                 const inWindow = SYNC_WINDOWS.some(w => hhmm >= w.start && hhmm <= w.end);
-                if (!inWindow) return;                                          // ngoài khung giờ -> bỏ qua
-                if (Date.now() - _lastDriveCheckTs < 15 * 60 * 1000) return;    // tối thiểu 15 phút/lần trong khung
+                if (!inWindow) return;
+                if (Date.now() - _lastDriveCheckTs < 15 * 60 * 1000) return;
                 _lastDriveCheckTs = Date.now();
                 console.log('[Auto-Sync] Trong khung giờ -> kiểm tra Drive tìm file ngày mới...');
-                syncFromGDriveFolder(true); // tự bỏ qua nếu KHÔNG có file tên ngày mới hơn (không tải lại vô ích)
+                syncFromGDriveFolder(true);
             } catch (e) { console.warn('[Auto-Sync] error:', e); }
         }
 
         async function syncFromGDriveFolder(isAuto = false) {
             const gsConfig = JSON.parse(localStorage.getItem('gsSyncConfig') || '{}');
-            if (!gsConfig.clientId) {
-                if (!isAuto) alert("Vui lòng cấu hình Client ID trong phần Settings trước khi đồng bộ.");
-                return;
-            }
+            const hasGToken = !!(gapiToken && gapiToken.access_token);
+            const hasApiKey = !!gsConfig.apiKey;
 
-            if (!gapiToken && window.gapiToken) {
-                gapiToken = window.gapiToken;
-            }
-
-            if (!gapiToken) {
+            if (!hasGToken && !hasApiKey) {
+                if (!gsConfig.clientId) {
+                    if (!isAuto) alert("Vui lòng cấu hình Client ID trong phần Settings trước khi đồng bộ.");
+                    return;
+                }
                 window.pendingGDriveSync = true;
                 updateGDriveSyncUI(true, "Đang mở kết nối đăng nhập Google...");
                 if (isAuto) {
@@ -8544,10 +8967,15 @@
             }
 
             try {
-                const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${GDRIVE_FOLDER_ID}' in parents and trashed = false`)}&fields=files(id,name,mimeType,createdTime,size)&pageSize=100`;
-                const listResponse = await fetch(listUrl, {
-                    headers: { 'Authorization': 'Bearer ' + gapiToken.access_token }
-                });
+                let listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${GDRIVE_FOLDER_ID}' in parents and trashed = false`)}&fields=files(id,name,mimeType,createdTime,size)&pageSize=100`;
+                const headers = {};
+                if (hasGToken) {
+                    headers['Authorization'] = 'Bearer ' + gapiToken.access_token;
+                } else {
+                    listUrl += `&key=${gsConfig.apiKey}`;
+                }
+
+                const listResponse = await fetch(listUrl, { headers });
 
                 if (!listResponse.ok) {
                     throw new Error(`Drive list HTTP error ${listResponse.status}`);
@@ -8592,17 +9020,19 @@
                     return;
                 }
 
-                // CHỈ ĐỌC .XLSX: ưu tiên file .xlsx, rồi tới Google Sheet (sẽ export ra .xlsx). Bỏ qua CSV.
                 let selectedFile = latestFiles.find(f => f.ext === 'xlsx')
                     || latestFiles.find(f => f.ext === 'spreadsheet')
                     || latestFiles.find(f => f.ext !== 'csv')
                     || null;
                 if (!selectedFile) {
-                    updateGDriveSyncUI(false, "Không tìm thấy file .xlsx trong thư mục (đã bỏ hỗ trợ CSV). Vui lòng tải lên file .xlsx.");
+                    updateGDriveSyncUI(false, "Không tìm thấy file .xlsx trong thư mục. Vui lòng tải lên file .xlsx.");
                     if (!isAuto) hideLoading();
                     return;
                 }
 
+                if (isAuto) {
+                    showToast(`🔄 Phát hiện file mới trên Google Drive: <strong>${selectedFile.name}</strong>. Đang tự động cập nhật ngầm...`, 'info');
+                }
                 updateGDriveSyncUI(true, `Đang tải: ${selectedFile.name}...`);
                 if (!isAuto) {
                     document.getElementById('loadingText').innerText = `Downloading ${selectedFile.name}...`;
@@ -8612,15 +9042,19 @@
                 const isGoogleSheet = selectedFile.mimeType === 'application/vnd.google-apps.spreadsheet';
                 
                 if (isGoogleSheet) {
-                    // Xuất Google Sheet ra .xlsx (ngày giữ dạng serial, không nhập nhằng như CSV)
                     downloadUrl = `https://www.googleapis.com/drive/v3/files/${selectedFile.id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`;
                 } else {
                     downloadUrl = `https://www.googleapis.com/drive/v3/files/${selectedFile.id}?alt=media`;
                 }
 
-                const fileResponse = await fetch(downloadUrl, {
-                    headers: { 'Authorization': 'Bearer ' + gapiToken.access_token }
-                });
+                const dlHeaders = {};
+                if (hasGToken) {
+                    dlHeaders['Authorization'] = 'Bearer ' + gapiToken.access_token;
+                } else {
+                    downloadUrl += (downloadUrl.includes('?') ? '&' : '?') + `key=${gsConfig.apiKey}`;
+                }
+
+                const fileResponse = await fetch(downloadUrl, { headers: dlHeaders });
 
                 if (!fileResponse.ok) {
                     throw new Error(`Download HTTP error ${fileResponse.status}`);
@@ -8630,12 +9064,10 @@
 
                 let json = null;
                 {
-                    // CHỈ ĐỌC XLSX (Google Sheet đã được export ra .xlsx ở trên). Đã bỏ nhánh CSV.
                     updateGDriveSyncUI(true, "Đang chuyển đổi và parse dữ liệu XLSX...");
                     if (!isAuto) document.getElementById('loadingText').innerText = "Reading Excel file...";
                     const arrayBuffer = await fileResponse.arrayBuffer();
                     
-                    // Đọc nhanh header workbook (chỉ lấy 20 hàng đầu mỗi sheet) để tìm sheet phù hợp
                     const headerWorkbook = XLSX.read(new Uint8Array(arrayBuffer), { 
                         type: 'array', 
                         sheetRows: 20,
@@ -8673,7 +9105,6 @@
                         }
                     }
                     
-                    // Load workbook đầy đủ để lấy toàn bộ dữ liệu của sheet đã chọn
                     if (!isAuto) document.getElementById('loadingText').innerText = "Parsing Excel sheet...";
                     const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
                         type: 'array',
@@ -8693,16 +9124,20 @@
 
                 processData(json, true, targetFileName);
                 
-                updateGDriveSyncUI(true, "Đang đồng bộ lên Cloud...");
-                if (!isAuto) document.getElementById('loadingText').innerText = "Uploading to Cloud Database...";
-                
-                await unifiedCloudSync(true);
+                const isLocalAdmin = localStorage.getItem('adminMode') === 'true';
+                if (isLocalAdmin) {
+                    updateGDriveSyncUI(true, "Đang đồng bộ lên Cloud...");
+                    if (!isAuto) document.getElementById('loadingText').innerText = "Uploading to Cloud Database...";
+                    await unifiedCloudSync(true);
+                }
                 
                 updateGDriveSyncUI(false, `✅ Đồng bộ thành công: ${targetFileName}`);
+                showToast(`✅ Đã đồng bộ thành công dữ liệu mới từ Google Drive: <strong>${targetFileName}</strong>`, 'success');
 
             } catch (err) {
                 console.error(err);
                 updateGDriveSyncUI(false, `Lỗi đồng bộ: ${err.message}`);
+                showToast(`❌ Lỗi đồng bộ Google Drive: ${err.message}`, 'error');
                 if (!isAuto) hideLoading();
             }
         }
