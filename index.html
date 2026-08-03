@@ -2646,7 +2646,7 @@
                 const kN = calKey(d.visDate);                                                              // NDT theo VisualReportDate
                 if (kN) {
                     const s = ensure(kN);
-                    if (d.ndtRequest) {
+                    if (d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT) {
                         s.ndtReq++;
                         if ((d.statusCol || '').trim().toUpperCase() === 'COMPLETED') s.ndt++;             // NDT Cpl = Status='Completed'
                     }
@@ -3612,7 +3612,7 @@
                 hydroRep: findKey(['HydroTestReportNo', 'Hydro Test Report No', 'HydroRep']),
                 releaseRep: findKey(['ReleaseNotesReportNo', 'Release Notes Report No', 'ReleaseRep']),
                 summaryRep: findKey(['SummaryReportNo', 'Summary Report No', 'SummaryRep']),
-                ndtRequest: findKey(['NDTRequest', 'NDT Request', 'NDTReq']),
+                ndtRequest: findKey(['NDT Rq', 'NDTRq', 'NDTRequest', 'NDT Request', 'NDTReq']),
                 ndtRate: findKey(['NDTRate', 'NDT Rate', 'Rate', 'Tỷ lệ NDT', 'ndtRate']),
                 pwhtRep: findKey(['PWHTReportNo', 'PWHT Report No.', 'PWHT Rep', 'pwhtRep']),
                 statusCol: findKey(['Status', 'DJ_Status', 'DJ Status', 'Stt']),
@@ -5216,7 +5216,8 @@
                     touch(kw);
                     weldMap[kw.key].W++;
                     // NDT Method: trong mối CÓ NDT request, đếm báo cáo đã có theo từng pp (theo ngày biểu diễn mới)
-                    if (d.ndtRequest) {
+                    const hasNdtReqChart = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
+                    if (hasNdtReqChart) {
                         if (!methodMap[kw.key]) methodMap[kw.key] = { RT: 0, PAUT: 0, MT: 0, PT: 0 };
                         const mm = methodMap[kw.key];
                         if (d.hasRT) mm.RT++;
@@ -5237,13 +5238,14 @@
                 }
                 // NDT theo VisualReportDate: Req (NDTRequest), Cpl (Status='Completed'), Repair (kết quả REJ)
                 const isRej = d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ';
-                if (d.ndtRequest || isRej) {
+                const hasNdtReqNdt = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
+                if (hasNdtReqNdt || isRej) {
                     const kn = keyFor(d.visDate, d.visDateStr);
                     if (kn) {
                         if (!ndtMap[kn.key]) ndtMap[kn.key] = { req: 0, cpl: 0, repair: 0 };
                         touch(kn);
                         const n = ndtMap[kn.key];
-                        if (d.ndtRequest) {
+                        if (hasNdtReqNdt) {
                             n.req++;
                             if ((d.statusCol || '').trim().toUpperCase() === 'COMPLETED') n.cpl++;
                         }
