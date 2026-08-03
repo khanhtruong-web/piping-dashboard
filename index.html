@@ -3510,10 +3510,9 @@
                         d.fitupAcc = '';
                     }
                 }
-                // visualACC: if missing, use visualRes
-                if (d.visualACC === undefined) {
-                    d.visualACC = d.visualRes || '';
-                }
+                // visualACC / visualRes: sync between both if one is missing
+                if (!d.visualACC) d.visualACC = d.visualRes || '';
+                if (!d.visualRes) d.visualRes = d.visualACC || '';
                 // ndtRequest: if missing, infer from reqRT/reqPAUT/reqMT/reqPT
                 if (d.ndtRequest === undefined) {
                     d.ndtRequest = !!(d.reqRT || d.reqPAUT || d.reqMT || d.reqPT);
@@ -3572,7 +3571,7 @@
                 weldType: findKey(['Weld Type', 'WeldType', 'Loại mối hàn']),
                 testPkg: findKey(['Test Package No.', 'Test Package', 'TestPkg', 'TP No', 'Mã Test Package', 'TestPackageNo']),
                 spec: findKey(['Spec', 'Specification', 'Tiêu chuẩn']),
-                visualRes: findKey(['Visual Result', 'Visual', 'VT Result']),
+                visualRes: findKey(['Visual Result', 'Visual', 'VT Result', 'VisualACC', 'Visual ACC', 'VisualResult']),
                 rtRes: findKey(['RTResult', 'RT Result', 'RT_Result']),
                 pautRes: findKey(['PAUT Result', 'PAUTResult']),
                 rtRep: findKey(['RT Report No.', 'RT Rep', 'RTReportNo']),
@@ -3596,8 +3595,8 @@
                 jointRem: findKey(['TV', 'Joint Remark', 'Remark', 'Ghi chú']),
                 location: findKey(['Location', 'Area', 'Vị trí']),
                 tv: findKey(['TV']),
-                visualACC: findKey(['VisualACC', 'Visual ACC', 'Visual Acc']),
-                visualReportDate: findKey(['VisualReportDate', 'Visual Report Date']),
+                visualACC: findKey(['VisualACC', 'Visual ACC', 'Visual Acc', 'Visual Result', 'Visual_Result', 'VisualResult', 'Visual', 'VT Result', 'VTResult']),
+                visualReportDate: findKey(['VisualReportDate', 'Visual Report Date', 'Visual Date', 'Visual ReportDate', 'VisualReport Date']),
                 fitUpReportDate: findKey(['FitUpReportDate', 'Fit-Up Report Date', 'FitUp Report Date']),
                 visualREJ: findKey(['VisualREJ', 'Visual REJ', 'Visual Rej']),
                 defectLoc: findKey(['DefectLocation', 'Defect Location']),
@@ -3663,7 +3662,7 @@
                 };
 
                 const fitupRaw = getStatus(getVal(r, 'fitupAcc'));
-                const visAccVal = getStatus(getVal(r, 'visualACC'));
+                const visAccVal = getStatus(getVal(r, 'visualACC')) || getStatus(getVal(r, 'visualRes'));
                 // Nếu chưa có ngày hàn (AL) nhưng Visual đã 'ACC' -> dùng VisualReportDate (AP) làm ngày sản xuất (tránh đếm thiếu mối)
                 if (!wDateObj && visAccVal === 'ACC') {
                     wDateObj = parseExDate(getVal(r, 'visualReportDate'));
@@ -3995,7 +3994,7 @@
             const len = filteredData.length;
             for(let i=0; i<len; i++) {
                 const d = filteredData[i];
-                if(d.visualRes === 'ACC') s.vis++;
+                if(d.visualRes === 'ACC' || d.visualACC === 'ACC') s.vis++;
                 s.ndtL += d.lenNDT; s.defL += d.lenDefect;
                 s.diaInch += d.sizeVal;
                 if(d.rtRes==='ACC'||d.pautRes==='ACC') s.rtA++; else if(d.rtRes==='REJ'||d.pautRes==='REJ') s.rtR++;
@@ -4104,7 +4103,7 @@
             const len = filteredData.length;
             for(let i=0; i<len; i++) {
                 const d = filteredData[i];
-                if(d.visualRes === 'ACC') sum.vis++;
+                if(d.visualRes === 'ACC' || d.visualACC === 'ACC') sum.vis++;
                 sum.ndtL += d.lenNDT; sum.defL += d.lenDefect;
                 sum.diaInch += d.sizeVal;
                 if(d.rtRes==='ACC'||d.pautRes==='ACC') sum.rtA++; else if(d.rtRes==='REJ'||d.pautRes==='REJ') sum.rtR++;
@@ -4355,7 +4354,7 @@
 
             const dailyMap = {};
             dailyFilteredData.forEach(d => {
-                const isVisualAcc = d.visualACC === 'ACC';
+                const isVisualAcc = d.visualACC === 'ACC' || d.visualRes === 'ACC';
                 const dateKey = (isVisualAcc && d.visDateStr) ? d.visDateStr : (d.wDateStr || 'No Date');
                 const ts = (isVisualAcc && d.visDate) ? d.visDate : (d.wDate || 0);
                 const sub = (d.isSub || 'Unknown').toUpperCase();
@@ -4422,7 +4421,7 @@
 
             const dailyMap = {};
             dailyFilteredData.forEach(d => {
-                const isVisualAcc = d.visualACC === 'ACC';
+                const isVisualAcc = d.visualACC === 'ACC' || d.visualRes === 'ACC';
                 const dateKey = (isVisualAcc && d.visDateStr) ? d.visDateStr : (d.wDateStr || 'No Date');
                 const ts = (isVisualAcc && d.visDate) ? d.visDate : (d.wDate || 0);
                 const sub = (d.isSub || 'Unknown').toUpperCase();
@@ -4492,7 +4491,7 @@
             const subconJoints = filteredData.filter(d => (d.isSub || '').toUpperCase().includes(subconFilter.toUpperCase()));
             // Xác định ngày biểu diễn của mối hàn (nếu visual ACC dùng visDate/visDateStr, ngược lại dùng wDate/wDateStr)
             const dayJoints = subconJoints.filter(d => {
-                const isVisualAcc = d.visualACC === 'ACC';
+                const isVisualAcc = d.visualACC === 'ACC' || d.visualRes === 'ACC';
                 const targetDate = (isVisualAcc && d.visDate) ? d.visDate : d.wDate;
                 const targetDateStr = (isVisualAcc && d.visDateStr) ? d.visDateStr : d.wDateStr;
                 return labelFor(targetDate, targetDateStr) === periodStr;
@@ -4513,7 +4512,7 @@
             const totalWeld = dayJoints.length;
             // Fit-up ACC / Visual ACC: đếm trong tập dayJoints (các mối thuộc kỳ này)
             const fitupAccCount = dayJoints.filter(d => d.fitupAcc === 'ACC').length;
-            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC').length;
+            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC' || d.visualRes === 'ACC').length;
 
             document.getElementById('lblDetailWeldComplete').innerText = totalWeld.toLocaleString();
             document.getElementById('lblDetailFitupAcc').innerText = fitupAccCount.toLocaleString();
@@ -4698,7 +4697,7 @@
                     if (!sub.includes(subconFilter.toUpperCase())) return false;
                 }
                 
-                const isVisualAcc = d.visualACC === 'ACC';
+                const isVisualAcc = d.visualACC === 'ACC' || d.visualRes === 'ACC';
                 const targetDate = (isVisualAcc && d.visDate) ? d.visDate : d.wDate;
                 const targetDateStr = (isVisualAcc && d.visDateStr) ? d.visDateStr : d.wDateStr;
                 
@@ -4727,7 +4726,7 @@
             const totalWeld = dayJoints.length;
             // Fit-up/Visual ACC đếm trong tập dayJoints (đồng bộ với modal)
             const fitupAccCount = dayJoints.filter(d => d.fitupAcc === 'ACC').length;
-            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC').length;
+            const visualAccCount = dayJoints.filter(d => d.visualACC === 'ACC' || d.visualRes === 'ACC').length;
             const ndtRequestCount = dayJoints.filter(d => d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT).length;
             const ndtCompletedCount = dayJoints.filter(d => {
                 const hasReq = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
@@ -5206,7 +5205,7 @@
 
             chartData.forEach(d => {
                 // Welding Completed theo ngày biểu diễn mới (ngày visual nếu visual ACC, ngược lại ngày hàn)
-                const isVisualAcc = d.visualACC === 'ACC';
+                const isVisualAcc = d.visualACC === 'ACC' || d.visualRes === 'ACC';
                 const targetDate = (isVisualAcc && d.visDate) ? d.visDate : d.wDate;
                 const targetDateStr = (isVisualAcc && d.visDateStr) ? d.visDateStr : d.wDateStr;
                 
@@ -5232,7 +5231,7 @@
                     if (kf) { fitMap[kf.key] = (fitMap[kf.key] || 0) + 1; touch(kf); }
                 }
                 // Visual ACC theo VisualReportDate (fallback targetDate)
-                if (d.visualACC === 'ACC') {
+                if (d.visualACC === 'ACC' || d.visualRes === 'ACC') {
                     const kv = keyFor(d.visDate || targetDate, d.visDateStr || targetDateStr);
                     if (kv) { visMap[kv.key] = (visMap[kv.key] || 0) + 1; touch(kv); }
                 }
