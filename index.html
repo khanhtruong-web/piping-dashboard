@@ -5226,21 +5226,21 @@
                         if (d.hasPT) mm.PT++;
                     }
                 }
-                // Fit-up ACC theo FitUpReportDate
+                // Fit-up ACC theo FitUpReportDate (fallback targetDate)
                 if (d.fitupAcc === 'ACC') {
-                    const kf = keyFor(d.fitDate, d.fitDateStr);
+                    const kf = keyFor(d.fitDate || targetDate, d.fitDateStr || targetDateStr);
                     if (kf) { fitMap[kf.key] = (fitMap[kf.key] || 0) + 1; touch(kf); }
                 }
-                // Visual ACC theo VisualReportDate
+                // Visual ACC theo VisualReportDate (fallback targetDate)
                 if (d.visualACC === 'ACC') {
-                    const kv = keyFor(d.visDate, d.visDateStr);
+                    const kv = keyFor(d.visDate || targetDate, d.visDateStr || targetDateStr);
                     if (kv) { visMap[kv.key] = (visMap[kv.key] || 0) + 1; touch(kv); }
                 }
-                // NDT theo VisualReportDate: Req (NDTRequest), Cpl (Status='Completed'), Repair (kết quả REJ)
+                // NDT theo VisualReportDate (fallback targetDate): Req (NDTRequest), Cpl (Status='Completed'), Repair (kết quả REJ)
                 const isRej = d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ';
                 const hasNdtReqNdt = d.ndtRequest || d.reqRT || d.reqPAUT || d.reqMT || d.reqPT;
                 if (hasNdtReqNdt || isRej) {
-                    const kn = keyFor(d.visDate, d.visDateStr);
+                    const kn = keyFor(d.visDate || targetDate, d.visDateStr || targetDateStr);
                     if (kn) {
                         if (!ndtMap[kn.key]) ndtMap[kn.key] = { req: 0, cpl: 0, repair: 0 };
                         touch(kn);
