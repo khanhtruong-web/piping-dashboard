@@ -7001,16 +7001,10 @@
                 let bMT = (d.reqMT && !d.hasMT) ? 1 : 0;
                 let bPT = (d.reqPT && !d.hasPT) ? 1 : 0;
                 
-                // RT/PAUT ACC cross-exclusion:
-                // If PAUT result is ACC, skip RT backlog for this joint
-                if (bRT && d.pautRes === 'ACC') bRT = 0;
-                // If RT result is ACC, skip PAUT backlog for this joint
-                if (bPAUT && d.rtRes === 'ACC') bPAUT = 0;
-                
                 if (bRT || bPAUT || bMT || bPT) {
                     const sizeText = (d.size || "Unknown").toLowerCase().trim();
                     const matText = (d.mat || "N/A").toLowerCase().trim();
-                    const locText = (d.tv || "N/A").toLowerCase().trim();
+                    const locText = (d.jointRem || "N/A").toLowerCase().trim();
                     
                     const matchSize = sizeQuery === '' || sizeText.includes(sizeQuery);
                     const matchMat = matQuery === '' || matText.includes(matQuery);
