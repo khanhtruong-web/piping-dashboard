@@ -1465,10 +1465,10 @@
                     </div>
                     <p class="text-muted small">Tự động đối chiếu dữ liệu NDT để báo Cleared cho toàn bộ Test Package. Bạn có thể sử dụng Test Pack Visualizer để tra cứu chi tiết tiến độ 1 Package.</p>
                     
-                    <!-- ROW ĐỒ THỊ: HYDROTEST STATUS -->
-                    <div class="row mb-4">
+                    <!-- ROW ĐỒ THỊ: HYDROTEST STATUS & SPOOL SUMMARY -->
+                    <div class="row mb-4 g-3">
                         <!-- Cột 1: Hydrotest Status (Tóm tắt & Tỷ lệ) -->
-                        <div class="col-12">
+                        <div class="col-xl-6 col-lg-12">
                             <div class="glass-card shadow-sm h-100" style="border: 1px solid rgba(2, 136, 209, 0.15); background: rgba(255, 255, 255, 0.65);">
                                 <div class="chart-header text-info py-2 d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-bottom: 1px solid rgba(0,0,0,0.05); min-height: auto;">
                                     <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-tint me-2"></i>Hydrotest Status <span class="text-muted fw-normal" style="font-size:0.62rem;">(bấm cột để lọc)</span></span>
@@ -1483,6 +1483,39 @@
                                         </div>
                                         <div class="col-md-7 col-sm-12">
                                             <div id="hydroStatusBreakdown"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột 2: Hydrotest & Spool Progress Summary (Bảng tổng hợp + 2 Pie Charts) -->
+                        <div class="col-xl-6 col-lg-12">
+                            <div class="glass-card shadow-sm h-100" style="border: 1px solid rgba(46, 125, 50, 0.2); background: rgba(255, 255, 255, 0.65);">
+                                <div class="chart-header py-2 d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-bottom: 1px solid rgba(0,0,0,0.05); color: #2e7d32; min-height: auto;">
+                                    <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-chart-pie me-2"></i>Hydrotest & Spool Summary</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size:0.65rem;">TP & Spool Breakdown</span>
+                                </div>
+                                <div class="p-3">
+                                    <!-- Summary Table -->
+                                    <div id="hydroSpoolSummaryTableContainer" class="mb-3"></div>
+                                    <!-- 2 Pie Charts -->
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="p-2 border rounded bg-white bg-opacity-75 text-center shadow-xs">
+                                                <div class="fw-bold text-muted mb-1" style="font-size: 0.7rem;"><i class="fas fa-layer-group me-1 text-primary"></i>by Number of TEST PACK</div>
+                                                <div style="height: 140px; position: relative;">
+                                                    <canvas id="hydroTpPieChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="p-2 border rounded bg-white bg-opacity-75 text-center shadow-xs">
+                                                <div class="fw-bold text-muted mb-1" style="font-size: 0.7rem;"><i class="fas fa-cubes me-1 text-success"></i>by Number of SPOOL</div>
+                                                <div style="height: 140px; position: relative;">
+                                                    <canvas id="hydroSpoolPieChart"></canvas>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -5761,7 +5794,9 @@
                         t: 0, d: 0, p: 0, r: 0, spools: new Set(), lines: new Set(), locations: new Set(), remarks: new Set(), jointMap: {},
                         actualStatus: value.statusFab || '',
                         hydrotestStatus: value.hydrotestStatus || '',
-                        signP04Date: value.signP04Date || ''
+                        signP04Date: value.signP04Date || '',
+                        spoolsCount: value.spools || 0,
+                        jointsCount: value.jointsCount || 0
                     };
                 });
             }
@@ -6094,9 +6129,13 @@
                     }
                     h.actualStatus = sheetData.statusFab || '';
                     h.hydrotestStatus = sheetData.hydrotestStatus || '';
+                    h.spoolsCount = sheetData.spools || Array.from(h.spools).length || 0;
+                    h.jointsCount = sheetData.jointsCount || h.weldingJoints || 0;
                 } else {
                     h.actualStatus = '';
                     h.hydrotestStatus = '';
+                    h.spoolsCount = Array.from(h.spools).length || 0;
+                    h.jointsCount = h.weldingJoints || 0;
                 }
 
                 const isHydrotested = sheetHydroDates.size > 0 
@@ -6359,50 +6398,227 @@
 
             if (chartInstances.hydroStatus) chartInstances.hydroStatus.destroy();
             const maxVal = Math.max(doneHydro, readyHydro, remainingHydro);
-            chartInstances.hydroStatus = new Chart(document.getElementById('hydroStatusChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['Hydrotested', 'Ready Hydro', 'Remaining'],
-                    datasets: [{
-                        label: 'Packages',
-                        data: [doneHydro, readyHydro, remainingHydro],
-                        backgroundColor: _hsColors,
-                        borderColor: [
-                            '#1e3c72',
-                            '#11998e',
-                            '#6c757d'
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    responsive: true,
-                    onClick: (evt, els) => {
-                        if (!els || !els.length) return;
-                        const vals = ['Hydrotested', 'Ready for Hydrotest', 'Remaining'];
-                        const target = vals[els[0].index];
-                        if (target && typeof filterHydroByStatus === 'function') filterHydroByStatus(target);
+            const canvasHydroStatus = document.getElementById('hydroStatusChart');
+            if (canvasHydroStatus) {
+                chartInstances.hydroStatus = new Chart(canvasHydroStatus, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Hydrotested', 'Ready Hydro', 'Remaining'],
+                        datasets: [{
+                            label: 'Packages',
+                            data: [doneHydro, readyHydro, remainingHydro],
+                            backgroundColor: _hsColors,
+                            borderColor: [
+                                '#1e3c72',
+                                '#11998e',
+                                '#6c757d'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
                     },
-                    onHover: (evt, els) => { if (evt && evt.native && evt.native.target) evt.native.target.style.cursor = (els && els.length) ? 'pointer' : 'default'; },
-                    layout: { padding: { top: 25 } },
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: {
-                            color: '#333',
-                            font: { weight: 'bold', size: 10 },
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: v => v > 0 ? v.toLocaleString() : '0'
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        onClick: (evt, els) => {
+                            if (!els || !els.length) return;
+                            const vals = ['Hydrotested', 'Ready for Hydrotest', 'Remaining'];
+                            const target = vals[els[0].index];
+                            if (target && typeof filterHydroByStatus === 'function') filterHydroByStatus(target);
+                        },
+                        onHover: (evt, els) => { if (evt && evt.native && evt.native.target) evt.native.target.style.cursor = (els && els.length) ? 'pointer' : 'default'; },
+                        layout: { padding: { top: 25 } },
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                color: '#333',
+                                font: { weight: 'bold', size: 10 },
+                                anchor: 'end',
+                                align: 'top',
+                                formatter: v => v > 0 ? v.toLocaleString() : '0'
+                            }
+                        },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { beginAtZero: true, suggestedMax: maxVal * 1.2 || 10, grid: { color: 'rgba(0,0,0,0.05)' } }
                         }
-                    },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true, suggestedMax: maxVal * 1.2 || 10, grid: { color: 'rgba(0,0,0,0.05)' } }
                     }
+                });
+            }
+
+            // === TÍNH NĂNG MỚI: HYDROTEST & SPOOL SUMMARY TABLE VÀ 2 BIỂU ĐỒ TRÒN ===
+            let tpDone = 0, tpNotYet = 0;
+            let spoolDone = 0, spoolNotYet = 0;
+
+            displayedItems.forEach(h => {
+                const spools = (h.spoolsCount !== undefined && h.spoolsCount !== null) ? h.spoolsCount : (Array.from(h.spools || []).length || 0);
+                if (h.status === 'Hydrotested') {
+                    tpDone++;
+                    spoolDone += spools;
+                } else {
+                    tpNotYet++;
+                    spoolNotYet += spools;
                 }
             });
+
+            const sumTP = tpDone + tpNotYet;
+            const sumSpool = spoolDone + spoolNotYet;
+
+            const tpDonePct = sumTP > 0 ? (tpDone / sumTP * 100).toFixed(2) : '0.00';
+            const tpNotYetPct = sumTP > 0 ? (tpNotYet / sumTP * 100).toFixed(2) : '0.00';
+
+            const spoolDonePct = sumSpool > 0 ? (spoolDone / sumSpool * 100).toFixed(2) : '0.00';
+            const spoolNotYetPct = sumSpool > 0 ? (spoolNotYet / sumSpool * 100).toFixed(2) : '0.00';
+
+            const sumTableContainer = document.getElementById('hydroSpoolSummaryTableContainer');
+            if (sumTableContainer) {
+                sumTableContainer.innerHTML = `
+                    <div class="table-responsive" style="border-radius: 6px; overflow: hidden; border: 1px solid #ced4da;">
+                        <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 0.72rem;">
+                            <thead>
+                                <tr>
+                                    <th style="background: #37474f; color: #fff; font-weight: 700; width: 34%; text-align: left; padding-left: 8px; font-style: italic;">HYDROTEST STATUS</th>
+                                    <th style="background: #37474f; color: #fff; font-weight: 700; width: 16%;">TP</th>
+                                    <th style="background: #37474f; color: #fff; font-weight: 700; width: 17%;">TP %</th>
+                                    <th style="background: #689f38; color: #fff; font-weight: 700; width: 16%;">SPOOL</th>
+                                    <th style="background: #689f38; color: #fff; font-weight: 700; width: 17%;">SPOOL %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="cursor: pointer; transition: background-color 0.15s ease;" class="hover-row" onclick="filterHydroByStatus('Hydrotested')" title="Click để lọc Hydrotested">
+                                    <td class="text-start fw-bold ps-2" style="color: #2e7d32;"><i class="fas fa-check-circle me-1"></i>Hydrotest Done</td>
+                                    <td class="fw-bold text-dark">${tpDone.toLocaleString()}</td>
+                                    <td class="fw-bold" style="color: #2e7d32;">${tpDonePct}%</td>
+                                    <td class="fw-bold text-dark">${spoolDone.toLocaleString()}</td>
+                                    <td class="fw-bold" style="color: #2e7d32;">${spoolDonePct}%</td>
+                                </tr>
+                                <tr style="cursor: pointer; transition: background-color 0.15s ease;" class="hover-row" onclick="filterHydroByStatus('Remaining')" title="Click để lọc NOT YET (Remaining)">
+                                    <td class="text-start fw-bold ps-2" style="color: #ef6c00;"><i class="fas fa-clock me-1"></i>NOT YET</td>
+                                    <td class="fw-bold text-dark">${tpNotYet.toLocaleString()}</td>
+                                    <td class="fw-bold" style="color: #ef6c00;">${tpNotYetPct}%</td>
+                                    <td class="fw-bold text-dark">${spoolNotYet.toLocaleString()}</td>
+                                    <td class="fw-bold" style="color: #ef6c00;">${spoolNotYetPct}%</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #e9ecef; border-top: 2px solid #37474f;">
+                                    <td class="text-start fw-bold ps-2 text-dark">Grand Total</td>
+                                    <td class="fw-bold text-primary">${sumTP.toLocaleString()}</td>
+                                    <td class="fw-bold text-primary">100.00%</td>
+                                    <td class="fw-bold text-success">${sumSpool.toLocaleString()}</td>
+                                    <td class="fw-bold text-success">100.00%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+            }
+
+            // Pie Chart 1: by Number of TEST PACK
+            if (chartInstances.hydroTpPie) chartInstances.hydroTpPie.destroy();
+            const canvasTpPie = document.getElementById('hydroTpPieChart');
+            if (canvasTpPie) {
+                chartInstances.hydroTpPie = new Chart(canvasTpPie, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Hydrotest Done', 'NOT YET'],
+                        datasets: [{
+                            data: [tpDone, tpNotYet],
+                            backgroundColor: ['#43a047', '#ff9800'],
+                            borderColor: ['#fff', '#fff'],
+                            borderWidth: 2,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 10, font: { size: 9, weight: 'bold' }, padding: 8 }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                font: { weight: 'bold', size: 10 },
+                                formatter: (val, ctx) => {
+                                    const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    if (!sum || !val) return '';
+                                    return (val / sum * 100).toFixed(1) + '%';
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (c) => {
+                                        const val = c.parsed;
+                                        const sum = c.dataset.data.reduce((a, b) => a + b, 0);
+                                        const pct = sum ? (val / sum * 100).toFixed(1) : 0;
+                                        return `${c.label}: ${val.toLocaleString()} packages (${pct}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        onClick: (evt, els) => {
+                            if (!els || !els.length) return;
+                            const target = els[0].index === 0 ? 'Hydrotested' : 'Remaining';
+                            if (typeof filterHydroByStatus === 'function') filterHydroByStatus(target);
+                        }
+                    }
+                });
+            }
+
+            // Pie Chart 2: by Number of SPOOL
+            if (chartInstances.hydroSpoolPie) chartInstances.hydroSpoolPie.destroy();
+            const canvasSpoolPie = document.getElementById('hydroSpoolPieChart');
+            if (canvasSpoolPie) {
+                chartInstances.hydroSpoolPie = new Chart(canvasSpoolPie, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Hydrotest Done', 'NOT YET'],
+                        datasets: [{
+                            data: [spoolDone, spoolNotYet],
+                            backgroundColor: ['#43a047', '#ff9800'],
+                            borderColor: ['#fff', '#fff'],
+                            borderWidth: 2,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 10, font: { size: 9, weight: 'bold' }, padding: 8 }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                font: { weight: 'bold', size: 10 },
+                                formatter: (val, ctx) => {
+                                    const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    if (!sum || !val) return '';
+                                    return (val / sum * 100).toFixed(1) + '%';
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (c) => {
+                                        const val = c.parsed;
+                                        const sum = c.dataset.data.reduce((a, b) => a + b, 0);
+                                        const pct = sum ? (val / sum * 100).toFixed(1) : 0;
+                                        return `${c.label}: ${val.toLocaleString()} spools (${pct}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        onClick: (evt, els) => {
+                            if (!els || !els.length) return;
+                            const target = els[0].index === 0 ? 'Hydrotested' : 'Remaining';
+                            if (typeof filterHydroByStatus === 'function') filterHydroByStatus(target);
+                        }
+                    }
+                });
+            }
         }
 
         window.rebuildHydroCache = function() {
@@ -9411,6 +9627,8 @@
                 };
 
                 let tpIdx = findHeaderIdx(['Test Package No', 'Test Package', 'TestPackage', 'TestPack', 'TP']);
+                let spoolsIdx = findHeaderIdx(['Spools', 'Spool', 'No of Spool', 'No. of Spools']);
+                let jointsIdx = findHeaderIdx(['Joints', 'Joint', 'No of Joint', 'No. of Joints']);
                 let skylineIdx = findHeaderIdx(['Skyline']);
                 let testPlanIdx = findHeaderIdx(['Hydrotest Plan', 'Test Plan', 'Plan Date', 'Plan_Date', 'HydrotestPlan', 'TestPlan', 'Plan']);
                 let statusFabIdx = findHeaderIdx(['Actual Status of Fab', 'Actual Status', 'ActualStatus', 'Status of Fab']);
@@ -9420,6 +9638,8 @@
                 let hydrotestStatusIdx = findHeaderIdx(['CHECK HYDROTEST', 'Check Hydrotest', 'Hydrotest Status', 'Hydro Test Status', 'HydrotestStatus', 'Check Hydro']);
 
                 if (tpIdx === -1) tpIdx = 0;
+                if (spoolsIdx === -1) spoolsIdx = 1; // Cột B (Spools)
+                if (jointsIdx === -1) jointsIdx = 2; // Cột C (Joints)
                 if (skylineIdx === -1) skylineIdx = 14;
                 if (testPlanIdx === -1) testPlanIdx = 14;
                 if (statusFabIdx === -1) statusFabIdx = 19;
@@ -9437,6 +9657,8 @@
                     const tp = (row[tpIdx] || '').toString().trim().toUpperCase();
                     if (!tp) continue;
 
+                    const spools = parseInt(row[spoolsIdx]) || 0;
+                    const jointsCount = parseInt(row[jointsIdx]) || 0;
                     const skylineDate = (row[testPlanIdx] || '').toString().trim();
                     const testPlanDate = (row[testPlanIdx] || '').toString().trim();
                     const statusFab = (row[statusFabIdx] || '').toString().trim();
@@ -9446,6 +9668,8 @@
                     const hydrotestStatus = hydrotestStatusIdx !== -1 ? (row[hydrotestStatusIdx] || '').toString().trim() : '';
 
                     newMap.set(tp, {
+                        spools,
+                        jointsCount,
                         skylineDate,
                         testPlanDate,
                         statusFab,
