@@ -6100,8 +6100,8 @@
                 }
 
                 const isHydrotested = sheetHydroDates.size > 0 
-                    ? (sheetData ? hasRep(sheetData.hydroDate) : false) 
-                    : ((sheetData && hasRep(sheetData.hydroDate)) || (!sheetData && hydroDoneCount > 0));
+                    ? (sheetData ? (hasRep(sheetData.hydroDate) || (sheetData.hydrotestStatus && (sheetData.hydrotestStatus.toLowerCase().includes('done') || sheetData.hydrotestStatus.toLowerCase() === 'hydrotested'))) : false) 
+                    : ((sheetData && (hasRep(sheetData.hydroDate) || (sheetData.hydrotestStatus && (sheetData.hydrotestStatus.toLowerCase().includes('done') || sheetData.hydrotestStatus.toLowerCase() === 'hydrotested')))) || (!sheetData && hydroDoneCount > 0));
 
                 if (isHydrotested) {
                     h.status = 'Hydrotested';
@@ -9395,11 +9395,16 @@
                 const headers = rows[0].map(h => (h || '').toString().trim().toLowerCase());
                 
                 // Tìm index cột bằng danh sách alias — normalize bỏ ký tự đặc biệt, lowercase
-                const findHeaderIdx = (aliases) => {
+                const findHeaderIdx = (aliases, exclude = []) => {
                     const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const exclNorm = exclude.map(e => norm(e));
                     for (const alias of aliases) {
                         const na = norm(alias);
-                        const idx = headers.findIndex(h => norm(h) === na || h.includes(alias.toLowerCase()));
+                        const idx = headers.findIndex(h => {
+                            const nh = norm(h);
+                            if (exclNorm.some(e => nh.includes(e))) return false;
+                            return nh === na || nh.includes(na) || h.includes(alias.toLowerCase());
+                        });
                         if (idx !== -1) return idx;
                     }
                     return -1;
@@ -9408,23 +9413,23 @@
                 let tpIdx = findHeaderIdx(['Test Package No', 'Test Package', 'TestPackage', 'TestPack', 'TP']);
                 let skylineIdx = findHeaderIdx(['Skyline']);
                 let testPlanIdx = findHeaderIdx(['Hydrotest Plan', 'Test Plan', 'Plan Date', 'Plan_Date', 'HydrotestPlan', 'TestPlan', 'Plan']);
-                let statusFabIdx = findHeaderIdx(['Actual Status', 'ActualStatus']);
-                let hydroIdx = findHeaderIdx(['Hydrotested Date', 'Hydrotested', 'Hydrotest Date', 'Hydro Test Date', 'Hydro Date', 'HydroDate']);
+                let statusFabIdx = findHeaderIdx(['Actual Status of Fab', 'Actual Status', 'ActualStatus', 'Status of Fab']);
+                let hydroIdx = findHeaderIdx(['Hydro Test (Input Date)', 'Hydro Test Input Date', 'Hydrotest Input Date', 'Hydrotested Date', 'Hydrotested', 'Hydro Test Date', 'Hydro Date'], ['plan', 'ready']);
                 let systemIdx = findHeaderIdx(['System']);
                 let signP04Idx = findHeaderIdx(['Sign P04A', 'P04A', 'P04', 'SignP04']);
                 let hydrotestStatusIdx = findHeaderIdx(['CHECK HYDROTEST', 'Check Hydrotest', 'Hydrotest Status', 'Hydro Test Status', 'HydrotestStatus', 'Check Hydro']);
 
                 if (tpIdx === -1) tpIdx = 0;
-                if (skylineIdx === -1) skylineIdx = 13;
-                if (testPlanIdx === -1) testPlanIdx = 15;
-                if (statusFabIdx === -1) statusFabIdx = 18;
+                if (skylineIdx === -1) skylineIdx = 14;
+                if (testPlanIdx === -1) testPlanIdx = 14;
+                if (statusFabIdx === -1) statusFabIdx = 19;
                 if (hydroIdx === -1) {
-                    hydroIdx = rows[0].length > 25 ? 25 : -1;
+                    hydroIdx = rows[0].length > 26 ? 26 : -1; // Cột AA (Hydro Test Input Date)
                 }
                 if (signP04Idx === -1) {
-                    signP04Idx = rows[0].length > 26 ? 26 : -1;
+                    signP04Idx = rows[0].length > 27 ? 27 : -1; // Cột AB (Sign P04A Input Date)
                 }
-                if (hydrotestStatusIdx === -1) hydrotestStatusIdx = rows[0].length > 33 ? 33 : -1; // cột AH (CHECK HYDROTEST)
+                if (hydrotestStatusIdx === -1) hydrotestStatusIdx = rows[0].length > 33 ? 33 : -1; // Cột AH (CHECK HYDROTEST)
 
                 const newMap = new Map();
                 for (let i = 1; i < rows.length; i++) {
