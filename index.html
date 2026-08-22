@@ -9393,14 +9393,26 @@
                 }
                 
                 const headers = rows[0].map(h => (h || '').toString().trim().toLowerCase());
-                let tpIdx = headers.findIndex(h => h.includes('test package') || h.includes('testpackage') || h.includes('testpack') || h === 'tp');
-                let skylineIdx = headers.findIndex(h => h.includes('skyline'));
-                let testPlanIdx = headers.findIndex(h => h.includes('test plan') || h.includes('testplan') || h.includes('plan date') || h.includes('plan_date') || h.includes('hydrotest plan') || h.includes('hydrotestplan') || h === 'plan');
-                let statusFabIdx = headers.findIndex(h => h.includes('actual status'));
-                let hydroIdx = headers.findIndex(h => (h.includes('hydro test') || h.includes('hydrotest') || h.includes('hydro date')) && !h.includes('ready'));
-                let systemIdx = headers.findIndex(h => h === 'system');
-                let signP04Idx = headers.findIndex(h => h.includes('sign p04a') || h.includes('p04a') || h.includes('p04'));
-                let hydrotestStatusIdx = headers.findIndex(h => h.includes('hydrotest status') || h.includes('hydro test status'));
+                
+                // Tìm index cột bằng danh sách alias — normalize bỏ ký tự đặc biệt, lowercase
+                const findHeaderIdx = (aliases) => {
+                    const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    for (const alias of aliases) {
+                        const na = norm(alias);
+                        const idx = headers.findIndex(h => norm(h) === na || h.includes(alias.toLowerCase()));
+                        if (idx !== -1) return idx;
+                    }
+                    return -1;
+                };
+
+                let tpIdx = findHeaderIdx(['Test Package No', 'Test Package', 'TestPackage', 'TestPack', 'TP']);
+                let skylineIdx = findHeaderIdx(['Skyline']);
+                let testPlanIdx = findHeaderIdx(['Hydrotest Plan', 'Test Plan', 'Plan Date', 'Plan_Date', 'HydrotestPlan', 'TestPlan', 'Plan']);
+                let statusFabIdx = findHeaderIdx(['Actual Status', 'ActualStatus']);
+                let hydroIdx = findHeaderIdx(['Hydrotested Date', 'Hydrotested', 'Hydrotest Date', 'Hydro Test Date', 'Hydro Date', 'HydroDate']);
+                let systemIdx = findHeaderIdx(['System']);
+                let signP04Idx = findHeaderIdx(['Sign P04A', 'P04A', 'P04', 'SignP04']);
+                let hydrotestStatusIdx = findHeaderIdx(['CHECK HYDROTEST', 'Check Hydrotest', 'Hydrotest Status', 'Hydro Test Status', 'HydrotestStatus', 'Check Hydro']);
 
                 if (tpIdx === -1) tpIdx = 0;
                 if (skylineIdx === -1) skylineIdx = 13;
@@ -9412,7 +9424,7 @@
                 if (signP04Idx === -1) {
                     signP04Idx = rows[0].length > 26 ? 26 : -1;
                 }
-                if (hydrotestStatusIdx === -1) hydrotestStatusIdx = rows[0].length > 32 ? 32 : -1; // cột AG (HYDROTEST STATUS)
+                if (hydrotestStatusIdx === -1) hydrotestStatusIdx = rows[0].length > 33 ? 33 : -1; // cột AH (CHECK HYDROTEST)
 
                 const newMap = new Map();
                 for (let i = 1; i < rows.length; i++) {
