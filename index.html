@@ -1709,6 +1709,8 @@
                             <option value="BW">BW</option>
                             <option value="SW">SW</option>
                             <option value="FW">FW</option>
+                            <option value="BRW">BRW</option>
+                            <option value="TJ">TJ</option>
                             <option value="DEL">DEL</option>
                         </select>
                         <!-- Date filter -->
@@ -5966,16 +5968,15 @@
                 if(d.location) hMap[targetK].locations.add(d.location.toString().trim());
                 if(d.jointRem) hMap[targetK].remarks.add(d.jointRem.toString().trim());
 
-                if (wtClass !== 'DEL' && wtClass !== 'FW') {
+                if (wtClass === 'BW') {
                     if (!hMap[targetK].lineStats) hMap[targetK].lineStats = {};
                     const lName = (d.line || 'UNKNOWN').toString().trim();
                     if (!hMap[targetK].lineStats[lName]) hMap[targetK].lineStats[lName] = { actual: 0, rtSelect: 0, mtSelect: 0 };
                     hMap[targetK].lineStats[lName].actual++;
                     
                     const rule = matrixMap.get(d.system + '|' + d.spec) || DEFAULT_RULE;
-                    let rtPct = 0, mtPct = 0;
-                    if (wtClass === 'BW') { rtPct = rule.rtBw || 0; mtPct = rule.mtBw || 0; }
-                    else if (wtClass === 'SW') { mtPct = rule.mtSw || 0; }
+                    const rtPct = rule.rtBw || 0;
+                    const mtPct = rule.mtBw || 0;
                     
                     hMap[targetK].rtPct = Math.max(hMap[targetK].rtPct || 0, rtPct);
                     hMap[targetK].mtPct = Math.max(hMap[targetK].mtPct || 0, mtPct);
@@ -6073,7 +6074,7 @@
                         if(d.ptRes==='REJ') rejMethods.push('PT');
                         h.pendingSummary.push(`${d.joint}: REPAIR(${rejMethods.join('/')})`);
                     } else if(isPend) {
-                        if (!isFW) {
+                        if (!['FW', 'BRW', 'TJ', 'SW'].includes(j.wtClass)) {
                             h.p++;
                             let m = [];
                             if(d.reqRT && !d.hasRT) m.push('RT');
@@ -6083,7 +6084,7 @@
                             h.pendingSummary.push(`${d.joint}: PEND(${m.join('/')})`);
                         } else {
                             h.d++;
-                            h.pendingSummary.push(`${d.joint}: PEND(FW)`);
+                            h.pendingSummary.push(`${d.joint}: PEND(${j.wtClass})`);
                         }
                     } else {
                         h.d++;
@@ -9954,12 +9955,13 @@
 
         function classifyWeldType(wt) {
             const w = (wt || '').toUpperCase().trim();
-            // Phân loại BRW (Branch Weld) vào nhóm BW (Butt Weld) để áp dụng quy tắc RT% chính xác
-            if (w === 'BW' || w === 'BRW' || w.includes('BUTT')) return 'BW'; 
-            if (w === 'SW' || w.includes('BRANCH') || w.includes('SOCKET') || w === 'TW' || w.includes('BOS') || w.includes('WOL')) return 'SW';
+            if (w === 'BW' || w.includes('BUTT')) return 'BW'; 
+            if (w === 'SW' || w.includes('SOCKET') || w === 'TW' || w.includes('BOS') || w.includes('WOL')) return 'SW';
             if (w === 'FW' || w.includes('FILLET') || w.includes('ATTACH') || w.includes('SUPPORT') || w === 'AW' || w === 'PAD') return 'FW';
+            if (w === 'BRW' || w.includes('BRANCH')) return 'BRW';
+            if (w === 'TJ' || w.includes('TEE') || w === 'T-JOINT') return 'TJ';
             if (w === 'DEL') return 'DEL';
-            return 'BW';
+            return w || 'BW';
         }
 
         function getJointBaseAndLevel(jointStr) {
@@ -10445,35 +10447,38 @@
                 
                 // Kiểm tra xem có mối hàn nào bị lỗi REJ mà chưa được sửa chữa thành công hay không
                 let hasUnrepairedRej = false;
-                if (['BW', 'SW'].includes(g.wtClass)) {
+                if (['BW', 'SW', 'FW', 'BRW', 'TJ'].includes(g.wtClass)) {
                     hasUnrepairedRej = g.rawJoints.some(d => {
                         const wtClass = classifyWeldType(d.weldType);
                         if (wtClass === 'DEL') return false;
                         
-                        const methods = ['rtRes', 'pautRes', 'mtRes', 'ptRes'];
-                        return methods.some(m => {
-                            if (d[m] !== 'REJ') return false;
-                            
-                            const targetJointName = (d.joint || '').toString().trim() + '#R1';
-                            const isRepaired = g.rawJoints.some(other => {
-                                const sameDwg = (other.dwg || '').toString().trim().toUpperCase() === (d.dwg || '').toString().trim().toUpperCase();
-                                const sameSpool = (other.spool || '').toString().trim().toUpperCase() === (d.spool || '').toString().trim().toUpperCase();
-                                const otherJointName = (other.joint || '').toString().trim();
-                                const isRepairJoint = otherJointName === targetJointName || otherJointName.startsWith(targetJointName);
-                                return sameDwg && sameSpool && isRepairJoint && other[m] === 'ACC';
-                            });
-                            
-                            return !isRepaired;
-                        });
+                        let repCheck = checkJointRepairStatus(d, g.rawJoints);
+                        if (repCheck.isRej && Array.isArray(data)) {
+                            const dSpool = (d.spool || '').toString().trim().toUpperCase();
+                            const dDwg = (d.dwg || '').toString().trim().toUpperCase();
+                            const sameSpoolJoints = data.filter(other => 
+                                (dSpool && (other.spool || '').toString().trim().toUpperCase() === dSpool) ||
+                                (dDwg && (other.dwg || '').toString().trim().toUpperCase() === dDwg)
+                            );
+                            if (sameSpoolJoints.length > 0) {
+                                repCheck = checkJointRepairStatus(d, sameSpoolJoints);
+                            }
+                        }
+                        return repCheck.isRej;
                     });
                 }
 
-                // Compliance: rtFinal >= 100 AND mtFinal >= 100 (or N/A), AND every individual line passed, AND no active unrepaired NDT rejects
-                // Only evaluate BW, SW for compliance. DEL (deleted welds) and FW (support welds) are ignored.
-                if (['BW', 'SW'].includes(g.wtClass)) {
+                // Compliance:
+                // - BW (Butt Welds): rtFinal >= 100 AND mtFinal >= 100 (hoặc N/A), tất cả các line con đạt chỉ tiêu, VÀ không còn mối REJ chưa sửa
+                // - FW, BRW, TJ, SW: Mặc định nếu chưa làm NDT thì vẫn tính là Compliance để kiểm tra hydrotest.
+                //   Chỉ non-compliant nếu có mối bị lỗi REJ mà chưa repair/reweld đạt ACC!
+                // - DEL (mối đã xóa): Bỏ qua
+                if (g.wtClass === 'BW') {
                     g.isCompliant = !hasUnrepairedRej && linesAllCompliant && (g.rtFinal === -1 || g.rtFinal >= 100) && (g.mtFinal === -1 || g.mtFinal >= 100);
+                } else if (['FW', 'BRW', 'TJ', 'SW'].includes(g.wtClass)) {
+                    g.isCompliant = !hasUnrepairedRej;
                 } else {
-                    g.isCompliant = true; // Does not fail the Test Package
+                    g.isCompliant = true; // DEL hoặc loại khác
                 }
             });
 
@@ -10549,7 +10554,7 @@
             let compBadge = '', bgClass = '', eyeBtn = '';
 
             if (isDetailView) {
-                const lineNotOk = (g.rtFinal !== -1 && g.rtFinal < 100) || (g.mtFinal !== -1 && g.mtFinal < 100);
+                const lineNotOk = !g.isCompliant;
                 bgClass = lineNotOk ? 'ndr-line-incomplete' : 'ndr-line-ok';
                 if (isFirstRow && tpKey) {
                     eyeBtn = `<button class="ndr-eye-btn" onclick="event.stopPropagation();ndrShowJointDetail('${encHtml(tpKey)}','${encHtml(g.key)}')" title="Xem chi tiết Joint"><i class="fas fa-eye"></i> Detail</button>`;
@@ -11139,40 +11144,78 @@
             joints.forEach((d, i) => {
                 const rule = matrixMap.get(d.system + '|' + d.spec) || DEFAULT_RULE;
                 const wtc = classifyWeldType(d.weldType);
-                const needsRT = (wtc === 'BW' || wtc === 'DEL') && (rule.rtBw || 0) > 0;
+                const needsRT = (wtc === 'BW') && (rule.rtBw || 0) > 0;
                 const needsMT = (rule.mtBw || rule.mtSw || rule.mtFw || 0) > 0;
 
-                // Kiểm tra xem tất cả các phương pháp bị lỗi REJ của joint này có được sửa bởi joint #R1 đạt ACC hay không
-                let allRepaired = false;
-                const rejMethods = [];
-                if (d.rtRes === 'REJ') rejMethods.push('rtRes');
-                if (d.pautRes === 'REJ') rejMethods.push('pautRes');
-                if (d.mtRes === 'REJ') rejMethods.push('mtRes');
-                if (d.ptRes === 'REJ') rejMethods.push('ptRes');
-                
-                if (rejMethods.length > 0) {
-                    const targetJointName = (d.joint || '').toString().trim() + '#R1';
-                    allRepaired = rejMethods.every(m => {
-                        return joints.some(other => {
-                            const sameSpool = (other.spool || '').toString().trim() === (d.spool || '').toString().trim();
-                            const otherJointName = (other.joint || '').toString().trim();
-                            const isRepairJoint = otherJointName === targetJointName || otherJointName.startsWith(targetJointName);
-                            return sameSpool && isRepairJoint && other[m] === 'ACC';
-                        });
-                    });
+                const spoolUpper = (d.spool || '').toString().trim().toUpperCase();
+                const dwgUpper = (d.dwg || '').toString().trim().toUpperCase();
+
+                // Kiểm tra trạng thái sửa chữa (Repair / Reweld) đạt ACC
+                let candidatePool = joints;
+                let repInfo = checkJointRepairStatus(d, candidatePool);
+                if (repInfo.isRej && typeof filteredData !== 'undefined') {
+                    const broaderPool = filteredData.filter(other => 
+                        (spoolUpper && (other.spool || '').toString().trim().toUpperCase() === spoolUpper) ||
+                        (dwgUpper && (other.dwg || '').toString().trim().toUpperCase() === dwgUpper)
+                    );
+                    if (broaderPool.length > 0) {
+                        const broaderRep = checkJointRepairStatus(d, broaderPool);
+                        if (broaderRep.isRepaired) {
+                            repInfo = broaderRep;
+                            candidatePool = broaderPool;
+                        }
+                    }
                 }
 
-                const isRej = rejMethods.length > 0 && !allRepaired;
-                const isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT)) || (rejMethods.length > 0 && allRepaired);
+                const rtRepJoint = findMethodRepair(d.joint, 'rtRes', candidatePool, spoolUpper, dwgUpper);
+                const pautRepJoint = findMethodRepair(d.joint, 'pautRes', candidatePool, spoolUpper, dwgUpper);
+                const mtRepJoint = findMethodRepair(d.joint, 'mtRes', candidatePool, spoolUpper, dwgUpper);
+                const ptRepJoint = findMethodRepair(d.joint, 'ptRes', candidatePool, spoolUpper, dwgUpper);
+
+                const renderMethodBadge = (res, repJoint) => {
+                    if (res === 'REJ') {
+                        if (repJoint) {
+                            return `<span class="badge bg-success" style="font-size:0.62rem;" title="Repaired ACC via ${repJoint}"><i class="fas fa-tools me-1"></i>ACC (qua ${repJoint})</span>`;
+                        }
+                        return '<span class="badge bg-danger">REJ</span>';
+                    }
+                    if (res === 'ACC') return '<span class="badge bg-success">ACC</span>';
+                    if (res === 'RS') return '<span class="badge bg-warning text-dark">RS</span>';
+                    return '<span class="badge bg-secondary" style="opacity:.5">-</span>';
+                };
+
+                const isRej = repInfo.isRej;
+                const isRepaired = repInfo.isRepaired;
+                const isOtherWeldType = ['FW', 'BRW', 'TJ', 'SW'].includes(wtc);
+
+                let isDone = false;
+                if (isRepaired) {
+                    isDone = true;
+                } else if (isOtherWeldType && !isRej) {
+                    isDone = true; // FW, BRW, TJ, SW mặc định là compliant khi chưa có lỗi REJ
+                } else if (wtc === 'DEL') {
+                    isDone = true;
+                } else {
+                    isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT));
+                }
                 const isPend = !isDone && !isRej;
 
-                if (isRej) repair++; else if (isPend) pending++; else done++;
+                if (isRej) repair++; 
+                else if (isPend) pending++; 
+                else done++;
 
                 const rowCls = isRej ? 'table-danger' : (isPend ? 'table-warning' : 'table-success bg-opacity-25');
-                const stBadge = isRej
-                    ? '<span class="badge bg-danger"><i class="fas fa-wrench me-1"></i>REPAIR</span>'
-                    : (isPend ? '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>PENDING</span>'
-                              : '<span class="badge bg-success"><i class="fas fa-check me-1"></i>DONE</span>');
+                
+                let stBadge = '';
+                if (isRej) {
+                    stBadge = '<span class="badge bg-danger"><i class="fas fa-wrench me-1"></i>REPAIR</span>';
+                } else if (isRepaired) {
+                    stBadge = `<span class="badge bg-success"><i class="fas fa-check-double me-1"></i>DONE (sửa ${repInfo.repairJoint})</span>`;
+                } else if (isPend) {
+                    stBadge = '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>PENDING</span>';
+                } else {
+                    stBadge = '<span class="badge bg-success"><i class="fas fa-check me-1"></i>DONE</span>';
+                }
 
                 rows += `<tr class="${rowCls}">
                     <td class="text-muted">${i+1}</td>
@@ -11182,14 +11225,14 @@
                     <td>${d.size || '-'}</td>
                     <td>${d.thick || '-'}</td>
                     <td>${d.mat || '-'}</td>
-                    <td>${badge(d.rtRes)}</td>
-                    <td>${badge(d.pautRes)}</td>
-                    <td>${badge(d.mtRes)}</td>
-                    <td>${badge(d.ptRes)}</td>
-                    <td>${badge(d.pwhtRes)}</td>
-                    <td>${badge(d.pmiRep ? 'ACC' : '')}</td>
-                    <td>${badge(d.hardnessRep ? 'ACC' : '')}</td>
-                    <td>${badge(d.ferriteRep ? 'ACC' : '')}</td>
+                    <td>${renderMethodBadge(d.rtRes, rtRepJoint)}</td>
+                    <td>${renderMethodBadge(d.pautRes, pautRepJoint)}</td>
+                    <td>${renderMethodBadge(d.mtRes, mtRepJoint)}</td>
+                    <td>${renderMethodBadge(d.ptRes, ptRepJoint)}</td>
+                    <td>${renderMethodBadge(d.pwhtRes, null)}</td>
+                    <td>${(d.pmiRep ? '<span class="badge bg-success">ACC</span>' : '<span class="badge bg-secondary" style="opacity:.5">-</span>')}</td>
+                    <td>${(d.hardnessRep ? '<span class="badge bg-success">ACC</span>' : '<span class="badge bg-secondary" style="opacity:.5">-</span>')}</td>
+                    <td>${(d.ferriteRep ? '<span class="badge bg-success">ACC</span>' : '<span class="badge bg-secondary" style="opacity:.5">-</span>')}</td>
                     <td>${stBadge}</td>
                     <td title="${(d.location||'-').replace(/"/g,'&quot;')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.location || '-'}</td>
                     <td title="${(d.jointRem||'-').replace(/"/g,'&quot;')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.75rem;">${d.jointRem || '-'}</td>
@@ -11243,13 +11286,37 @@
                 const matrixMap = new Map(FULL_MATRIX.map(m => [m.sys + '|' + m.spec, m]));
                 const rule = matrixMap.get(d.system + '|' + d.spec) || DEFAULT_RULE;
                 const wtc = classifyWeldType(d.weldType);
-                const needsRT = (wtc === 'BW' || wtc === 'DEL') && (rule.rtBw || 0) > 0;
-                const needsMT = (rule.mtBw || rule.mtSw || rule.mtFw || 0) > 0;
+                if (wtc === 'DEL') return false;
 
+                const spoolUpper = (d.spool || '').toString().trim().toUpperCase();
+                const dwgUpper = (d.dwg || '').toString().trim().toUpperCase();
+
+                let candidatePool = joints;
+                let repInfo = checkJointRepairStatus(d, candidatePool);
+                if (repInfo.isRej && typeof filteredData !== 'undefined') {
+                    const broaderPool = filteredData.filter(other => 
+                        (spoolUpper && (other.spool || '').toString().trim().toUpperCase() === spoolUpper) ||
+                        (dwgUpper && (other.dwg || '').toString().trim().toUpperCase() === dwgUpper)
+                    );
+                    if (broaderPool.length > 0) {
+                        const broaderRep = checkJointRepairStatus(d, broaderPool);
+                        if (broaderRep.isRepaired) {
+                            repInfo = broaderRep;
+                            candidatePool = broaderPool;
+                        }
+                    }
+                }
+
+                if (repInfo.isRepaired) return false; // Đã sửa xong ACC
+                if (repInfo.isRej) return true; // Lỗi REJ chưa sửa
+
+                // FW, BRW, TJ, SW mặc định là compliant (không tính là pending)
+                if (['FW', 'BRW', 'TJ', 'SW'].includes(wtc)) return false;
+
+                const needsRT = (wtc === 'BW') && (rule.rtBw || 0) > 0;
+                const needsMT = (rule.mtBw || rule.mtSw || rule.mtFw || 0) > 0;
                 const isDone = (d.rtRes === 'ACC' || d.pautRes === 'ACC') || (!needsRT && (d.mtRes === 'ACC' || !needsMT));
-                const isRej  = (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ');
-                const isPend = !isDone && !isRej;
-                return isPend || isRej;
+                return !isDone;
             });
 
             if (pendingJoints.length === 0) {
@@ -11288,7 +11355,39 @@
             });
 
             pendingJoints.forEach((d, idx) => {
-                const isRej  = (d.rtRes === 'REJ' || d.pautRes === 'REJ' || d.mtRes === 'REJ' || d.ptRes === 'REJ');
+                const spoolUpper = (d.spool || '').toString().trim().toUpperCase();
+                const dwgUpper = (d.dwg || '').toString().trim().toUpperCase();
+
+                let candidatePool = joints;
+                let repInfo = checkJointRepairStatus(d, candidatePool);
+                if (repInfo.isRej && typeof filteredData !== 'undefined') {
+                    const broaderPool = filteredData.filter(other => 
+                        (spoolUpper && (other.spool || '').toString().trim().toUpperCase() === spoolUpper) ||
+                        (dwgUpper && (other.dwg || '').toString().trim().toUpperCase() === dwgUpper)
+                    );
+                    if (broaderPool.length > 0) {
+                        const broaderRep = checkJointRepairStatus(d, broaderPool);
+                        if (broaderRep.isRepaired) {
+                            repInfo = broaderRep;
+                            candidatePool = broaderPool;
+                        }
+                    }
+                }
+
+                const rtRepJoint = findMethodRepair(d.joint, 'rtRes', candidatePool, spoolUpper, dwgUpper);
+                const pautRepJoint = findMethodRepair(d.joint, 'pautRes', candidatePool, spoolUpper, dwgUpper);
+                const mtRepJoint = findMethodRepair(d.joint, 'mtRes', candidatePool, spoolUpper, dwgUpper);
+                const ptRepJoint = findMethodRepair(d.joint, 'ptRes', candidatePool, spoolUpper, dwgUpper);
+
+                const getExportMethodVal = (res, repJoint) => {
+                    if (res === 'REJ') {
+                        if (repJoint) return `ACC (qua ${repJoint})`;
+                        return 'REJ';
+                    }
+                    return res || '-';
+                };
+
+                const isRej = repInfo.isRej;
                 const statusText = isRej ? 'REPAIR' : 'PENDING';
 
                 const row = ws.addRow([
@@ -11299,10 +11398,10 @@
                     d.size || '-',
                     d.thick || '-',
                     d.mat || '-',
-                    d.rtRes || '-',
-                    d.pautRes || '-',
-                    d.mtRes || '-',
-                    d.ptRes || '-',
+                    getExportMethodVal(d.rtRes, rtRepJoint),
+                    getExportMethodVal(d.pautRes, pautRepJoint),
+                    getExportMethodVal(d.mtRes, mtRepJoint),
+                    getExportMethodVal(d.ptRes, ptRepJoint),
                     d.pwhtRes || '-',
                     d.pmiRep ? 'ACC' : '-',
                     d.hardnessRep ? 'ACC' : '-',
@@ -11317,7 +11416,7 @@
 
                     if (col >= 8 && col <= 15) {
                         const val = cell.value;
-                        if (val === 'ACC' || val === 'OK') {
+                        if (typeof val === 'string' && (val.includes('ACC') || val === 'OK')) {
                             cell.fill = hFill('FFD4EDDA');
                             cell.font = { bold: true, size: 9, color: { argb: 'FF0F5132' } };
                         } else if (val === 'REJ') {
@@ -11340,8 +11439,8 @@
 
             ws.columns = [
                 {width: 5}, {width: 14}, {width: 14}, {width: 12}, {width: 8}, {width: 8}, {width: 12},
-                {width: 8}, {width: 8}, {width: 8}, {width: 8}, {width: 8}, {width: 8}, {width: 10}, {width: 10},
-                {width: 12}, {width: 25}
+                {width: 14}, {width: 14}, {width: 14}, {width: 14}, {width: 8}, {width: 8}, {width: 10}, {width: 10},
+                {width: 14}, {width: 25}
             ];
 
             const buffer = await wb.xlsx.writeBuffer();
