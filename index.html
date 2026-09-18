@@ -1585,7 +1585,7 @@
                     </div>
                     <div class="table-detail-container sticky-vh-65">
                         <table class="table-detail" id="hydroTable">
-                            <thead>
+                            <thead id="hydroThead">
                                 <tr>
                                     <th class="hydro-sticky-col hydro-sticky-col-0" style="width:40px;">No.</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-1 sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:100px;">Hydrotested Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
@@ -1613,11 +1613,45 @@
                                     <th style="width:60px; text-align: center;">PWHT</th>
                                     <th style="min-width:150px;">Hydrotest Status</th>
                                     <th style="min-width:220px;">Actual Status</th>
+                                    <!-- New sign-off columns -->
+                                    <th style="min-width:110px; background:#e3f2fd; color:#1565c0; font-size:0.65rem; white-space:nowrap;" title="Line check / Punch list / FJ Register (Input Date)">Line Check<br><span style="font-weight:400;">(Punch/FJ)</span></th>
+                                    <th style="min-width:105px; background:#e3f2fd; color:#1565c0; font-size:0.65rem; white-space:nowrap;" title="Sign P02A (Input Date)">Sign P02A</th>
+                                    <th style="min-width:105px; background:#e8f5e9; color:#2e7d32; font-size:0.65rem; white-space:nowrap;" title="Flushing (Input Date)">Flushing</th>
+                                    <th style="min-width:105px; background:#e8f5e9; color:#2e7d32; font-size:0.65rem; white-space:nowrap;" title="Sign P03A (Input Date)">Sign P03A</th>
+                                    <th style="min-width:105px; background:#fff3e0; color:#e65100; font-size:0.65rem; white-space:nowrap;" title="Hydro Test (Input Date)">Hydro Test</th>
+                                    <th style="min-width:105px; background:#fff3e0; color:#e65100; font-size:0.65rem; white-space:nowrap;" title="Sign P04A (Input Date)">Sign P04A</th>
+                                    <th style="min-width:105px; background:#fce4ec; color:#880e4f; font-size:0.65rem; white-space:nowrap;" title="Bolting Completion (Input Date)">Bolting</th>
+                                    <th style="min-width:105px; background:#fce4ec; color:#880e4f; font-size:0.65rem; white-space:nowrap;" title="Re-instatement (Input Date)">Re-instate</th>
+                                    <th style="min-width:105px; background:#f3e5f5; color:#6a1b9a; font-size:0.65rem; white-space:nowrap;" title="Sign P05A (Input Date)">Sign P05A</th>
+                                    <th style="min-width:105px; background:#f3e5f5; color:#6a1b9a; font-size:0.65rem; white-space:nowrap;" title="Sign P06A (Input Date)">Sign P06A</th>
+                                    <th style="min-width:105px; background:#e8eaf6; color:#283593; font-size:0.65rem; white-space:nowrap;" title="Sign P07A (Input Date)">Sign P07A</th>
                                     <th style="width:120px;">Location</th>
                                     <th style="min-width:120px;">TV</th>
                                 </tr>
+                                <!-- Row lọc theo cột -->
+                                <tr id="hydroColFilterRow" style="background: #f8f9fa;">
+                                    <td colspan="5" class="hydro-sticky-col hydro-sticky-col-0" style="padding:2px 4px; min-width:490px; left:0;"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:90px;" placeholder="Line..." data-col="line" oninput="applyHydroColFilter()"></td>
+                                    <td colspan="18" style="padding:2px 4px;"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="HTest Status..." data-col="hydrotestStatus" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:100px;" placeholder="Actual Status..." data-col="actualStatus" oninput="applyHydroColFilter()"></td>
+                                    <!-- New sign-off col filters -->
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="Line Check..." data-col="lineCheckDate" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="P02A..." data-col="signP02Date" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="Flush..." data-col="flushingDate" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="P03A..." data-col="signP03Date" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="Hydro..." data-col="dateStr" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="P04A..." data-col="signP04Date" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="Bolting..." data-col="boltingDate" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="Re-inst..." data-col="reinstateDate" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="P05A..." data-col="signP05Date" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="P06A..." data-col="signP06Date" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="P07A..." data-col="signP07Date" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"><input type="text" class="hydro-col-filter form-control form-control-sm py-0" style="font-size:0.65rem; min-width:80px;" placeholder="Location..." data-col="location" oninput="applyHydroColFilter()"></td>
+                                    <td style="padding:2px 4px;"></td>
+                                </tr>
                             </thead>
-                            <tbody id="hydroBody"><tr><td colspan="28" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
+                            <tbody id="hydroBody"><tr><td colspan="39" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
                             <tfoot id="hydroTfoot"></tfoot>
                         </table>
                     </div>
@@ -5794,9 +5828,18 @@
                         t: 0, d: 0, p: 0, r: 0, spools: new Set(), lines: new Set(), locations: new Set(), remarks: new Set(), jointMap: {},
                         actualStatus: value.statusFab || '',
                         hydrotestStatus: value.hydrotestStatus || '',
-                        signP04Date: value.signP04Date || '',
                         spoolsCount: value.spools || 0,
-                        jointsCount: value.jointsCount || 0
+                        jointsCount: value.jointsCount || 0,
+                        lineCheckDate: value.lineCheckDate || '',
+                        signP02Date:   value.signP02Date || '',
+                        flushingDate:  value.flushingDate || '',
+                        signP03Date:   value.signP03Date || '',
+                        signP04Date:   value.signP04Date || '',
+                        boltingDate:   value.boltingDate || '',
+                        reinstateDate: value.reinstateDate || '',
+                        signP05Date:   value.signP05Date || '',
+                        signP06Date:   value.signP06Date || '',
+                        signP07Date:   value.signP07Date || ''
                     };
                 });
             }
@@ -6127,15 +6170,36 @@
                     if (sheetData.system && sheetData.system !== '-' && sheetData.system !== '') {
                         h.sys = sheetData.system;
                     }
-                    h.actualStatus = sheetData.statusFab || '';
+                    h.actualStatus    = sheetData.statusFab || '';
                     h.hydrotestStatus = sheetData.hydrotestStatus || '';
-                    h.spoolsCount = sheetData.spools || Array.from(h.spools).length || 0;
-                    h.jointsCount = sheetData.jointsCount || h.weldingJoints || 0;
+                    h.spoolsCount     = sheetData.spools || Array.from(h.spools).length || 0;
+                    h.jointsCount     = sheetData.jointsCount || h.weldingJoints || 0;
+                    // New sign-off columns
+                    h.lineCheckDate   = sheetData.lineCheckDate  || '';
+                    h.signP02Date     = sheetData.signP02Date    || '';
+                    h.flushingDate    = sheetData.flushingDate   || '';
+                    h.signP03Date     = sheetData.signP03Date    || '';
+                    h.signP04Date     = sheetData.signP04Date    || '';
+                    h.boltingDate     = sheetData.boltingDate    || '';
+                    h.reinstateDate   = sheetData.reinstateDate  || '';
+                    h.signP05Date     = sheetData.signP05Date    || '';
+                    h.signP06Date     = sheetData.signP06Date    || '';
+                    h.signP07Date     = sheetData.signP07Date    || '';
                 } else {
-                    h.actualStatus = '';
+                    h.actualStatus    = '';
                     h.hydrotestStatus = '';
-                    h.spoolsCount = Array.from(h.spools).length || 0;
-                    h.jointsCount = h.weldingJoints || 0;
+                    h.spoolsCount     = Array.from(h.spools).length || 0;
+                    h.jointsCount     = h.weldingJoints || 0;
+                    h.lineCheckDate   = '';
+                    h.signP02Date     = '';
+                    h.flushingDate    = '';
+                    h.signP03Date     = '';
+                    h.signP04Date     = '';
+                    h.boltingDate     = '';
+                    h.reinstateDate   = '';
+                    h.signP05Date     = '';
+                    h.signP06Date     = '';
+                    h.signP07Date     = '';
                 }
 
                 const isHydrotested = sheetHydroDates.size > 0 
@@ -6261,6 +6325,18 @@
 
                 <td class="text-start fw-bold" style="font-size:0.68rem; white-space:normal; word-wrap:break-word;">${h.hydrotestStatus || '-'}</td>
                 <td class="text-start" style="font-size:0.65rem; white-space:normal; word-wrap:break-word;">${h.actualStatus}</td>
+                <!-- New sign-off date columns -->
+                <td class="text-center" style="font-size:0.65rem; background:#f0f7ff; ${h.lineCheckDate ? 'color:#1565c0; font-weight:600;' : 'color:#aaa;'}">${h.lineCheckDate || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#f0f7ff; ${h.signP02Date ? 'color:#1565c0; font-weight:600;' : 'color:#aaa;'}">${h.signP02Date || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#f0fff4; ${h.flushingDate ? 'color:#2e7d32; font-weight:600;' : 'color:#aaa;'}">${h.flushingDate || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#f0fff4; ${h.signP03Date ? 'color:#2e7d32; font-weight:600;' : 'color:#aaa;'}">${h.signP03Date || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#fffaf0; ${h.dateStr && h.dateStr !== 'TBA' && h.dateStr !== '-' ? 'color:#e65100; font-weight:600;' : 'color:#aaa;'}">${h.dateStr && h.dateStr !== 'TBA' ? h.dateStr : '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#fffaf0; ${h.signP04Date ? 'color:#e65100; font-weight:600;' : 'color:#aaa;'}">${h.signP04Date || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#fff5f8; ${h.boltingDate ? 'color:#880e4f; font-weight:600;' : 'color:#aaa;'}">${h.boltingDate || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#fff5f8; ${h.reinstateDate ? 'color:#880e4f; font-weight:600;' : 'color:#aaa;'}">${h.reinstateDate || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#fdf5ff; ${h.signP05Date ? 'color:#6a1b9a; font-weight:600;' : 'color:#aaa;'}">${h.signP05Date || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#fdf5ff; ${h.signP06Date ? 'color:#6a1b9a; font-weight:600;' : 'color:#aaa;'}">${h.signP06Date || '-'}</td>
+                <td class="text-center" style="font-size:0.65rem; background:#f5f5ff; ${h.signP07Date ? 'color:#283593; font-weight:600;' : 'color:#aaa;'}">${h.signP07Date || '-'}</td>
                 <td title="${encHtml(h.locations ? Array.from(h.locations).join(', ') : '-')}" style="max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.7rem;">${h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-'}</td>
                 <td title="${encHtml(h.remarks ? Array.from(h.remarks).join('; ') : '-')}" style="max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.65rem;">${h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-'}</td>
             </tr>`;
@@ -6331,7 +6407,7 @@
                 <td class="text-center">${totals.rtAcc}</td>
                 <td class="text-center">${totals.pautReq}</td>
                 <td class="text-center">${totals.pautAcc}</td>
-                <td colspan="12"></td>
+                <td colspan="23"></td>
             </tr>`;
 
             updateHydroCharts(chartList || displayedItems, totals);
@@ -6677,11 +6753,31 @@
             }
         };
 
+        // === Lọc theo cột (Column Header Filter) ===
+        window._hydroColFilters = {};
+
+        window.applyHydroColFilter = function() {
+            const inputs = document.querySelectorAll('.hydro-col-filter');
+            window._hydroColFilters = {};
+            inputs.forEach(inp => {
+                const col = inp.getAttribute('data-col');
+                const val = inp.value.toLowerCase().trim();
+                if (col && val) window._hydroColFilters[col] = val;
+            });
+            renderHydro();
+        };
+
+        window.clearHydroColFilters = function() {
+            document.querySelectorAll('.hydro-col-filter').forEach(inp => inp.value = '');
+            window._hydroColFilters = {};
+            renderHydro();
+        };
+
         function renderHydro() {
             const tbody = document.getElementById('hydroBody');
             try {
             if(hydroPlanData.length === 0 && filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="28" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="39" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
                 return;
             }
 
@@ -6788,17 +6884,29 @@
             };
             const displayed = [];
             let _hi = 0;
-            const finalHtml = sorted.filter(matchHydroStatus).map((h) => {
+            const _cf = window._hydroColFilters || {};
+            const hasCf = Object.keys(_cf).length > 0;
+            const finalHtml = sorted.filter(matchHydroStatus).filter(h => {
+                if (!hasCf) return true;
+                // Lọc theo cột: each filter key maps to an h property
+                return Object.entries(_cf).every(([col, val]) => {
+                    let fieldVal = '';
+                    if (col === 'line') fieldVal = (h.line || '').toLowerCase();
+                    else if (col === 'location') fieldVal = h.locations ? Array.from(h.locations).join(', ').toLowerCase() : '';
+                    else fieldVal = (h[col] || '').toLowerCase();
+                    return fieldVal.includes(val);
+                });
+            }).map((h) => {
                 displayed.push(h);
                 return generateHydroRowHtml(h, _hi++, true);
             }).join('');
 
-            tbody.innerHTML = (displayed.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
+            tbody.innerHTML = (displayed.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="39" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
             renderHydroTfoot(displayed, sorted);
             window.lastFilteredHydroList = displayed;
             } catch(e) {
                 console.error(e);
-                tbody.innerHTML = `<tr><td colspan="28" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="39" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
             }
         }
 
@@ -8183,7 +8291,7 @@
             });
 
             tbody.innerHTML = filtered.length === 0 
-                ? '<tr><td colspan="28" class="text-center py-4 text-muted small">Không tìm thấy Test Package / Line matching trong dữ liệu</td></tr>'
+                ? '<tr><td colspan="39" class="text-center py-4 text-muted small">Không tìm thấy Test Package / Line matching trong dữ liệu</td></tr>'
                 : filtered.map((h, i) => {
                     return generateHydroRowHtml(h, i, false);
                 }).join('');
@@ -9634,7 +9742,17 @@
                 let statusFabIdx = findHeaderIdx(['Actual Status of Fab', 'Actual Status', 'ActualStatus', 'Status of Fab']);
                 let hydroIdx = findHeaderIdx(['Hydro Test (Input Date)', 'Hydro Test Input Date', 'Hydrotest Input Date', 'Hydrotested Date', 'Hydrotested', 'Hydro Test Date', 'Hydro Date'], ['plan', 'ready']);
                 let systemIdx = findHeaderIdx(['System']);
-                let signP04Idx = findHeaderIdx(['Sign P04A', 'P04A', 'P04', 'SignP04']);
+                // New sign-off columns
+                let lineCheckIdx = findHeaderIdx(['Line check', 'Line Check Issue', 'FJ Register', 'Punch list Issue FJ', 'Line Check Punch']);
+                let signP02Idx   = findHeaderIdx(['Sign P02A', 'P02A', 'SignP02']);
+                let flushingIdx  = findHeaderIdx(['Flushing']);
+                let signP03Idx   = findHeaderIdx(['Sign P03A', 'P03A', 'SignP03']);
+                let signP04Idx   = findHeaderIdx(['Sign P04A', 'P04A', 'P04', 'SignP04']);
+                let boltingIdx   = findHeaderIdx(['Bolting Completion', 'Bolting', 'Bolting Complete', 'BoltingCompletion']);
+                let reinstateIdx = findHeaderIdx(['Re-instatement', 'Reinstatement', 'Re instatement']);
+                let signP05Idx   = findHeaderIdx(['Sign P05A', 'P05A', 'SignP05']);
+                let signP06Idx   = findHeaderIdx(['Sign P06A', 'P06A', 'SignP06']);
+                let signP07Idx   = findHeaderIdx(['Sign P07A', 'P07A', 'SignP07']);
                 let hydrotestStatusIdx = findHeaderIdx(['CHECK HYDROTEST', 'Check Hydrotest', 'Hydrotest Status', 'Hydro Test Status', 'HydrotestStatus', 'Check Hydro']);
 
                 if (tpIdx === -1) tpIdx = 0;
@@ -9644,12 +9762,20 @@
                 if (testPlanIdx === -1) testPlanIdx = 14;
                 if (statusFabIdx === -1) statusFabIdx = 19;
                 if (hydroIdx === -1) {
-                    hydroIdx = rows[0].length > 26 ? 26 : -1; // Cột AA (Hydro Test Input Date)
+                    hydroIdx = rows[0].length > 27 ? 27 : -1; // Cột AB (Hydro Test Input Date)
                 }
-                if (signP04Idx === -1) {
-                    signP04Idx = rows[0].length > 27 ? 27 : -1; // Cột AB (Sign P04A Input Date)
-                }
-                if (hydrotestStatusIdx === -1) hydrotestStatusIdx = rows[0].length > 33 ? 33 : -1; // Cột AH (CHECK HYDROTEST)
+                // Fallback column indices based on user's column mapping
+                if (lineCheckIdx === -1) lineCheckIdx = rows[0].length > 23 ? 23 : -1;  // Cột X
+                if (signP02Idx   === -1) signP02Idx   = rows[0].length > 24 ? 24 : -1;  // Cột Y
+                if (flushingIdx  === -1) flushingIdx  = rows[0].length > 25 ? 25 : -1;  // Cột Z
+                if (signP03Idx   === -1) signP03Idx   = rows[0].length > 26 ? 26 : -1;  // Cột AA
+                if (signP04Idx   === -1) signP04Idx   = rows[0].length > 28 ? 28 : -1;  // Cột AC
+                if (boltingIdx   === -1) boltingIdx   = rows[0].length > 29 ? 29 : -1;  // Cột AD
+                if (reinstateIdx === -1) reinstateIdx = rows[0].length > 30 ? 30 : -1;  // Cột AE
+                if (signP05Idx   === -1) signP05Idx   = rows[0].length > 31 ? 31 : -1;  // Cột AF
+                if (signP06Idx   === -1) signP06Idx   = rows[0].length > 32 ? 32 : -1;  // Cột AG
+                if (signP07Idx   === -1) signP07Idx   = rows[0].length > 33 ? 33 : -1;  // Cột AH
+                if (hydrotestStatusIdx === -1) hydrotestStatusIdx = rows[0].length > 33 ? 33 : -1; // Cột AH (CHECK HYDROTEST fallback)
 
                 const newMap = new Map();
                 for (let i = 1; i < rows.length; i++) {
@@ -9664,8 +9790,18 @@
                     const statusFab = (row[statusFabIdx] || '').toString().trim();
                     const hydroDate = (row[hydroIdx] || '').toString().trim();
                     const system = systemIdx !== -1 ? (row[systemIdx] || '').toString().trim() : '-';
-                    const signP04Date = signP04Idx !== -1 ? (row[signP04Idx] || '').toString().trim() : '';
                     const hydrotestStatus = hydrotestStatusIdx !== -1 ? (row[hydrotestStatusIdx] || '').toString().trim() : '';
+                    // New sign-off columns
+                    const lineCheckDate  = lineCheckIdx  !== -1 ? (row[lineCheckIdx]  || '').toString().trim() : '';
+                    const signP02Date    = signP02Idx    !== -1 ? (row[signP02Idx]    || '').toString().trim() : '';
+                    const flushingDate   = flushingIdx   !== -1 ? (row[flushingIdx]   || '').toString().trim() : '';
+                    const signP03Date    = signP03Idx    !== -1 ? (row[signP03Idx]    || '').toString().trim() : '';
+                    const signP04Date    = signP04Idx    !== -1 ? (row[signP04Idx]    || '').toString().trim() : '';
+                    const boltingDate    = boltingIdx    !== -1 ? (row[boltingIdx]    || '').toString().trim() : '';
+                    const reinstateDate  = reinstateIdx  !== -1 ? (row[reinstateIdx]  || '').toString().trim() : '';
+                    const signP05Date    = signP05Idx    !== -1 ? (row[signP05Idx]    || '').toString().trim() : '';
+                    const signP06Date    = signP06Idx    !== -1 ? (row[signP06Idx]    || '').toString().trim() : '';
+                    const signP07Date    = signP07Idx    !== -1 ? (row[signP07Idx]    || '').toString().trim() : '';
 
                     newMap.set(tp, {
                         spools,
@@ -9675,8 +9811,17 @@
                         statusFab,
                         hydroDate,
                         system,
+                        hydrotestStatus,
+                        lineCheckDate,
+                        signP02Date,
+                        flushingDate,
+                        signP03Date,
                         signP04Date,
-                        hydrotestStatus
+                        boltingDate,
+                        reinstateDate,
+                        signP05Date,
+                        signP06Date,
+                        signP07Date
                     });
                 }
                 sheetHydroDates = newMap;
