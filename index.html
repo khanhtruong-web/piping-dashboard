@@ -1421,7 +1421,7 @@
                             <button class="btn btn-sm btn-light focus-back-btn" onclick="toggleFocus('cardHydroTracker')"><i class="fas fa-chevron-left me-1"></i> Back to report</button>
                             <span><i class="fas fa-check-double me-2"></i>Hydrotest Clearance Tracker</span>
                             <!-- Chỉ báo đồng bộ Google Sheet -->
-                            <div class="d-inline-flex align-items-center gap-1 ms-3 px-2 py-1 rounded shadow-sm border" id="hydroSheetSyncIndicator" style="font-size:0.72rem; font-weight:700; color:#6c757d; background: rgba(255,255,255,0.7); cursor: pointer;" title="Nhấn để đồng bộ dữ liệu Google Sheet ngay lập tức" onclick="manualSyncGoogleSheet()">
+                            <div class="d-inline-flex align-items-center gap-1 ms-3 px-2 py-1 rounded shadow-sm border" id="hydroSheetSyncIndicator" style="font-size:0.72rem; font-weight:700; color:#6c757d; background: rgba(255,255,255,0.7); cursor: pointer;" title="Click to manually sync Google Sheet data" onclick="manualSyncGoogleSheet()">
                                 <span id="hydroSheetSyncDot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:#6c757d; transition: all 0.3s ease;"></span>
                                 <span id="hydroSheetSyncText">Sheet Sync: Off</span>
                                 <i id="hydroSyncSpinIcon" class="fas fa-sync-alt ms-1 text-muted" style="display:none;"></i>
@@ -1430,9 +1430,9 @@
                         <div class="d-flex align-items-center gap-3 flex-wrap">
                             <div class="d-flex align-items-center gap-1">
                                 <span class="small fw-bold text-muted">Hydrotested Date:</span>
-                                <input type="date" id="hydroDate" class="form-control form-control-sm" style="width: 150px;" onchange="renderHydro()" title="Chọn ngày hydrotest">
+                                <input type="date" id="hydroDate" class="form-control form-control-sm" style="width: 150px;" onchange="renderHydro()" title="Select hydrotest date">
                                 <span class="small fw-bold text-muted ms-2">Hydrotest plan:</span>
-                                <input type="text" id="hydroPlanFilter" class="form-control form-control-sm" placeholder="Search Plan (e.g. Apr-26, Ưu tiên 1, -)..." style="width: 260px; font-size: 0.75rem;" oninput="debouncedRenderHydro()">
+                                <input type="text" id="hydroPlanFilter" class="form-control form-control-sm" placeholder="Search Plan (e.g. Apr-26, Priority 1, -)..." style="width: 260px; font-size: 0.75rem;" oninput="debouncedRenderHydro()">
                                 <button class="btn btn-sm btn-outline-secondary" onclick="clearHydroFilters()" title="Clear Filters"><i class="fas fa-times me-1"></i>Clear</button>
                             </div>
                             <div class="dropdown" style="min-width: 140px;" id="hydroStatusDropdownContainer">
@@ -1454,7 +1454,7 @@
                                     </label>
                                 </div>
                             </div>
-                            <select id="hydroSystemFilter" class="form-select form-select-sm" style="width: 130px; font-size: 0.75rem; background-color: #fff;" onchange="debouncedRenderHydro()" title="Lọc theo System">
+                            <select id="hydroSystemFilter" class="form-select form-select-sm" style="width: 130px; font-size: 0.75rem; background-color: #fff;" onchange="debouncedRenderHydro()" title="Filter by System">
                                 <option value="">All System</option>
                             </select>
                             <input type="text" id="hydroSearchInput" class="form-control form-control-sm" placeholder="Search Hydro Packages..." style="width: 180px; font-size: 0.75rem;" oninput="debouncedRenderHydro()">
@@ -1463,7 +1463,7 @@
                             <i class="fas fa-expand-alt focus-mode-btn" onclick="toggleFocus('cardHydroTracker')" title="Focus mode"></i>
                         </div>
                     </div>
-                    <p class="text-muted small">Tự động đối chiếu dữ liệu NDT để báo Cleared cho toàn bộ Test Package. Bạn có thể sử dụng Test Pack Visualizer để tra cứu chi tiết tiến độ 1 Package.</p>
+                    <p class="text-muted small">Automatically cross-references NDT inspection records to clear Test Packages. Use Test Pack Visualizer to inspect detailed status for individual packages.</p>
                     
                     <!-- ROW ĐỒ THỊ: HYDROTEST STATUS & SPOOL SUMMARY -->
                     <div class="row mb-4 g-3">
@@ -1471,8 +1471,8 @@
                         <div class="col-xl-6 col-lg-12">
                             <div class="glass-card shadow-sm h-100" style="border: 1px solid rgba(2, 136, 209, 0.15); background: rgba(255, 255, 255, 0.65);">
                                 <div class="chart-header text-info py-2 d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-bottom: 1px solid rgba(0,0,0,0.05); min-height: auto;">
-                                    <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-tint me-2"></i>Hydrotest Status <span class="text-muted fw-normal" style="font-size:0.62rem;">(bấm cột để lọc)</span></span>
-                                    <button id="hydroStatusClearBtn" class="btn btn-sm btn-outline-danger align-items-center" style="display:none; font-size:0.68rem; padding:1px 8px; line-height:1.4;" onclick="clearHydroStatusFilter()" title="Bỏ lọc tình trạng gói test"><i class="fas fa-times me-1"></i>Clear: <span id="hydroStatusClearLabel" class="ms-1 fw-bold"></span></button>
+                                    <span class="fw-bold" style="font-size:0.85rem;"><i class="fas fa-tint me-2"></i>Hydrotest Status <span class="text-muted fw-normal" style="font-size:0.62rem;">(click bar to filter)</span></span>
+                                    <button id="hydroStatusClearBtn" class="btn btn-sm btn-outline-danger align-items-center" style="display:none; font-size:0.68rem; padding:1px 8px; line-height:1.4;" onclick="clearHydroStatusFilter()" title="Clear status filter"><i class="fas fa-times me-1"></i>Clear: <span id="hydroStatusClearLabel" class="ms-1 fw-bold"></span></button>
                                 </div>
                                 <div class="p-3">
                                     <div class="row align-items-center">
@@ -1529,7 +1529,7 @@
                             <label class="form-label text-info fw-bold"><i class="fas fa-layer-group me-1"></i>Test Pack / Line Visualizer (Multi-Search)</label>
                             <div class="input-group mb-3">
                                 <span class="input-group-text bg-info text-white"><i class="fas fa-search"></i></span>
-                                <textarea id="vpSearch" class="form-control border-info" rows="1" placeholder="Nhập tên Test Package hoặc Line No (Dùng dấu phẩy hoặc xuống dòng để tìm nhiều cùng lúc)..." onkeyup="syncNdtAndHydroSearch('vp'); if(event.key==='Enter' && !event.shiftKey) visualizePack()"></textarea>
+                                <textarea id="vpSearch" class="form-control border-info" rows="1" placeholder="Enter Test Package or Line No. (Use commas, semicolons or newlines for multiple search)..." onkeyup="syncNdtAndHydroSearch('vp'); if(event.key==='Enter' && !event.shiftKey) visualizePack()"></textarea>
                                 <button class="btn btn-info text-white fw-bold px-4" onclick="visualizePack()"><i class="fas fa-bolt me-1"></i> Visualize All</button>
                                 <button class="btn btn-outline-secondary px-3" onclick="clearVisualizer()" title="Clear results"><i class="fas fa-times"></i></button>
                                 <div class="btn-group ms-2" role="group">
@@ -1570,17 +1570,17 @@
 
 
                     <div id="hydroFilterBanner" class="alert alert-info py-2 mb-2 d-flex align-items-center justify-content-between" style="display:none !important;">
-                        <span><i class="fas fa-filter me-2"></i><strong>Đang lọc theo Visualizer search.</strong> Bảng chỉ hiển thị Test Package / Line matching.</span>
-                        <button class="btn btn-sm btn-outline-info py-0 px-2" onclick="clearVisualizer()"><i class="fas fa-times me-1"></i>Bỏ lọc</button>
+                        <span><i class="fas fa-filter me-2"></i><strong>Filtered by Visualizer search:</strong> Showing matching Test Packages / Lines only.</span>
+                        <button class="btn btn-sm btn-outline-info py-0 px-2" onclick="clearVisualizer()"><i class="fas fa-times me-1"></i>Clear Filter</button>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                         <div id="hydroStatsBanner" class="d-flex justify-content-around bg-light p-2 rounded border shadow-sm flex-grow-1" style="font-size:0.9rem; margin-bottom:0 !important; max-width: 600px;"></div>
                         <div class="bg-light p-2 rounded border shadow-sm d-flex gap-3 align-items-center flex-wrap" style="font-size:0.72rem;">
                             <span class="fw-bold text-muted"><i class="fas fa-info-circle me-1 text-info"></i>NDT Legend:</span>
-                            <span class="d-flex align-items-center gap-1"><span class="badge bg-success" style="background-color: #d4edda !important; color: #155724 !important; border: 1px solid #c3e6cb !important; font-size:0.65rem; padding: 2px 6px;">ACC</span> Đã kiểm tra & Đạt (Accepted)</span>
-                            <span class="d-flex align-items-center gap-1"><span class="badge bg-success" style="background-color: #d4edda !important; color: #155724 !important; border: 1px solid #c3e6cb !important; font-size:0.65rem; padding: 2px 6px;">OK</span> Đủ scope / Không yêu cầu test</span>
-                            <span class="d-flex align-items-center gap-1"><span class="badge bg-danger" style="background-color: #f8d7da !important; color: #721c24 !important; border: 1px solid #f5c6cb !important; font-size:0.65rem; padding: 2px 6px;">REJ</span> Phát hiện lỗi hàn (Rejected)</span>
-                            <span class="d-flex align-items-center gap-1"><span class="badge bg-warning text-dark" style="background-color: #fff3cd !important; color: #856404 !important; border: 1px solid #ffeeba !important; font-size:0.65rem; padding: 2px 6px;">Số (e.g. 1)</span> Số mối hàn còn lại cần test (Pending)</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-success" style="background-color: #d4edda !important; color: #155724 !important; border: 1px solid #c3e6cb !important; font-size:0.65rem; padding: 2px 6px;">ACC</span> Inspected & Accepted</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-success" style="background-color: #d4edda !important; color: #155724 !important; border: 1px solid #c3e6cb !important; font-size:0.65rem; padding: 2px 6px;">OK</span> Full scope / Not required</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-danger" style="background-color: #f8d7da !important; color: #721c24 !important; border: 1px solid #f5c6cb !important; font-size:0.65rem; padding: 2px 6px;">REJ</span> Defect found (Rejected)</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-warning text-dark" style="background-color: #fff3cd !important; color: #856404 !important; border: 1px solid #ffeeba !important; font-size:0.65rem; padding: 2px 6px;">Number (e.g. 1)</span> Remaining joints to test (Pending)</span>
                         </div>
                     </div>
                     <div class="table-detail-container sticky-vh-65">
@@ -1588,7 +1588,7 @@
                             <thead id="hydroThead">
                                 <tr>
                                     <th class="hydro-sticky-col hydro-sticky-col-0" style="width:40px;">No.</th>
-                                    <th class="hydro-sticky-col hydro-sticky-col-1 sortable-col" onclick="sortHydroDate()" title="Nhấn để sắp xếp ngày" style="width:100px;">Hydrotested Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
+                                    <th class="hydro-sticky-col hydro-sticky-col-1 sortable-col" onclick="sortHydroDate()" title="Click to sort by date" style="width:100px;">Hydrotested Date <i class="fas fa-sort" id="sortHydroIcon"></i></th>
                                     <th class="hydro-sticky-col hydro-sticky-col-2" style="width:100px;">Hydrotest plan</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-3" style="width:70px;">System</th>
                                     <th class="hydro-sticky-col hydro-sticky-col-4" style="min-width:180px;">Test Package</th>
@@ -1651,7 +1651,7 @@
                                     <td style="padding:2px 4px;"></td>
                                 </tr>
                             </thead>
-                            <tbody id="hydroBody"><tr><td colspan="39" class="text-center py-4">Vui lòng tải lên file Hydrotest Plan (Cột bắt buộc: TestPackNo hoặc Line_No, Hydrotest date) ở Menu bên trái</td></tr></tbody>
+                            <tbody id="hydroBody"><tr><td colspan="39" class="text-center py-4">Please upload Hydrotest Plan file (Required columns: TestPackNo or Line_No, Hydrotest date) from the left menu</td></tr></tbody>
                             <tfoot id="hydroTfoot"></tfoot>
                         </table>
                     </div>
@@ -6311,7 +6311,7 @@
             const pendJoints = h.pendingSummary.filter(s => s.includes('PEND') && !s.includes('REPAIR'));
             if (repairJoints.length > 0) detailParts.push('<span class="text-danger" style="font-size:0.65rem;"><b>REJ:</b> ' + repairJoints.slice(0, 10).map(s => s.trim()).join('; ') + (repairJoints.length > 10 ? ' ...(+' + (repairJoints.length-10) + ')' : '') + '</span>');
             if (pendJoints.length > 0) detailParts.push('<span class="text-warning" style="font-size:0.65rem;"><b>PEND:</b> ' + pendJoints.slice(0, 15).map(s => s.trim()).join('; ') + (pendJoints.length > 15 ? ' ...(+' + (pendJoints.length-15) + ')' : '') + '</span>');
-            if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detailParts.push('<span class="text-info" style="font-size:0.65rem;"><b>NDT Random:</b> Thiếu %RT/MT</span>');
+            if (!h.isNdtRandomCompliant && h.p === 0 && h.r === 0) detailParts.push('<span class="text-info" style="font-size:0.65rem;"><b>NDT Random:</b> Incomplete %RT/MT</span>');
             const detailHtml = detailParts.length > 0 ? detailParts.join('<br>') : '<span class="text-success" style="font-size:0.65rem;">✅ All Clear</span>';
 
             const editAttr = isEditable ? 'contenteditable="true"' : '';
@@ -6615,14 +6615,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr style="cursor: pointer; transition: background-color 0.15s ease;" class="hover-row" onclick="filterHydroByStatus('Hydrotested')" title="Click để lọc Hydrotested">
+                                <tr style="cursor: pointer; transition: background-color 0.15s ease;" class="hover-row" onclick="filterHydroByStatus('Hydrotested')" title="Click to filter Hydrotested">
                                     <td class="text-start fw-bold ps-2" style="color: #2e7d32;"><i class="fas fa-check-circle me-1"></i>Hydrotest Done</td>
                                     <td class="fw-bold text-dark">${tpDone.toLocaleString()}</td>
                                     <td class="fw-bold" style="color: #2e7d32;">${tpDonePct}%</td>
                                     <td class="fw-bold text-dark">${spoolDone.toLocaleString()}</td>
                                     <td class="fw-bold" style="color: #2e7d32;">${spoolDonePct}%</td>
                                 </tr>
-                                <tr style="cursor: pointer; transition: background-color 0.15s ease;" class="hover-row" onclick="filterHydroByStatus('Remaining')" title="Click để lọc NOT YET (Remaining)">
+                                <tr style="cursor: pointer; transition: background-color 0.15s ease;" class="hover-row" onclick="filterHydroByStatus('Remaining')" title="Click to filter NOT YET (Remaining)">
                                     <td class="text-start fw-bold ps-2" style="color: #ef6c00;"><i class="fas fa-clock me-1"></i>NOT YET</td>
                                     <td class="fw-bold text-dark">${tpNotYet.toLocaleString()}</td>
                                     <td class="fw-bold" style="color: #ef6c00;">${tpNotYetPct}%</td>
@@ -6831,7 +6831,7 @@
             const tbody = document.getElementById('hydroBody');
             try {
             if(hydroPlanData.length === 0 && filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="39" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Vui lòng tải lên file Hydrotest Plan hoặc Master Database</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="39" class="text-center py-5 text-muted"><i class="fas fa-file-import fa-3x mb-3"></i><br>Please upload Hydrotest Plan or Master Database file</td></tr>';
                 return;
             }
 
@@ -6955,12 +6955,12 @@
                 return generateHydroRowHtml(h, _hi++, true);
             }).join('');
 
-            tbody.innerHTML = (displayed.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="39" class="text-center py-4 text-muted small">Không có dữ liệu hiển thị (Bị ẩn bởi bộ lọc)</td></tr>' : finalHtml;
+            tbody.innerHTML = (displayed.length === 0 || finalHtml.trim() === "") ? '<tr><td colspan="39" class="text-center py-4 text-muted small">No data to display (Hidden by active filters)</td></tr>' : finalHtml;
             renderHydroTfoot(displayed, sorted);
             window.lastFilteredHydroList = displayed;
             } catch(e) {
                 console.error(e);
-                tbody.innerHTML = `<tr><td colspan="39" class="text-danger p-3">Lỗi Render Hydrotest: ${e.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="39" class="text-danger p-3">Hydrotest Render Error: ${e.message}</td></tr>`;
             }
         }
 
@@ -6992,7 +6992,7 @@
 
 
         async function exportHydroExcel() {
-            if(hydroPlanData.length === 0 && filteredData.length === 0) return alert("Vui lòng tải lên dữ liệu.");
+            if(hydroPlanData.length === 0 && filteredData.length === 0) return alert("Please upload data first.");
             let sorted = buildHydroMap();
             sorted.sort((a,b) => {
                 let valA = a.dateTs !== null ? a.dateTs : (hydroSortAsc ? Infinity : -Infinity);
@@ -8189,12 +8189,12 @@
         function copyFilteredTestPackages() {
             const list = window.lastFilteredHydroList || [];
             if (list.length === 0) {
-                alert("Không có gói test package nào để copy!");
+                alert("No test packages available to copy!");
                 return;
             }
             const pkgs = [...new Set(list.map(h => h.testPack).filter(p => p))];
             if (pkgs.length === 0) {
-                alert("Không có gói test package nào để copy!");
+                alert("No test packages available to copy!");
                 return;
             }
             const textToCopy = pkgs.join('\n');
@@ -8211,11 +8211,11 @@
                         btn.classList.add('btn-outline-primary');
                     }, 2000);
                 } else {
-                    alert("Đã copy " + pkgs.length + " gói test package vào clipboard!");
+                    alert("Copied " + pkgs.length + " test packages to clipboard!");
                 }
             }).catch(err => {
-                console.error('Lỗi khi copy: ', err);
-                alert("Không thể copy. Vui lòng cấp quyền clipboard hoặc thử lại.");
+                console.error('Error copying to clipboard: ', err);
+                alert("Could not copy. Please grant clipboard permission or try again.");
             });
         }
 
@@ -8244,7 +8244,52 @@
         // Global cache data cho Visualizer
         window._vpCardData = {};
 
-        // Tính NDT stats cho 1 nhóm joints (hỗ trợ kiểm tra Repair / Reweld ACC và liệt kê chi tiết các cột)
+        // Helper: Find repair joint that accepted a specific method
+        function findMethodRepair(origJoint, methodKey, allJoints, dSpool, dDwg) {
+            if (!allJoints || allJoints.length === 0) return null;
+            const oJoint = (origJoint || '').toString().trim();
+            for (let other of allJoints) {
+                const sameSpool = !dSpool || (other.spool || '').toString().trim().toUpperCase() === dSpool;
+                const sameDwg = !dDwg || (other.dwg || '').toString().trim().toUpperCase() === dDwg;
+                const otherJoint = (other.joint || '').toString().trim();
+                if (sameSpool && sameDwg && isRepairJointCandidate(oJoint, otherJoint)) {
+                    if (other[methodKey] === 'ACC') {
+                        return otherJoint;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Helper: Format HTML badge for individual NDT method column
+        function getMethodCellHtml(isReq, res, hasRep, repJoint) {
+            if (res === 'REJ') {
+                if (repJoint) {
+                    return `<span class="badge bg-success" style="font-size:0.62rem;" title="Repaired ACC via ${repJoint}"><i class="fas fa-tools me-1"></i>ACC (${repJoint})</span>`;
+                }
+                return `<span class="badge bg-danger" style="font-size:0.65rem;">REJ</span>`;
+            }
+            if (res === 'ACC' || hasRep) {
+                return `<span class="badge bg-success" style="font-size:0.65rem;">ACC</span>`;
+            }
+            if (isReq) {
+                return `<span class="badge bg-warning text-dark" style="font-size:0.65rem;">PEND</span>`;
+            }
+            return `<span class="text-muted small">-</span>`;
+        }
+
+        // Helper: Format text for Excel export of individual NDT method column
+        function getMethodText(isReq, res, hasRep, repJoint) {
+            if (res === 'REJ') {
+                if (repJoint) return `ACC (Repaired: ${repJoint})`;
+                return 'REJ';
+            }
+            if (res === 'ACC' || hasRep) return 'ACC';
+            if (isReq) return 'PEND';
+            return '-';
+        }
+
+        // Calculate NDT stats for a subset of joints with detailed columns and repair tracking
         function calcNdtStats(subset) {
             let t = 0, d = 0, p = 0, r = 0;
             let weldedCount = 0;
@@ -8259,18 +8304,18 @@
 
             subset.forEach(x => {
                 t++;
-                // 1. Kiểm tra tình trạng hàn & chế tạo
+                // 1. Fabrication / welding status
                 const isWelded = !!x.wDate;
                 if (isWelded) weldedCount++;
                 const isFitupAcc = x.fitupAcc === 'ACC';
                 const isVisualAcc = x.visualACC === 'ACC';
                 const isCompletedStt = (x.statusCol || '').toString().trim().toLowerCase() === 'completed';
 
-                // 2. Kiểm tra NDT Repair / Reweld
+                // 2. NDT Repair / Reweld status
                 const repInfo = checkJointRepairStatus(x, subset);
-                const isRej = repInfo.isRej; // Chỉ true nếu REJ mà CHƯA có mối repair đạt ACC
+                const isRej = repInfo.isRej; // True only if REJ and not yet repaired to ACC
 
-                // 3. Kiểm tra NDT Pending
+                // 3. NDT Pending status
                 const pendMethods = [];
                 if (x.reqRT && (!x.hasRT || x.rtRes === '')) pendMethods.push('RT');
                 if (x.reqPAUT && (!x.hasPAUT || x.pautRes === '')) pendMethods.push('PAUT');
@@ -8281,25 +8326,25 @@
                 if (x.reqHardness && (!x.hasHardness || x.hardnessRep === '')) pendMethods.push('Hardness');
                 const isPend = pendMethods.length > 0;
 
-                // 4. Thu thập danh sách nguyên nhân chưa hoàn thiện (issues)
+                // 4. Collect issues in pure English
                 const issues = [];
-                if (!isWelded) issues.push('Chưa hàn');
-                if (!isFitupAcc) issues.push('Chưa Fit-up ACC');
-                if (!isVisualAcc) issues.push('Chờ Visual (VT Pending)');
+                if (!isWelded) issues.push('Unwelded');
+                if (!isFitupAcc) issues.push('Fit-Up Pending');
+                if (!isVisualAcc) issues.push('VT Pending');
                 if (isRej) {
                     const rejStr = repInfo.rejMethods.map(m => m.name).join('/');
-                    issues.push(`REJ (${rejStr}) - Chờ sửa`);
+                    issues.push(`REJ (${rejStr}) - Repair Required`);
                 } else if (repInfo.isRepaired) {
-                    issues.push(`Đã sửa: ${repInfo.repairJoint} (ACC)`);
+                    issues.push(`Repaired: ${repInfo.repairJoint} (ACC)`);
                 }
                 if (isPend) {
-                    issues.push(`Chờ NDT: ${pendMethods.join(', ')}`);
+                    issues.push(`Pending NDT: ${pendMethods.join(', ')}`);
                 }
                 if (!isCompletedStt && issues.length === 0) {
                     issues.push(`Status: ${x.statusCol || 'Incomplete'}`);
                 }
 
-                // 5. Phân loại thống kê d, p, r
+                // 5. Statistics classification: d, p, r
                 if (isRej) {
                     r++;
                     pendingList.push({ j: x.joint, s: x.spool, st: 'REJ', msg: repInfo.rejMethods.map(m => m.name).join(',') });
@@ -8314,29 +8359,33 @@
                     completedCount++;
                 }
 
-                // Chi tiết NDT Scope
-                const reqNdtScope = [];
-                if (x.reqRT) reqNdtScope.push('RT');
-                if (x.reqPAUT) reqNdtScope.push('PAUT');
-                if (x.reqMT) reqNdtScope.push('MT');
-                if (x.reqPT) reqNdtScope.push('PT');
-                if (x.reqPmi) reqNdtScope.push('PMI');
-                if (x.reqPwht) reqNdtScope.push('PWHT');
-                if (x.reqHardness) reqNdtScope.push('Hard');
+                // 6. Per-method NDT cells (RT, PAUT, MT, PT, PMI, PWHT, Hardness)
+                const spoolUpper = (x.spool || '').toString().trim().toUpperCase();
+                const dwgUpper = (x.dwg || '').toString().trim().toUpperCase();
+                const rtRepJoint = findMethodRepair(x.joint, 'rtRes', subset, spoolUpper, dwgUpper);
+                const pautRepJoint = findMethodRepair(x.joint, 'pautRes', subset, spoolUpper, dwgUpper);
+                const mtRepJoint = findMethodRepair(x.joint, 'mtRes', subset, spoolUpper, dwgUpper);
+                const ptRepJoint = findMethodRepair(x.joint, 'ptRes', subset, spoolUpper, dwgUpper);
 
-                // Chi tiết NDT Result
-                let ndtResultDisplay = '';
-                if (isRej) {
-                    ndtResultDisplay = `<span class="badge bg-danger">REJ (${repInfo.rejMethods.map(m => m.name).join('/')})</span>`;
-                } else if (repInfo.isRepaired) {
-                    ndtResultDisplay = `<span class="badge bg-success" title="Đã repair đạt ACC qua mối ${repInfo.repairJoint}"><i class="fas fa-tools me-1"></i>ACC (${repInfo.repairJoint})</span>`;
-                } else if (isPend) {
-                    ndtResultDisplay = `<span class="badge bg-warning text-dark">PEND (${pendMethods.join('/')})</span>`;
-                } else if (reqNdtScope.length > 0) {
-                    ndtResultDisplay = `<span class="badge bg-success">ACC</span>`;
-                } else {
-                    ndtResultDisplay = `<span class="text-muted small">-</span>`;
-                }
+                const hasPmiAcc = !!(x.hasPMI || (x.pmiRep && x.pmiRep.toString().trim() !== ''));
+                const hasPwhtRep = !!(x.pwhtRep && x.pwhtRep.toString().trim() !== '');
+                const hasHardAcc = !!(x.hasHardness || (x.hardnessRep && x.hardnessRep.toString().trim() !== ''));
+
+                const rtCell = getMethodCellHtml(!!x.reqRT, x.rtRes, !!x.hasRT, rtRepJoint);
+                const pautCell = getMethodCellHtml(!!x.reqPAUT, x.pautRes, !!x.hasPAUT, pautRepJoint);
+                const mtCell = getMethodCellHtml(!!x.reqMT, x.mtRes, !!x.hasMT, mtRepJoint);
+                const ptCell = getMethodCellHtml(!!x.reqPT, x.ptRes, !!x.hasPT, ptRepJoint);
+                const pmiCell = getMethodCellHtml(!!x.reqPmi, '', hasPmiAcc, null);
+                const pwhtCell = getMethodCellHtml(!!x.reqPwht, x.pwhtRes, hasPwhtRep, null);
+                const hardCell = getMethodCellHtml(!!x.reqHardness, '', hasHardAcc, null);
+
+                const rtText = getMethodText(!!x.reqRT, x.rtRes, !!x.hasRT, rtRepJoint);
+                const pautText = getMethodText(!!x.reqPAUT, x.pautRes, !!x.hasPAUT, pautRepJoint);
+                const mtText = getMethodText(!!x.reqMT, x.mtRes, !!x.hasMT, mtRepJoint);
+                const ptText = getMethodText(!!x.reqPT, x.ptRes, !!x.hasPT, ptRepJoint);
+                const pmiText = getMethodText(!!x.reqPmi, '', hasPmiAcc, null);
+                const pwhtText = getMethodText(!!x.reqPwht, x.pwhtRes, hasPwhtRep, null);
+                const hardText = getMethodText(!!x.reqHardness, '', hasHardAcc, null);
 
                 const isIncomplete = !isWelded || !isVisualAcc || !isFitupAcc || !isCompletedStt || isRej || isPend;
 
@@ -8351,8 +8400,20 @@
                     isWelded: isWelded,
                     fitupAcc: x.fitupAcc || '-',
                     visualAcc: x.visualACC || '-',
-                    ndtScope: reqNdtScope.join(', ') || '-',
-                    ndtResultDisplay: ndtResultDisplay,
+                    rtCell: rtCell,
+                    pautCell: pautCell,
+                    mtCell: mtCell,
+                    ptCell: ptCell,
+                    pmiCell: pmiCell,
+                    pwhtCell: pwhtCell,
+                    hardCell: hardCell,
+                    rtText: rtText,
+                    pautText: pautText,
+                    mtText: mtText,
+                    ptText: ptText,
+                    pmiText: pmiText,
+                    pwhtText: pwhtText,
+                    hardText: hardText,
                     issues: issues,
                     isIncomplete: isIncomplete,
                     repInfo: repInfo
@@ -8367,10 +8428,10 @@
             return { t, d, p, r, welded: weldedCount, completed: completedCount, pendingList, incompleteJoints, allJointDetails };
         }
 
-        // Helper render bảng chi tiết mối hàn cho Visualizer
+        // Helper render joints detail table for Visualizer with individual NDT columns
         function renderVpJointsTableHtml(termClean, jointList, isOnlyIncomplete) {
             if (!jointList || jointList.length === 0) {
-                return `<div class="alert alert-success py-2 mt-2 mb-0 small text-center"><i class="fas fa-check-double me-1"></i> Tất cả mối hàn đã hoàn thiện và NDT đạt ACC 100%!</div>`;
+                return `<div class="alert alert-success py-2 mt-2 mb-0 small text-center"><i class="fas fa-check-double me-1"></i> All joints completed and NDT 100% Accepted!</div>`;
             }
 
             const rows = jointList.map((j, idx) => {
@@ -8385,7 +8446,7 @@
 
                 const weldDateHtml = j.wDateStr 
                     ? `<span class="text-dark">${j.wDateStr}</span>` 
-                    : `<span class="badge bg-danger" style="font-size:0.65rem;">Chưa hàn</span>`;
+                    : `<span class="badge bg-danger" style="font-size:0.65rem;">Unwelded</span>`;
 
                 const fitupHtml = j.fitupAcc === 'ACC'
                     ? `<span class="badge bg-success" style="font-size:0.65rem;">ACC</span>`
@@ -8396,16 +8457,16 @@
                     : `<span class="badge bg-warning text-dark" style="font-size:0.65rem;">${j.visualAcc || 'Pending'}</span>`;
 
                 const issuesHtml = j.issues.map(iss => {
-                    if (iss.includes('Chưa hàn') || iss.includes('REJ')) {
+                    if (iss.includes('Unwelded') || iss.includes('REJ')) {
                         return `<span class="badge bg-danger text-white me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
-                    } else if (iss.includes('Đã sửa')) {
+                    } else if (iss.includes('Repaired')) {
                         return `<span class="badge bg-success text-white me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
                     } else {
                         return `<span class="badge bg-warning text-dark me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
                     }
                 }).join('');
 
-                const rowBg = j.isIncomplete ? (j.issues.some(s => s.includes('REJ') || s.includes('Chưa hàn')) ? 'style="background-color: #fff5f5;"' : 'style="background-color: #fffdf5;"') : '';
+                const rowBg = j.isIncomplete ? (j.issues.some(s => s.includes('REJ') || s.includes('Unwelded')) ? 'style="background-color: #fff5f5;"' : 'style="background-color: #fffdf5;"') : '';
 
                 return `<tr ${rowBg}>
                     <td class="text-center text-muted">${idx + 1}</td>
@@ -8417,29 +8478,39 @@
                     <td class="text-center">${weldDateHtml}</td>
                     <td class="text-center">${fitupHtml}</td>
                     <td class="text-center">${visualHtml}</td>
-                    <td class="text-center">${j.ndtScope}</td>
-                    <td class="text-center">${j.ndtResultDisplay}</td>
-                    <td class="text-start" style="min-width: 150px;">${issuesHtml || '<span class="text-success small">Hoàn thành</span>'}</td>
+                    <td class="text-center">${j.rtCell}</td>
+                    <td class="text-center">${j.pautCell}</td>
+                    <td class="text-center">${j.mtCell}</td>
+                    <td class="text-center">${j.ptCell}</td>
+                    <td class="text-center">${j.pmiCell}</td>
+                    <td class="text-center">${j.pwhtCell}</td>
+                    <td class="text-center">${j.hardCell}</td>
+                    <td class="text-start" style="min-width: 160px;">${issuesHtml || '<span class="text-success small">Completed</span>'}</td>
                 </tr>`;
             }).join('');
 
             return `
-                <div class="table-responsive border rounded mt-2 shadow-sm" style="max-height: 380px; overflow-y: auto; overflow-x: auto; background: #fff;">
+                <div class="table-responsive border rounded mt-2 shadow-sm" style="max-height: 420px; overflow-y: auto; overflow-x: auto; background: #fff;">
                     <table class="table table-sm table-hover table-bordered mb-0 align-middle" style="font-size: 0.72rem;">
                         <thead class="table-light sticky-top" style="z-index: 2;">
                             <tr class="text-center">
                                 <th style="width: 35px;">No.</th>
                                 <th style="min-width: 120px;">Spool</th>
                                 <th style="min-width: 90px;">Joint No.</th>
-                                <th style="width: 55px;">Type</th>
-                                <th style="width: 55px;">Size</th>
-                                <th style="width: 70px;">Welder</th>
+                                <th style="width: 50px;">Type</th>
+                                <th style="width: 50px;">Size</th>
+                                <th style="width: 65px;">Welder</th>
                                 <th style="min-width: 85px;">Weld Date</th>
-                                <th style="width: 65px;">Fit-Up</th>
+                                <th style="width: 60px;">Fit-Up</th>
                                 <th style="width: 65px;">Visual (VT)</th>
-                                <th style="min-width: 90px;">NDT Scope</th>
-                                <th style="min-width: 100px;">NDT Result</th>
-                                <th style="min-width: 160px;">Tình trạng chi tiết (Issue / Action)</th>
+                                <th style="width: 50px;">RT</th>
+                                <th style="width: 50px;">PAUT</th>
+                                <th style="width: 50px;">MT</th>
+                                <th style="width: 50px;">PT</th>
+                                <th style="width: 50px;">PMI</th>
+                                <th style="width: 55px;">PWHT</th>
+                                <th style="width: 65px;">Hardness</th>
+                                <th style="min-width: 160px;">Status / Action Required</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -8450,7 +8521,7 @@
             `;
         }
 
-        // Chuyển đổi xem mối chưa xong vs tất cả mối trong card
+        // Toggle between incomplete joints vs all joints in card
         window.toggleVpJointView = function(termClean, viewMode) {
             const stats = window._vpCardData ? window._vpCardData[termClean] : null;
             if (!stats) return;
@@ -8470,11 +8541,11 @@
             }
         };
 
-        // Xuất file Excel chi tiết mối hàn của gói test pack
+        // Export joints detail of test package to Excel
         window.exportVpJointsExcel = function(termClean) {
             const stats = window._vpCardData ? window._vpCardData[termClean] : null;
             if (!stats || !stats.allJointDetails || typeof XLSX === 'undefined') {
-                alert("Không có dữ liệu hoặc thư viện Excel chưa sẵn sàng");
+                alert("No data available or Excel library not ready");
                 return;
             }
             const rows = stats.allJointDetails.map((j, idx) => ({
@@ -8484,12 +8555,17 @@
                 "Weld Type": j.weldType,
                 "Size (Inch)": j.size,
                 "Welder ID": j.welder,
-                "Welding Date": j.wDateStr || "Chưa hàn",
+                "Welding Date": j.wDateStr || "Unwelded",
                 "Fit-Up Result": j.fitupAcc,
-                "Visual Result": j.visualAcc,
-                "NDT Scope": j.ndtScope,
-                "NDT Result": j.repInfo && j.repInfo.isRepaired ? `ACC (sửa: ${j.repInfo.repairJoint})` : (j.repInfo && j.repInfo.isRej ? `REJ (${j.repInfo.rejMethods.map(m=>m.name).join('/')})` : j.ndtScope),
-                "Tồn đọng / Issue": j.issues.join('; ') || "Hoàn thành"
+                "Visual (VT)": j.visualAcc,
+                "RT": j.rtText,
+                "PAUT": j.pautText,
+                "MT": j.mtText,
+                "PT": j.ptText,
+                "PMI": j.pmiText,
+                "PWHT": j.pwhtText,
+                "Hardness": j.hardText,
+                "Status / Action Required": j.issues.join('; ') || "Completed"
             }));
             const ws = XLSX.utils.json_to_sheet(rows);
             const wb = XLSX.utils.book_new();
@@ -8563,14 +8639,14 @@
             });
 
             tbody.innerHTML = filtered.length === 0 
-                ? '<tr><td colspan="39" class="text-center py-4 text-muted small">Không tìm thấy Test Package / Line matching trong dữ liệu</td></tr>'
+                ? '<tr><td colspan="39" class="text-center py-4 text-muted small">No matching Test Package / Line found in dataset</td></tr>'
                 : filtered.map((h, i) => {
                     return generateHydroRowHtml(h, i, false);
                 }).join('');
 
             renderHydroTfoot(filtered);
 
-            // Hiện banner filter
+            // Show filter banner
             banner.style.cssText = 'display:flex !important';
             reapplyTableFilter('hydroTable');
         }
@@ -8578,11 +8654,11 @@
         function visualizePack(silent = false) {
             const inputVal = document.getElementById('vpSearch').value.trim();
             if(!inputVal) {
-                if(!silent) alert("Vui lòng nhập danh sách Test Package hoặc Line No");
+                if(!silent) alert("Please enter a list of Test Packages or Line Numbers");
                 return;
             }
             
-            // Tách chuỗi theo dấu phẩy, dấu chấm phẩy hoặc xuống dòng
+            // Split search string by commas, semicolons or newlines
             const terms = inputVal.split(/[\n,;]+/).map(t => t.trim().toUpperCase()).filter(t => t);
             if(terms.length === 0) return;
 
@@ -8616,7 +8692,7 @@
                 window._vpCardData[termClean] = stats;
 
                 const cardCol = document.createElement('div');
-                // Nếu tìm 1 gói hoặc gói có mối chưa xong -> mở rộng full width để bảng hiển thị thoải mái
+                // Expand card width if single package or has incomplete joints
                 if (terms.length === 1) {
                     cardCol.className = 'col-12';
                 } else {
@@ -8630,7 +8706,7 @@
                                 <h6 class="text-secondary fw-bold mb-0 text-truncate" title="${term}"><i class="fas fa-exclamation-circle me-1"></i> ${term}</h6>
                                 <span class="badge bg-secondary">Not Found</span>
                             </div>
-                            <div class="small text-muted">Không tìm thấy dữ liệu trong bộ lọc hiện tại.</div>
+                            <div class="small text-muted">No data found in current filter.</div>
                         </div>`;
                 } else {
                     const {t, d, p, r, welded, incompleteJoints} = stats;
@@ -8641,7 +8717,7 @@
                     const statusText = r > 0 ? 'REPAIR' : (!isFullyCleared ? 'PENDING' : 'CLEARED');
                     const statusBadgeClass = r > 0 ? 'bg-danger' : (!isFullyCleared ? 'bg-warning text-dark' : 'bg-success');
 
-                    // Nếu thiếu 100% (có mối chưa hoàn thiện hoặc NDT chưa xong) -> tự động hiển thị bảng chi tiết các cột
+                    // If incomplete progress (<100% or pending/rej NDT), automatically display joints table
                     const tableHtml = renderVpJointsTableHtml(termClean, isFullyCleared ? stats.allJointDetails : stats.incompleteJoints, !isFullyCleared);
 
                     cardCol.innerHTML = `
@@ -8652,7 +8728,7 @@
                                 </h6>
                                 <div class="d-flex gap-2 align-items-center">
                                     <span class="badge ${statusBadgeClass} px-2 py-1" style="font-size:0.75rem;">${statusText}</span>
-                                    <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:0.72rem;" onclick="exportVpJointsExcel('${termClean}')" title="Xuất Excel toàn bộ mối hàn">
+                                    <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:0.72rem;" onclick="exportVpJointsExcel('${termClean}')" title="Export all joints to Excel">
                                         <i class="fas fa-file-excel me-1"></i>Excel
                                     </button>
                                 </div>
@@ -8677,18 +8753,18 @@
                             </div>
 
                             ${!isFullyCleared ? `
-                            <!-- BẢNG CHI TIẾT CÁC MỐI HÀN CHƯA HOÀN THIỆN HOẶC NDT CHƯA XONG -->
+                            <!-- INCOMPLETE JOINTS OR PENDING NDT DETAILS TABLE -->
                             <div class="mt-3 pt-2 border-top">
                                 <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
                                     <span class="fw-bold text-danger" style="font-size: 0.8rem;">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>Chi tiết mối hàn chưa hoàn thiện / NDT chưa xong (${incompleteJoints.length} mối):
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Incomplete Joints / Pending NDT Details (${incompleteJoints.length} joints):
                                     </span>
                                     <div class="btn-group btn-group-sm">
                                         <button class="btn btn-outline-danger btn-sm active py-0 px-2" style="font-size:0.68rem;" id="vpBtnIncomp_${termClean}" onclick="toggleVpJointView('${termClean}', 'incomplete')">
-                                            Chưa xong (${incompleteJoints.length})
+                                            Incomplete (${incompleteJoints.length})
                                         </button>
                                         <button class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.68rem;" id="vpBtnAll_${termClean}" onclick="toggleVpJointView('${termClean}', 'all')">
-                                            Tất cả (${t})
+                                            All Joints (${t})
                                         </button>
                                     </div>
                                 </div>
@@ -8697,9 +8773,9 @@
                                 </div>
                             </div>` : `
                             <div class="alert alert-success py-2 mt-2 mb-0 small d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-check-double me-1"></i> 100% Cleared - Tất cả mối hàn đã hoàn tất!</span>
+                                <span><i class="fas fa-check-double me-1"></i> 100% Cleared - All joints completed!</span>
                                 <button class="btn btn-sm btn-link p-0 text-success text-decoration-none fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#vpAllJointsCollapse_${termClean}">
-                                    Xem chi tiết (${t} mối) <i class="fas fa-chevron-down ms-1"></i>
+                                    View details (${t} joints) <i class="fas fa-chevron-down ms-1"></i>
                                 </button>
                             </div>
                             <div class="collapse mt-2" id="vpAllJointsCollapse_${termClean}">
