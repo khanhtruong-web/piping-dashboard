@@ -5808,6 +5808,75 @@
 
         // showFabricationPeriodDetail and exportDailyDetailToExcel have been integrated into showDailyDetail and exportDailyDetailExcel above.
 
+        // === HELPER: Kiểm tra mối hàn candidate có phải là mối Repair / Reweld của origJoint không ===
+        function isRepairJointCandidate(origJoint, candidateJoint) {
+            if (!origJoint || !candidateJoint) return false;
+            const orig = origJoint.toString().trim().toUpperCase();
+            const cand = candidateJoint.toString().trim().toUpperCase();
+            if (orig === cand) return false; // Không tự so sánh với chính mình
+
+            // Trường hợp 1: cand bắt đầu bằng orig (Ví dụ: J1 -> J1#R1, J1R1, J1-R1; J12#RW -> J12#RWR1, J12#RW#R1, J12#RW-R1...)
+            if (cand.startsWith(orig)) {
+                const rem = cand.slice(orig.length);
+                if (/^[#\-_]?(RW)?#?R\d+$/i.test(rem) || /^[#\-_]?R\d+$/i.test(rem) || /^R\d+$/i.test(rem) || /^[#\-_]?RW$/i.test(rem)) {
+                    return true;
+                }
+            }
+
+            // Trường hợp 2: Cùng số mối cơ sở (Ví dụ: orig là J12#RW hoặc J12, cand là J12#RWR1)
+            const cleanJointBase = (str) => str.replace(/[-#\s]*(RW)?[-#\s]*R\d+$/i, '').replace(/[-#\s]*RW$/i, '').trim();
+            const origBase = cleanJointBase(orig);
+            const candBase = cleanJointBase(cand);
+            if (origBase && origBase === candBase) {
+                if (/[#\-_]?(RW)?#?R\d+/i.test(cand) || /[#\-_]?RW/i.test(cand)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // === HELPER: Kiểm tra một mối hàn bị REJ đã được sửa chữa (Repair/Reweld) và kiểm tra lại đạt ACC chưa ===
+        function checkJointRepairStatus(d, allJoints) {
+            const rejMethods = [];
+            if (d.rtRes === 'REJ') rejMethods.push({ key: 'rtRes', name: 'RT' });
+            if (d.pautRes === 'REJ') rejMethods.push({ key: 'pautRes', name: 'PAUT' });
+            if (d.mtRes === 'REJ') rejMethods.push({ key: 'mtRes', name: 'MT' });
+            if (d.ptRes === 'REJ') rejMethods.push({ key: 'ptRes', name: 'PT' });
+
+            if (rejMethods.length === 0) {
+                return { isRej: false, isRepaired: false, repairJoint: null, rejMethods: [] };
+            }
+
+            if (!allJoints || allJoints.length === 0) {
+                return { isRej: true, isRepaired: false, repairJoint: null, rejMethods: rejMethods };
+            }
+
+            const dSpool = (d.spool || '').toString().trim().toUpperCase();
+            const dDwg = (d.dwg || '').toString().trim().toUpperCase();
+            const dJoint = (d.joint || '').toString().trim();
+
+            let repairJointFound = null;
+            const allRepaired = rejMethods.every(rm => {
+                return allJoints.some(other => {
+                    const sameSpool = !dSpool || (other.spool || '').toString().trim().toUpperCase() === dSpool;
+                    const sameDwg = !dDwg || (other.dwg || '').toString().trim().toUpperCase() === dDwg;
+                    const otherJoint = (other.joint || '').toString().trim();
+                    if (sameSpool && sameDwg && isRepairJointCandidate(dJoint, otherJoint)) {
+                        if (other[rm.key] === 'ACC') {
+                            repairJointFound = otherJoint;
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            });
+
+            if (allRepaired && repairJointFound) {
+                return { isRej: false, isRepaired: true, repairJoint: repairJointFound, rejMethods: rejMethods };
+            }
+            return { isRej: true, isRepaired: false, repairJoint: null, rejMethods: rejMethods };
+        }
+
         function buildHydroMap() {
             const sTestPkgVal = document.getElementById('sTestPkg') ? document.getElementById('sTestPkg').value.trim() : '';
             const testPkgArray = sTestPkgVal ? sTestPkgVal.split(/[\n,;]+/).map(k => k.trim().toLowerCase()).filter(k => k) : [];
@@ -5986,29 +6055,9 @@
                     const isDEL = (j.wtClass === 'DEL');
                     const isFW = (j.wtClass === 'FW');
                     
-                    let isRej = !isDEL && (d.rtRes==='REJ'||d.pautRes==='REJ'||d.mtRes==='REJ'||d.ptRes==='REJ');
-                    if (isRej) {
-                        const rejMethods = [];
-                        if (d.rtRes==='REJ') rejMethods.push('rtRes');
-                        if (d.pautRes==='REJ') rejMethods.push('pautRes');
-                        if (d.mtRes==='REJ') rejMethods.push('mtRes');
-                        if (d.ptRes==='REJ') rejMethods.push('ptRes');
-                        
-                        const targetJointName = (d.joint || '').toString().trim() + '#R1';
-                        const allRepaired = rejMethods.every(m => {
-                            return joints.some(otherJ => {
-                                const other = otherJ.data;
-                                const sameDwg = (other.dwg || '').toString().trim().toUpperCase() === (d.dwg || '').toString().trim().toUpperCase();
-                                const sameSpool = (other.spool || '').toString().trim().toUpperCase() === (d.spool || '').toString().trim().toUpperCase();
-                                const otherJointName = (other.joint || '').toString().trim();
-                                const isRepairJoint = otherJointName === targetJointName || otherJointName.startsWith(targetJointName);
-                                return sameDwg && sameSpool && isRepairJoint && other[m] === 'ACC';
-                            });
-                        });
-                        if (allRepaired) {
-                            isRej = false;
-                        }
-                    }
+                    const allPkgJoints = joints.map(oj => oj.data);
+                    const repCheck = !isDEL ? checkJointRepairStatus(d, allPkgJoints) : { isRej: false, isRepaired: false, repairJoint: null, rejMethods: [] };
+                    let isRej = repCheck.isRej;
 
                     const isPend = !isDEL && (((d.reqRT&&(!d.hasRT || d.rtRes==='')) || 
                                     (d.reqPAUT&&(!d.hasPAUT || d.pautRes==='')) || 
@@ -6078,13 +6127,18 @@
                     if (d.ferriteRep) ferriteDoneCount++;
 
                     const jKey = (d.line || '') + '|' + (d.dwg || '') + '|' + base;
+                    const effRt = (d.rtRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'rtRes')) ? 'ACC' : d.rtRes;
+                    const effPaut = (d.pautRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'pautRes')) ? 'ACC' : d.pautRes;
+                    const effMt = (d.mtRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'mtRes')) ? 'ACC' : d.mtRes;
+                    const effPt = (d.ptRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'ptRes')) ? 'ACC' : d.ptRes;
+
                     if (!jointStatusMap[jKey] || jointStatusMap[jKey].rev < rev) {
                         jointStatusMap[jKey] = {
                             rev: rev,
-                            rt: d.rtRes,
-                            paut: d.pautRes,
-                            mt: d.mtRes,
-                            pt: d.ptRes,
+                            rt: effRt,
+                            paut: effPaut,
+                            mt: effMt,
+                            pt: effPt,
                             pwht: d.pwhtRes
                         };
                     }
@@ -8187,56 +8241,274 @@
             ndrBackToOverview();
         }
 
-        // Tính NDT stats cho 1 nhóm joints
+        // Global cache data cho Visualizer
+        window._vpCardData = {};
+
+        // Tính NDT stats cho 1 nhóm joints (hỗ trợ kiểm tra Repair / Reweld ACC và liệt kê chi tiết các cột)
         function calcNdtStats(subset) {
-            let t=0, d=0, p=0, r=0;
+            let t = 0, d = 0, p = 0, r = 0;
+            let weldedCount = 0;
+            let completedCount = 0;
             let pendingList = [];
+            let incompleteJoints = [];
+            let allJointDetails = [];
+
+            if (!subset || subset.length === 0) {
+                return { t: 0, d: 0, p: 0, r: 0, welded: 0, completed: 0, pendingList: [], incompleteJoints: [], allJointDetails: [] };
+            }
+
             subset.forEach(x => {
                 t++;
-                const isRej = (x.rtRes==='REJ'||x.pautRes==='REJ'||x.mtRes==='REJ'||x.ptRes==='REJ');
-                const isPend = ((x.reqRT&&(!x.hasRT || x.rtRes==='')) || 
-                                (x.reqPAUT&&(!x.hasPAUT || x.pautRes==='')) || 
-                                (x.reqMT&&(!x.hasMT || x.mtRes==='')) || 
-                                (x.reqPT&&(!x.hasPT || x.ptRes==='')) ||
-                                (x.reqPmi&&(!x.hasPMI || x.pmiRep==='')) ||
-                                (x.reqHardness&&(!x.hasHardness || x.hardnessRep==='')));
-                
-                if(isRej) { 
-                    r++; 
-                    let missing = [];
-                    if(x.rtRes==='REJ') missing.push('RT');
-                    if(x.pautRes==='REJ') missing.push('PAUT');
-                    if(x.mtRes==='REJ') missing.push('MT');
-                    if(x.ptRes==='REJ') missing.push('PT');
-                    pendingList.push({j: x.joint, s: x.spool, st: 'REJ', msg: missing.join(',')}); 
+                // 1. Kiểm tra tình trạng hàn & chế tạo
+                const isWelded = !!x.wDate;
+                if (isWelded) weldedCount++;
+                const isFitupAcc = x.fitupAcc === 'ACC';
+                const isVisualAcc = x.visualACC === 'ACC';
+                const isCompletedStt = (x.statusCol || '').toString().trim().toLowerCase() === 'completed';
+
+                // 2. Kiểm tra NDT Repair / Reweld
+                const repInfo = checkJointRepairStatus(x, subset);
+                const isRej = repInfo.isRej; // Chỉ true nếu REJ mà CHƯA có mối repair đạt ACC
+
+                // 3. Kiểm tra NDT Pending
+                const pendMethods = [];
+                if (x.reqRT && (!x.hasRT || x.rtRes === '')) pendMethods.push('RT');
+                if (x.reqPAUT && (!x.hasPAUT || x.pautRes === '')) pendMethods.push('PAUT');
+                if (x.reqMT && (!x.hasMT || x.mtRes === '')) pendMethods.push('MT');
+                if (x.reqPT && (!x.hasPT || x.ptRes === '')) pendMethods.push('PT');
+                if (x.reqPmi && (!x.hasPMI || x.pmiRep === '')) pendMethods.push('PMI');
+                if (x.reqPwht && (!x.pwhtRes || x.pwhtRes !== 'ACC')) pendMethods.push('PWHT');
+                if (x.reqHardness && (!x.hasHardness || x.hardnessRep === '')) pendMethods.push('Hardness');
+                const isPend = pendMethods.length > 0;
+
+                // 4. Thu thập danh sách nguyên nhân chưa hoàn thiện (issues)
+                const issues = [];
+                if (!isWelded) issues.push('Chưa hàn');
+                if (!isFitupAcc) issues.push('Chưa Fit-up ACC');
+                if (!isVisualAcc) issues.push('Chờ Visual (VT Pending)');
+                if (isRej) {
+                    const rejStr = repInfo.rejMethods.map(m => m.name).join('/');
+                    issues.push(`REJ (${rejStr}) - Chờ sửa`);
+                } else if (repInfo.isRepaired) {
+                    issues.push(`Đã sửa: ${repInfo.repairJoint} (ACC)`);
                 }
-                else if(isPend) { 
-                    p++; 
-                    let missing = [];
-                    if(x.reqRT && (!x.hasRT || x.rtRes==='')) missing.push('RT');
-                    if(x.reqPAUT && (!x.hasPAUT || x.pautRes==='')) missing.push('PAUT');
-                    if(x.reqMT && (!x.hasMT || x.mtRes==='')) missing.push('MT');
-                    if(x.reqPT && (!x.hasPT || x.ptRes==='')) missing.push('PT');
-                    if(x.reqPmi && (!x.hasPMI || x.pmiRep==='')) missing.push('PMI');
-                    if(x.reqHardness && (!x.hasHardness || x.hardnessRep==='')) missing.push('Hardness');
-                    pendingList.push({j: x.joint, s: x.spool, st: 'PEND', msg: missing.join(',')}); 
+                if (isPend) {
+                    issues.push(`Chờ NDT: ${pendMethods.join(', ')}`);
                 }
-                else { d++; }
+                if (!isCompletedStt && issues.length === 0) {
+                    issues.push(`Status: ${x.statusCol || 'Incomplete'}`);
+                }
+
+                // 5. Phân loại thống kê d, p, r
+                if (isRej) {
+                    r++;
+                    pendingList.push({ j: x.joint, s: x.spool, st: 'REJ', msg: repInfo.rejMethods.map(m => m.name).join(',') });
+                } else if (isPend) {
+                    p++;
+                    pendingList.push({ j: x.joint, s: x.spool, st: 'PEND', msg: pendMethods.join(',') });
+                } else if (!isWelded || !isVisualAcc || !isFitupAcc || !isCompletedStt) {
+                    p++;
+                    pendingList.push({ j: x.joint, s: x.spool, st: 'FAB', msg: issues[0] || 'Incomplete' });
+                } else {
+                    d++;
+                    completedCount++;
+                }
+
+                // Chi tiết NDT Scope
+                const reqNdtScope = [];
+                if (x.reqRT) reqNdtScope.push('RT');
+                if (x.reqPAUT) reqNdtScope.push('PAUT');
+                if (x.reqMT) reqNdtScope.push('MT');
+                if (x.reqPT) reqNdtScope.push('PT');
+                if (x.reqPmi) reqNdtScope.push('PMI');
+                if (x.reqPwht) reqNdtScope.push('PWHT');
+                if (x.reqHardness) reqNdtScope.push('Hard');
+
+                // Chi tiết NDT Result
+                let ndtResultDisplay = '';
+                if (isRej) {
+                    ndtResultDisplay = `<span class="badge bg-danger">REJ (${repInfo.rejMethods.map(m => m.name).join('/')})</span>`;
+                } else if (repInfo.isRepaired) {
+                    ndtResultDisplay = `<span class="badge bg-success" title="Đã repair đạt ACC qua mối ${repInfo.repairJoint}"><i class="fas fa-tools me-1"></i>ACC (${repInfo.repairJoint})</span>`;
+                } else if (isPend) {
+                    ndtResultDisplay = `<span class="badge bg-warning text-dark">PEND (${pendMethods.join('/')})</span>`;
+                } else if (reqNdtScope.length > 0) {
+                    ndtResultDisplay = `<span class="badge bg-success">ACC</span>`;
+                } else {
+                    ndtResultDisplay = `<span class="text-muted small">-</span>`;
+                }
+
+                const isIncomplete = !isWelded || !isVisualAcc || !isFitupAcc || !isCompletedStt || isRej || isPend;
+
+                const jointDetail = {
+                    data: x,
+                    spool: x.spool || '-',
+                    joint: x.joint || '-',
+                    weldType: x.weldType || '-',
+                    size: x.size || (x.diaIn ? x.diaIn + '"' : '-'),
+                    welder: x.welder || '-',
+                    wDateStr: x.wDateStr && x.wDateStr !== 'No Date' ? x.wDateStr : null,
+                    isWelded: isWelded,
+                    fitupAcc: x.fitupAcc || '-',
+                    visualAcc: x.visualACC || '-',
+                    ndtScope: reqNdtScope.join(', ') || '-',
+                    ndtResultDisplay: ndtResultDisplay,
+                    issues: issues,
+                    isIncomplete: isIncomplete,
+                    repInfo: repInfo
+                };
+
+                allJointDetails.push(jointDetail);
+                if (isIncomplete) {
+                    incompleteJoints.push(jointDetail);
+                }
             });
-            return { t, d, p, r, pendingList };
+
+            return { t, d, p, r, welded: weldedCount, completed: completedCount, pendingList, incompleteJoints, allJointDetails };
         }
+
+        // Helper render bảng chi tiết mối hàn cho Visualizer
+        function renderVpJointsTableHtml(termClean, jointList, isOnlyIncomplete) {
+            if (!jointList || jointList.length === 0) {
+                return `<div class="alert alert-success py-2 mt-2 mb-0 small text-center"><i class="fas fa-check-double me-1"></i> Tất cả mối hàn đã hoàn thiện và NDT đạt ACC 100%!</div>`;
+            }
+
+            const rows = jointList.map((j, idx) => {
+                let jointBadge = '';
+                const jName = j.joint;
+                if (/#[rR]\d+/i.test(jName) || /-[rR]\d+/i.test(jName) || /R\d+$/i.test(jName)) {
+                    jointBadge = '<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">Repair</span>';
+                }
+                if (/RW/i.test(jName)) {
+                    jointBadge += '<span class="badge bg-primary text-white ms-1" style="font-size:0.6rem;">Reweld</span>';
+                }
+
+                const weldDateHtml = j.wDateStr 
+                    ? `<span class="text-dark">${j.wDateStr}</span>` 
+                    : `<span class="badge bg-danger" style="font-size:0.65rem;">Chưa hàn</span>`;
+
+                const fitupHtml = j.fitupAcc === 'ACC'
+                    ? `<span class="badge bg-success" style="font-size:0.65rem;">ACC</span>`
+                    : `<span class="badge bg-warning text-dark" style="font-size:0.65rem;">${j.fitupAcc || 'Pending'}</span>`;
+
+                const visualHtml = j.visualAcc === 'ACC'
+                    ? `<span class="badge bg-success" style="font-size:0.65rem;">ACC</span>`
+                    : `<span class="badge bg-warning text-dark" style="font-size:0.65rem;">${j.visualAcc || 'Pending'}</span>`;
+
+                const issuesHtml = j.issues.map(iss => {
+                    if (iss.includes('Chưa hàn') || iss.includes('REJ')) {
+                        return `<span class="badge bg-danger text-white me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
+                    } else if (iss.includes('Đã sửa')) {
+                        return `<span class="badge bg-success text-white me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
+                    } else {
+                        return `<span class="badge bg-warning text-dark me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
+                    }
+                }).join('');
+
+                const rowBg = j.isIncomplete ? (j.issues.some(s => s.includes('REJ') || s.includes('Chưa hàn')) ? 'style="background-color: #fff5f5;"' : 'style="background-color: #fffdf5;"') : '';
+
+                return `<tr ${rowBg}>
+                    <td class="text-center text-muted">${idx + 1}</td>
+                    <td class="text-start" style="max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${j.spool}">${j.spool}</td>
+                    <td class="text-start fw-bold text-primary">${j.joint}${jointBadge}</td>
+                    <td class="text-center">${j.weldType}</td>
+                    <td class="text-center">${j.size}</td>
+                    <td class="text-center font-monospace">${j.welder}</td>
+                    <td class="text-center">${weldDateHtml}</td>
+                    <td class="text-center">${fitupHtml}</td>
+                    <td class="text-center">${visualHtml}</td>
+                    <td class="text-center">${j.ndtScope}</td>
+                    <td class="text-center">${j.ndtResultDisplay}</td>
+                    <td class="text-start" style="min-width: 150px;">${issuesHtml || '<span class="text-success small">Hoàn thành</span>'}</td>
+                </tr>`;
+            }).join('');
+
+            return `
+                <div class="table-responsive border rounded mt-2 shadow-sm" style="max-height: 380px; overflow-y: auto; overflow-x: auto; background: #fff;">
+                    <table class="table table-sm table-hover table-bordered mb-0 align-middle" style="font-size: 0.72rem;">
+                        <thead class="table-light sticky-top" style="z-index: 2;">
+                            <tr class="text-center">
+                                <th style="width: 35px;">No.</th>
+                                <th style="min-width: 120px;">Spool</th>
+                                <th style="min-width: 90px;">Joint No.</th>
+                                <th style="width: 55px;">Type</th>
+                                <th style="width: 55px;">Size</th>
+                                <th style="width: 70px;">Welder</th>
+                                <th style="min-width: 85px;">Weld Date</th>
+                                <th style="width: 65px;">Fit-Up</th>
+                                <th style="width: 65px;">Visual (VT)</th>
+                                <th style="min-width: 90px;">NDT Scope</th>
+                                <th style="min-width: 100px;">NDT Result</th>
+                                <th style="min-width: 160px;">Tình trạng chi tiết (Issue / Action)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Chuyển đổi xem mối chưa xong vs tất cả mối trong card
+        window.toggleVpJointView = function(termClean, viewMode) {
+            const stats = window._vpCardData ? window._vpCardData[termClean] : null;
+            if (!stats) return;
+            const container = document.getElementById(`vpJointTableContainer_${termClean}`);
+            const btnIncomp = document.getElementById(`vpBtnIncomp_${termClean}`);
+            const btnAll = document.getElementById(`vpBtnAll_${termClean}`);
+            if (!container) return;
+
+            if (viewMode === 'all') {
+                container.innerHTML = renderVpJointsTableHtml(termClean, stats.allJointDetails, false);
+                if (btnAll) btnAll.classList.add('active');
+                if (btnIncomp) btnIncomp.classList.remove('active');
+            } else {
+                container.innerHTML = renderVpJointsTableHtml(termClean, stats.incompleteJoints, true);
+                if (btnIncomp) btnIncomp.classList.add('active');
+                if (btnAll) btnAll.classList.remove('active');
+            }
+        };
+
+        // Xuất file Excel chi tiết mối hàn của gói test pack
+        window.exportVpJointsExcel = function(termClean) {
+            const stats = window._vpCardData ? window._vpCardData[termClean] : null;
+            if (!stats || !stats.allJointDetails || typeof XLSX === 'undefined') {
+                alert("Không có dữ liệu hoặc thư viện Excel chưa sẵn sàng");
+                return;
+            }
+            const rows = stats.allJointDetails.map((j, idx) => ({
+                "No.": idx + 1,
+                "Spool No.": j.spool,
+                "Joint No.": j.joint,
+                "Weld Type": j.weldType,
+                "Size (Inch)": j.size,
+                "Welder ID": j.welder,
+                "Welding Date": j.wDateStr || "Chưa hàn",
+                "Fit-Up Result": j.fitupAcc,
+                "Visual Result": j.visualAcc,
+                "NDT Scope": j.ndtScope,
+                "NDT Result": j.repInfo && j.repInfo.isRepaired ? `ACC (sửa: ${j.repInfo.repairJoint})` : (j.repInfo && j.repInfo.isRej ? `REJ (${j.repInfo.rejMethods.map(m=>m.name).join('/')})` : j.ndtScope),
+                "Tồn đọng / Issue": j.issues.join('; ') || "Hoàn thành"
+            }));
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Joint Details");
+            XLSX.writeFile(wb, `${termClean}_Joint_Details.xlsx`);
+        };
 
         function renderVpTable(terms) {
             const tbody = document.getElementById('vpTableBody');
             let rows = [];
+            const pool = (rawData && rawData.length > 0) ? rawData : filteredData;
             
             terms.forEach((term, idx) => {
-                const subset = filteredData.filter(d => 
+                const subset = pool.filter(d => 
                     (d.testPkg && d.testPkg.toUpperCase().includes(term)) || 
                     (d.line && d.line.toUpperCase().includes(term))
                 );
                 const stats = calcNdtStats(subset);
-                const pctD = stats.t > 0 ? (stats.d/stats.t*100) : 0;
+                const pctD = stats.t > 0 ? (stats.d / stats.t * 100) : 0;
                 const statusText = stats.t === 0 ? '<span class="badge bg-secondary">Not Found</span>' :
                     (stats.r > 0 ? '<span class="badge bg-danger shadow-sm">REPAIR</span>' :
                     (stats.p > 0 ? '<span class="badge bg-warning text-dark shadow-sm">PENDING</span>' :
@@ -8331,15 +8603,25 @@
             }
 
             // Always build cards (for grid mode or later toggle)
+            const pool = (rawData && rawData.length > 0) ? rawData : filteredData;
+
             terms.forEach(term => {
-                const subset = filteredData.filter(d => 
+                const subset = pool.filter(d => 
                     (d.testPkg && d.testPkg.toUpperCase().includes(term)) || 
                     (d.line && d.line.toUpperCase().includes(term))
                 );
 
-                const cardCol = document.createElement('div');
-                cardCol.className = 'col-md-6 col-lg-4';
                 const stats = calcNdtStats(subset);
+                const termClean = term.replace(/\W/g, '_');
+                window._vpCardData[termClean] = stats;
+
+                const cardCol = document.createElement('div');
+                // Nếu tìm 1 gói hoặc gói có mối chưa xong -> mở rộng full width để bảng hiển thị thoải mái
+                if (terms.length === 1) {
+                    cardCol.className = 'col-12';
+                } else {
+                    cardCol.className = stats.incompleteJoints.length > 0 ? 'col-12 col-xl-6' : 'col-md-6 col-lg-4';
+                }
                 
                 if(subset.length === 0) {
                     cardCol.innerHTML = `
@@ -8351,44 +8633,80 @@
                             <div class="small text-muted">Không tìm thấy dữ liệu trong bộ lọc hiện tại.</div>
                         </div>`;
                 } else {
-                    const {t, d, p, r, pendingList} = stats;
-                    const pctD = (d/t)*100, pctP = (p/t)*100, pctR = (r/t)*100;
-                    const statusText = r > 0 ? 'REPAIR' : (p > 0 ? 'PENDING' : 'CLEARED');
+                    const {t, d, p, r, welded, incompleteJoints} = stats;
+                    const pctD = t > 0 ? (d / t * 100) : 0;
+                    const pctP = t > 0 ? (p / t * 100) : 0;
+                    const pctR = t > 0 ? (r / t * 100) : 0;
+                    const isFullyCleared = (incompleteJoints.length === 0 && d === t && t > 0);
+                    const statusText = r > 0 ? 'REPAIR' : (!isFullyCleared ? 'PENDING' : 'CLEARED');
+                    const statusBadgeClass = r > 0 ? 'bg-danger' : (!isFullyCleared ? 'bg-warning text-dark' : 'bg-success');
+
+                    // Nếu thiếu 100% (có mối chưa hoàn thiện hoặc NDT chưa xong) -> tự động hiển thị bảng chi tiết các cột
+                    const tableHtml = renderVpJointsTableHtml(termClean, isFullyCleared ? stats.allJointDetails : stats.incompleteJoints, !isFullyCleared);
 
                     cardCol.innerHTML = `
-                        <div class="glass-card h-100 border-info vp-card-hover" style="transition: transform 0.2s;">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="text-primary fw-bold mb-0 text-truncate" title="${term}"><i class="fas fa-box-open me-2"></i>${term}</h6>
-                                <span class="badge ${r>0?'bg-danger':(p>0?'bg-warning text-dark':'bg-success')}">${statusText}</span>
+                        <div class="glass-card h-100 border-info shadow-sm" style="transition: transform 0.2s;">
+                            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                                <h6 class="text-primary fw-bold mb-0 text-truncate" style="font-size: 1.05rem;" title="${term}">
+                                    <i class="fas fa-box-open me-2 text-info"></i>${term}
+                                </h6>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span class="badge ${statusBadgeClass} px-2 py-1" style="font-size:0.75rem;">${statusText}</span>
+                                    <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:0.72rem;" onclick="exportVpJointsExcel('${termClean}')" title="Xuất Excel toàn bộ mối hàn">
+                                        <i class="fas fa-file-excel me-1"></i>Excel
+                                    </button>
+                                </div>
                             </div>
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>Progress: <strong>${pctD.toFixed(1)}%</strong></span>
-                                <span class="text-muted">${t} Joints</span>
+                            
+                            <div class="d-flex justify-content-between small mb-1 flex-wrap">
+                                <span>Progress: <strong class="text-success">${pctD.toFixed(1)}%</strong> (${d}/${t} Cleared)</span>
+                                <span>Welded: <strong>${welded}/${t}</strong> | Remaining: <strong class="text-danger">${incompleteJoints.length}</strong></span>
                             </div>
+                            
                             <div class="progress mb-3" style="height: 12px; border-radius: 6px;">
-                                <div class="progress-bar bg-success" style="width: ${pctD}%"></div>
-                                <div class="progress-bar bg-warning" style="width: ${pctP}%"></div>
-                                <div class="progress-bar bg-danger" style="width: ${pctR}%"></div>
+                                <div class="progress-bar bg-success" style="width: ${pctD}%" title="Cleared: ${d}"></div>
+                                <div class="progress-bar bg-warning text-dark" style="width: ${pctP}%" title="Pending: ${p}"></div>
+                                <div class="progress-bar bg-danger" style="width: ${pctR}%" title="Repair: ${r}"></div>
                             </div>
-                            <div class="vp-mini-stats d-flex gap-2 small mb-2">
-                                <div class="text-success"><i class="fas fa-check-circle me-1"></i>${d}</div>
-                                <div class="text-warning"><i class="fas fa-clock me-1"></i>${p}</div>
-                                <div class="text-danger"><i class="fas fa-tools me-1"></i>${r}</div>
+                            
+                            <div class="vp-mini-stats d-flex gap-3 small mb-2 p-2 rounded bg-light border">
+                                <div class="text-success"><i class="fas fa-check-circle me-1"></i><strong>${d}</strong> Cleared</div>
+                                <div class="text-warning text-dark"><i class="fas fa-clock me-1 text-warning"></i><strong>${p}</strong> Pending</div>
+                                <div class="text-danger"><i class="fas fa-tools me-1"></i><strong>${r}</strong> Repair</div>
+                                <div class="text-muted ms-auto"><i class="fas fa-layer-group me-1"></i>Total: <strong>${t}</strong> Joints</div>
                             </div>
-                            ${pendingList.length > 0 ? `
-                            <div class="mt-2 pt-2 border-top">
-                                <button class="btn btn-sm btn-link p-0 text-decoration-none small w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#vpDetail_${term.replace(/\W/g,'_')}">
-                                    <i class="fas fa-list me-1"></i> View Remaining (${pendingList.length}) <i class="fas fa-chevron-down float-end mt-1"></i>
-                                </button>
-                                <div class="collapse mt-2" id="vpDetail_${term.replace(/\W/g,'_')}">
-                                    <div class="bg-white p-2 rounded border small" style="max-height: 120px; overflow-y: auto;">
-                                        ${pendingList.map(item => `<div class="d-flex justify-content-between py-1 border-bottom-dashed">
-                                            <span class="fw-bold">${item.s} / ${item.j}</span>
-                                            <span class="badge ${item.st==='REJ'?'bg-danger':'bg-warning text-dark'}" style="font-size: 0.65rem;">${item.st}: ${item.msg}</span>
-                                        </div>`).join('')}
+
+                            ${!isFullyCleared ? `
+                            <!-- BẢNG CHI TIẾT CÁC MỐI HÀN CHƯA HOÀN THIỆN HOẶC NDT CHƯA XONG -->
+                            <div class="mt-3 pt-2 border-top">
+                                <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+                                    <span class="fw-bold text-danger" style="font-size: 0.8rem;">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Chi tiết mối hàn chưa hoàn thiện / NDT chưa xong (${incompleteJoints.length} mối):
+                                    </span>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-danger btn-sm active py-0 px-2" style="font-size:0.68rem;" id="vpBtnIncomp_${termClean}" onclick="toggleVpJointView('${termClean}', 'incomplete')">
+                                            Chưa xong (${incompleteJoints.length})
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:0.68rem;" id="vpBtnAll_${termClean}" onclick="toggleVpJointView('${termClean}', 'all')">
+                                            Tất cả (${t})
+                                        </button>
                                     </div>
                                 </div>
-                            </div>` : `<div class="alert alert-success py-1 mt-2 mb-0 small text-center"><i class="fas fa-check-double me-1"></i> 100% Cleared</div>`}
+                                <div id="vpJointTableContainer_${termClean}">
+                                    ${tableHtml}
+                                </div>
+                            </div>` : `
+                            <div class="alert alert-success py-2 mt-2 mb-0 small d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-check-double me-1"></i> 100% Cleared - Tất cả mối hàn đã hoàn tất!</span>
+                                <button class="btn btn-sm btn-link p-0 text-success text-decoration-none fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#vpAllJointsCollapse_${termClean}">
+                                    Xem chi tiết (${t} mối) <i class="fas fa-chevron-down ms-1"></i>
+                                </button>
+                            </div>
+                            <div class="collapse mt-2" id="vpAllJointsCollapse_${termClean}">
+                                <div id="vpJointTableContainer_${termClean}">
+                                    ${tableHtml}
+                                </div>
+                            </div>`}
                         </div>`;
                 }
                 resultsContainer.appendChild(cardCol);
