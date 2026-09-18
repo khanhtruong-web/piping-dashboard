@@ -6993,136 +6993,481 @@
 
 
         async function exportHydroExcel() {
-            if(hydroPlanData.length === 0 && filteredData.length === 0) return alert("Please upload data first.");
-            let sorted = buildHydroMap();
-            sorted.sort((a,b) => {
-                let valA = a.dateTs !== null ? a.dateTs : (hydroSortAsc ? Infinity : -Infinity);
-                let valB = b.dateTs !== null ? b.dateTs : (hydroSortAsc ? Infinity : -Infinity);
-                return hydroSortAsc ? (valA - valB) : (valB - valA);
-            });
+            if (hydroPlanData.length === 0 && filteredData.length === 0) return alert("Please upload data first.");
+            
+            // Hiển thị trạng thái loading trên nút Export Excel
+            const exportBtns = Array.from(document.querySelectorAll('button')).filter(b => b.onclick && b.onclick.toString().includes('exportHydroExcel'));
+            const exportBtn = exportBtns[0] || null;
+            let origBtnHtml = '';
+            if (exportBtn) {
+                origBtnHtml = exportBtn.innerHTML;
+                exportBtn.disabled = true;
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Exporting...';
+            }
 
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Hydrotest Tracking');
-            const thinBdr = { top:{style:'thin',color:{argb:'FFDDDDDD'}}, bottom:{style:'thin',color:{argb:'FFDDDDDD'}}, left:{style:'thin',color:{argb:'FFDDDDDD'}}, right:{style:'thin',color:{argb:'FFDDDDDD'}} };
-            const hFill = (argb) => ({ type:'pattern', pattern:'solid', fgColor:{argb} });
+            try {
+                // Lấy danh sách các gói đang được hiển thị theo bộ lọc, hoặc fallback sang buildHydroMap()
+                let sorted = (window.lastFilteredHydroList && window.lastFilteredHydroList.length > 0)
+                    ? [...window.lastFilteredHydroList]
+                    : buildHydroMap();
 
-            // Header row
-            ws.addRow([
-                'No.','Hydrotested Date','Hydrotest plan','System','Test Package','Line No.','Spools',
-                'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
-                'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
-                'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
-                'Hydrotest Status', 'Actual Status', 'Location', 'TV'
-            ]);
+                sorted.sort((a, b) => {
+                    let valA = a.dateTs !== null ? a.dateTs : (hydroSortAsc ? Infinity : -Infinity);
+                    let valB = b.dateTs !== null ? b.dateTs : (hydroSortAsc ? Infinity : -Infinity);
+                    return hydroSortAsc ? (valA - valB) : (valB - valA);
+                });
 
-            // Style group header row colors
-            const hdrClr = {};
-            for(let c=1; c<=7; c++) hdrClr[c] = 'FF0097A7';
-            for(let c=8; c<=12; c++) hdrClr[c] = 'FF00695C';
-            for(let c=13; c<=16; c++) hdrClr[c] = 'FF1565C0';
-            for(let c=17; c<=24; c++) hdrClr[c] = 'FF5E35B1';
-            hdrClr[25] = 'FF00838F';
-            hdrClr[26] = 'FF455A64';
-            hdrClr[27] = 'FF37474F';
-            hdrClr[28] = 'FF37474F';
+                const wb = new ExcelJS.Workbook();
+                const thinBdr = { 
+                    top: { style: 'thin', color: { argb: 'FFDDDDDD' } }, 
+                    bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } }, 
+                    left: { style: 'thin', color: { argb: 'FFDDDDDD' } }, 
+                    right: { style: 'thin', color: { argb: 'FFDDDDDD' } } 
+                };
+                const hFill = (argb) => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
 
-            ws.getRow(1).eachCell({includeEmpty:true}, (cell, col) => {
-                cell.font = { bold:true, size:10, color:{argb:'FFFFFFFF'} };
-                cell.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
-                cell.fill = hFill(hdrClr[col] || 'FF0097A7');
-                cell.border = thinBdr;
-            });
-            ws.getRow(1).height = 25;
+                // =========================================================================
+                // SHEET 1: HYDROTEST CLEARANCE (Đầy đủ 39 cột của bảng Hydrotest Clearance)
+                // =========================================================================
+                const ws1 = wb.addWorksheet('Hydrotest Clearance');
+                ws1.views = [{ state: 'frozen', ySplit: 1, xSplit: 5 }];
 
-            sorted.forEach((h, i) => {
-                const lineList = Array.from(h.lines).join(', ') || h.line || '-';
-                let detail = '';
-                const pkgName = (h.testPack || h.line || '').toString().trim().toUpperCase();
-                const sheetData = sheetHydroDates.get(pkgName);
-                if (sheetData && sheetData.statusFab) {
-                    detail = sheetData.statusFab;
-                }
-
-                const locStr = h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-';
-                const remStr = h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-';
-
-                const row = ws.addRow([
-                    i+1, h.dateStr, h.skylineDateStr||'-', h.sys, h.testPack||'-', lineList, Array.from(h.spools).length,
-                    h.weldingJoints, h.welded, h.progress/100, h.jointComplete, h.jointNotComplete,
-                    h.rtRequired, h.rtAcc, h.pautRequired, h.pautAcc,
-                    h.rtStatus, h.pautStatus, h.mtStatus, h.ptStatus, h.pmiStatus, h.ferriteStatus, h.hardnessStatus, h.pwhtStatus,
-                    (h.hydrotestStatus || '-'), detail, locStr, remStr
+                // Header row Sheet 1
+                ws1.addRow([
+                    'No.', 'Hydrotested Date', 'Hydrotest plan', 'System', 'Test Package', 'Line No.', 'Spools',
+                    'Welding joint', 'Welded', 'Progress', 'Joint complete', 'Joint Not complete',
+                    'RT required', 'RT ACC', 'PAUT required', 'PAUT ACC',
+                    'RT', 'PAUT', 'MT', 'PT', 'PMI', 'FE', 'HT', 'PWHT',
+                    'Hydrotest Status', 'Actual Status',
+                    'Line Check (Punch/FJ)', 'Sign P02A', 'Flushing', 'Sign P03A', 'Hydro Test', 'Sign P04A',
+                    'Bolting', 'Re-instate', 'Sign P05A', 'Sign P06A', 'Sign P07A',
+                    'Location', 'TV'
                 ]);
 
-                row.eachCell({includeEmpty:true}, (cell, col) => {
-                    cell.alignment = { vertical:'middle', horizontal: (col===25||col===26)?'left':'center', wrapText: (col===25||col===26) };
+                // Style Header Sheet 1
+                const hdrClr1 = {};
+                for (let c = 1; c <= 7; c++) hdrClr1[c] = 'FF0097A7';
+                for (let c = 8; c <= 12; c++) hdrClr1[c] = 'FF00695C';
+                for (let c = 13; c <= 16; c++) hdrClr1[c] = 'FF1565C0';
+                for (let c = 17; c <= 24; c++) hdrClr1[c] = 'FF5E35B1';
+                hdrClr1[25] = 'FF00838F';
+                hdrClr1[26] = 'FF455A64';
+                hdrClr1[27] = 'FF1976D2';
+                hdrClr1[28] = 'FF1976D2';
+                hdrClr1[29] = 'FF2E7D32';
+                hdrClr1[30] = 'FF2E7D32';
+                hdrClr1[31] = 'FFEF6C00';
+                hdrClr1[32] = 'FFEF6C00';
+                hdrClr1[33] = 'FFAD1457';
+                hdrClr1[34] = 'FFAD1457';
+                hdrClr1[35] = 'FF7B1FA2';
+                hdrClr1[36] = 'FF7B1FA2';
+                hdrClr1[37] = 'FF283593';
+                hdrClr1[38] = 'FF37474F';
+                hdrClr1[39] = 'FF37474F';
+
+                ws1.getRow(1).eachCell({ includeEmpty: true }, (cell, col) => {
+                    cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    cell.fill = hFill(hdrClr1[col] || 'FF0097A7');
                     cell.border = thinBdr;
-                    
-                    if (col === 10) {
-                        cell.numFormat = '0%';
-                    }
-                    
-                    // Joint Not complete column (12) - light orange if > 0
-                    if (col === 12 && h.jointNotComplete > 0) {
-                        cell.fill = hFill('FFFFF3CD');
-                        cell.font = { bold:true, color:{argb:'FF664D03'} };
-                    }
-                    
-                    // Color formatting for NDT columns (17 to 24)
-                    if (col >= 17 && col <= 24) {
-                        const val = cell.value;
-                        if (val === 'ACC' || val === 'OK') {
-                            cell.fill = hFill('FFD4EDDA');
-                            cell.font = { bold:true, color:{argb:'FF0F5132'} };
-                        } else if (val === 'REJ') {
-                            cell.fill = hFill('FFF8D7DA');
-                            cell.font = { bold:true, color:{argb:'FF842029'} };
-                        } else if (val && !isNaN(val)) {
-                            cell.font = { bold:true, color:{argb:'FF5E35B1'} };
-                        }
-                    }
-
-                    // Hydrotest Status column (25) - màu theo Done / Not yet
-                    if (col===25) {
-                        const hv = (h.hydrotestStatus || '').toLowerCase();
-                        if (hv.includes('done') || hv.includes('complete') || hv.includes('ready') || hv.includes('ok')) {
-                            cell.fill = hFill('FFD4EDDA');
-                            cell.font = { size:9, bold:true, color:{argb:'FF0F5132'} };
-                        } else if (hv.trim().length > 0) {
-                            cell.fill = hFill('FFFFF3CD');
-                            cell.font = { size:9, bold:true, color:{argb:'FF664D03'} };
-                        }
-                    }
-
-                    // Actual Status column (26) - light background for non-clear
-                    const hasDetail = detail.trim().length > 0;
-                    if (col===26 && hasDetail) {
-                        const lowVal = detail.toLowerCase();
-                        if (lowVal.includes('done') || lowVal.includes('complete') || lowVal.includes('ready')) {
-                            cell.fill = hFill('FFD4EDDA');
-                            cell.font = { size:9, color:{argb:'FF0F5132'} };
-                        } else if (lowVal.includes('repair') || lowVal.includes('rej') || lowVal.includes('fail')) {
-                            cell.fill = hFill('FFF8D7DA');
-                            cell.font = { size:9, color:{argb:'FF842029'} };
-                        } else {
-                            cell.fill = hFill('FFFFF3CD');
-                            cell.font = { size:9, color:{argb:'FF664D03'} };
-                        }
-                    }
                 });
-            });
+                ws1.getRow(1).height = 30;
 
-            // Column widths
-            ws.columns = [
-                {width:5}, {width:13}, {width:13}, {width:8}, {width:28}, {width:35}, {width:8},
-                {width:13}, {width:8}, {width:10}, {width:14}, {width:16},
-                {width:11}, {width:8}, {width:13}, {width:10},
-                {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8}, {width:8},
-                {width:20}, {width:50}, {width:18}, {width:25}
-            ];
+                // Data Sheet 1
+                sorted.forEach((h, i) => {
+                    const lineList = Array.from(h.lines || []).join(', ') || h.line || '-';
+                    let detail = h.actualStatus || '';
+                    const pkgName = (h.testPack || h.line || '').toString().trim().toUpperCase();
+                    const sheetData = sheetHydroDates.get(pkgName);
+                    if (sheetData && sheetData.statusFab) {
+                        detail = sheetData.statusFab;
+                    }
 
-            const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), `Hydrotest_Clearance_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+                    const locStr = h.locations && h.locations.size > 0 ? Array.from(h.locations).join(', ') : '-';
+                    const remStr = h.remarks && h.remarks.size > 0 ? Array.from(h.remarks).join('; ') : '-';
+
+                    const row = ws1.addRow([
+                        i + 1,
+                        h.dateStr || '-',
+                        h.skylineDateStr || '-',
+                        h.sys || '-',
+                        h.testPack || '-',
+                        lineList,
+                        Array.from(h.spools || []).length,
+                        h.weldingJoints || 0,
+                        h.welded || 0,
+                        (h.weldingJoints > 0) ? (h.welded / h.weldingJoints) : 0,
+                        h.jointComplete || 0,
+                        h.jointNotComplete || 0,
+                        h.rtRequired || 0,
+                        h.rtAcc || 0,
+                        h.pautRequired || 0,
+                        h.pautAcc || 0,
+                        h.rtStatus || '-',
+                        h.pautStatus || '-',
+                        h.mtStatus || '-',
+                        h.ptStatus || '-',
+                        h.pmiStatus || '-',
+                        h.ferriteStatus || '-',
+                        h.hardnessStatus || '-',
+                        h.pwhtStatus || '-',
+                        h.hydrotestStatus || '-',
+                        detail || '-',
+                        h.lineCheckDate || '-',
+                        h.signP02Date || '-',
+                        h.flushingDate || '-',
+                        h.signP03Date || '-',
+                        (h.dateStr && h.dateStr !== 'TBA') ? h.dateStr : '-',
+                        h.signP04Date || '-',
+                        h.boltingDate || '-',
+                        h.reinstateDate || '-',
+                        h.signP05Date || '-',
+                        h.signP06Date || '-',
+                        h.signP07Date || '-',
+                        locStr,
+                        remStr
+                    ]);
+
+                    row.eachCell({ includeEmpty: true }, (cell, col) => {
+                        cell.alignment = { 
+                            vertical: 'middle', 
+                            horizontal: (col === 25 || col === 26 || col === 5 || col === 6) ? 'left' : 'center', 
+                            wrapText: (col === 25 || col === 26) 
+                        };
+                        cell.border = thinBdr;
+                        
+                        if (col === 10) {
+                            cell.numFormat = '0.0%';
+                        }
+                        
+                        // Joint Not complete column (12) - light orange if > 0
+                        if (col === 12 && h.jointNotComplete > 0) {
+                            cell.fill = hFill('FFFFF3CD');
+                            cell.font = { bold: true, color: { argb: 'FF664D03' } };
+                        }
+                        
+                        // Color formatting for NDT columns (17 to 24)
+                        if (col >= 17 && col <= 24) {
+                            const val = cell.value;
+                            if (val === 'ACC' || val === 'OK') {
+                                cell.fill = hFill('FFD4EDDA');
+                                cell.font = { bold: true, color: { argb: 'FF0F5132' } };
+                            } else if (val === 'REJ') {
+                                cell.fill = hFill('FFF8D7DA');
+                                cell.font = { bold: true, color: { argb: 'FF842029' } };
+                            } else if (val && !isNaN(val)) {
+                                cell.font = { bold: true, color: { argb: 'FF5E35B1' } };
+                            }
+                        }
+
+                        // Hydrotest Status column (25)
+                        if (col === 25) {
+                            const hv = (h.hydrotestStatus || '').toLowerCase();
+                            if (hv.includes('done') || hv.includes('complete') || hv.includes('hydrotested') || hv.includes('ok')) {
+                                cell.fill = hFill('FFD4EDDA');
+                                cell.font = { size: 9, bold: true, color: { argb: 'FF0F5132' } };
+                            } else if (hv.includes('ready')) {
+                                cell.fill = hFill('FFE8F5E9');
+                                cell.font = { size: 9, bold: true, color: { argb: 'FF2E7D32' } };
+                            } else if (hv.trim().length > 0) {
+                                cell.fill = hFill('FFFFF3CD');
+                                cell.font = { size: 9, bold: true, color: { argb: 'FF664D03' } };
+                            }
+                        }
+
+                        // Actual Status column (26)
+                        const hasDetail = detail.trim().length > 0;
+                        if (col === 26 && hasDetail) {
+                            const lowVal = detail.toLowerCase();
+                            if (lowVal.includes('done') || lowVal.includes('complete') || lowVal.includes('ready')) {
+                                cell.fill = hFill('FFD4EDDA');
+                                cell.font = { size: 9, color: { argb: 'FF0F5132' } };
+                            } else if (lowVal.includes('repair') || lowVal.includes('rej') || lowVal.includes('fail')) {
+                                cell.fill = hFill('FFF8D7DA');
+                                cell.font = { size: 9, color: { argb: 'FF842029' } };
+                            } else {
+                                cell.fill = hFill('FFFFF3CD');
+                                cell.font = { size: 9, color: { argb: 'FF664D03' } };
+                            }
+                        }
+
+                        // Soft tints for sign-off columns (27 to 37)
+                        if (col >= 27 && col <= 28) cell.fill = hFill('FFF0F7FF');
+                        else if (col >= 29 && col <= 30) cell.fill = hFill('FFF0FFF4');
+                        else if (col >= 31 && col <= 32) cell.fill = hFill('FFFFFAF0');
+                        else if (col >= 33 && col <= 34) cell.fill = hFill('FFFFF5F8');
+                        else if (col >= 35 && col <= 36) cell.fill = hFill('FFFDF5FF');
+                        else if (col === 37) cell.fill = hFill('FFF5F5FF');
+                    });
+                });
+
+                // Column widths Sheet 1
+                ws1.columns = [
+                    { width: 5 }, { width: 14 }, { width: 14 }, { width: 9 }, { width: 28 }, { width: 35 }, { width: 8 },
+                    { width: 13 }, { width: 9 }, { width: 11 }, { width: 14 }, { width: 16 },
+                    { width: 12 }, { width: 9 }, { width: 13 }, { width: 10 },
+                    { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 }, { width: 8 },
+                    { width: 20 }, { width: 45 },
+                    { width: 14 }, { width: 12 }, { width: 12 }, { width: 12 }, { width: 14 }, { width: 12 },
+                    { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 },
+                    { width: 18 }, { width: 25 }
+                ];
+
+                // =========================================================================
+                // SHEET 2: JOINTS DETAIL (Thông tin chi tiết từng mối hàn theo Test Pack Visualizer)
+                // =========================================================================
+                const ws2 = wb.addWorksheet('Joint Details');
+                ws2.views = [{ state: 'frozen', ySplit: 1, xSplit: 6 }];
+
+                // Header row Sheet 2 (28 cột bao gồm Drawing No.)
+                ws2.addRow([
+                    'No.',
+                    'Test Package',
+                    'Line No.',
+                    'Drawing No.',
+                    'Spool No.',
+                    'Joint No.',
+                    'Weld Type',
+                    'Size',
+                    'Thick',
+                    'Material',
+                    'Spec',
+                    'Welder ID',
+                    'WPS No.',
+                    'Weld Date',
+                    'Fit-Up',
+                    'Visual (VT)',
+                    'RT',
+                    'PAUT',
+                    'MT',
+                    'PT',
+                    'PMI',
+                    'PWHT',
+                    'Hardness',
+                    'Ferrite',
+                    'Joint Status',
+                    'Status / Action Required',
+                    'Location',
+                    'Remarks / TV'
+                ]);
+
+                // Header styling Sheet 2
+                const hdrClr2 = {};
+                for (let c = 1; c <= 6; c++) hdrClr2[c] = 'FF1E3C72';   // General & Joint Identification
+                for (let c = 7; c <= 13; c++) hdrClr2[c] = 'FF00695C';  // Specs, Welder, WPS
+                for (let c = 14; c <= 16; c++) hdrClr2[c] = 'FF00838F'; // Weld Date, Fit-up, Visual
+                for (let c = 17; c <= 24; c++) hdrClr2[c] = 'FF5E35B1'; // NDT Methods
+                for (let c = 25; c <= 26; c++) hdrClr2[c] = 'FFD84315'; // Status & Actions
+                for (let c = 27; c <= 28; c++) hdrClr2[c] = 'FF37474F'; // Location & Remarks
+
+                ws2.getRow(1).eachCell({ includeEmpty: true }, (cell, col) => {
+                    cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    cell.fill = hFill(hdrClr2[col] || 'FF1E3C72');
+                    cell.border = thinBdr;
+                });
+                ws2.getRow(1).height = 30;
+
+                // Data Sheet 2: Tập hợp chi tiết mối hàn từ từng Test Package
+                let jointIdx = 0;
+                sorted.forEach(h => {
+                    // Lấy tất cả mối hàn của gói
+                    const pkgJoints = Object.values(h.jointMap || {}).map(item => item.data);
+                    if (!pkgJoints || pkgJoints.length === 0) return;
+
+                    // Sắp xếp theo Spool và Joint
+                    pkgJoints.sort((a, b) => {
+                        const sA = (a.spool || '').toString();
+                        const sB = (b.spool || '').toString();
+                        if (sA !== sB) return sA.localeCompare(sB, undefined, { numeric: true });
+                        return (a.joint || '').toString().localeCompare((b.joint || '').toString(), undefined, { numeric: true });
+                    });
+
+                    // Tính toán chi tiết NDT và sửa chữa theo đúng cơ chế của Test Pack Visualizer
+                    const stats = calcNdtStats(pkgJoints);
+                    const details = stats.allJointDetails || [];
+
+                    details.forEach(jd => {
+                        jointIdx++;
+                        const d = jd.data || {};
+                        const pkgName = d.testPkg || h.testPack || '-';
+                        const lineName = d.line || h.line || '-';
+                        const dwgName = d.dwg || '-';
+                        const spoolName = jd.spool || d.spool || '-';
+                        const jointName = jd.joint || d.joint || '-';
+                        const weldType = jd.weldType || d.weldType || '-';
+                        const sizeVal = jd.size || d.size || (d.diaIn ? d.diaIn + '"' : '-');
+                        const thickVal = d.thick || '-';
+                        const matVal = d.mat || '-';
+                        const specVal = d.spec || '-';
+                        const welderId = jd.welder || d.welder || '-';
+                        const wpsNo = d.wps || '-';
+                        const weldDate = jd.wDateStr || (d.wDate ? d.wDateStr : 'Unwelded');
+                        const fitupRes = jd.fitupAcc || d.fitupAcc || '-';
+                        const visualRes = jd.visualAcc || d.visualACC || '-';
+
+                        const rtVal = jd.rtText || '-';
+                        const pautVal = jd.pautText || '-';
+                        const mtVal = jd.mtText || '-';
+                        const ptVal = jd.ptText || '-';
+                        const pmiVal = jd.pmiText || '-';
+                        const pwhtVal = jd.pwhtText || '-';
+                        const hardVal = jd.hardText || '-';
+                        const ferriteVal = d.ferriteRep ? 'ACC' : (d.ferriteRes || '-');
+
+                        const jointStatus = d.statusCol || 'Incomplete';
+                        const actionReq = (jd.issues && jd.issues.length > 0) ? jd.issues.join('; ') : 'Completed';
+                        const locVal = d.location || '-';
+                        const remVal = d.jointRem || '-';
+
+                        const jRow = ws2.addRow([
+                            jointIdx,
+                            pkgName,
+                            lineName,
+                            dwgName,
+                            spoolName,
+                            jointName,
+                            weldType,
+                            sizeVal,
+                            thickVal,
+                            matVal,
+                            specVal,
+                            welderId,
+                            wpsNo,
+                            weldDate,
+                            fitupRes,
+                            visualRes,
+                            rtVal,
+                            pautVal,
+                            mtVal,
+                            ptVal,
+                            pmiVal,
+                            pwhtVal,
+                            hardVal,
+                            ferriteVal,
+                            jointStatus,
+                            actionReq,
+                            locVal,
+                            remVal
+                        ]);
+
+                        jRow.eachCell({ includeEmpty: true }, (cell, col) => {
+                            cell.border = thinBdr;
+                            cell.alignment = { 
+                                vertical: 'middle', 
+                                horizontal: (col === 2 || col === 3 || col === 4 || col === 5 || col === 26 || col === 27 || col === 28) ? 'left' : 'center' 
+                            };
+
+                            // Highlight Unwelded
+                            if (col === 14 && cell.value === 'Unwelded') {
+                                cell.fill = hFill('FFF8D7DA');
+                                cell.font = { bold: true, color: { argb: 'FF842029' } };
+                            }
+
+                            // Fit-up & Visual highlights
+                            if (col === 15 || col === 16) {
+                                if (cell.value === 'ACC' || cell.value === 'OK') {
+                                    cell.fill = hFill('FFD4EDDA');
+                                    cell.font = { bold: true, color: { argb: 'FF0F5132' } };
+                                } else if (cell.value && cell.value !== '-') {
+                                    cell.fill = hFill('FFFFF3CD');
+                                    cell.font = { bold: true, color: { argb: 'FF664D03' } };
+                                }
+                            }
+
+                            // NDT Columns (17 to 24) highlights
+                            if (col >= 17 && col <= 24) {
+                                const val = (cell.value || '').toString();
+                                if (val.includes('ACC') || val === 'OK') {
+                                    cell.fill = hFill('FFD4EDDA');
+                                    cell.font = { bold: true, color: { argb: 'FF0F5132' } };
+                                } else if (val === 'REJ') {
+                                    cell.fill = hFill('FFF8D7DA');
+                                    cell.font = { bold: true, color: { argb: 'FF842029' } };
+                                } else if (val.includes('PEND')) {
+                                    cell.fill = hFill('FFFFF3CD');
+                                    cell.font = { bold: true, color: { argb: 'FF664D03' } };
+                                }
+                            }
+
+                            // Joint Status (25)
+                            if (col === 25) {
+                                const val = (cell.value || '').toString().toLowerCase();
+                                if (val.includes('completed')) {
+                                    cell.fill = hFill('FFD4EDDA');
+                                    cell.font = { bold: true, color: { argb: 'FF0F5132' } };
+                                } else {
+                                    cell.fill = hFill('FFFFF3CD');
+                                    cell.font = { color: { argb: 'FF664D03' } };
+                                }
+                            }
+
+                            // Status / Action Required (26)
+                            if (col === 26) {
+                                const val = (cell.value || '').toString().toLowerCase();
+                                if (val === 'completed') {
+                                    cell.fill = hFill('FFD4EDDA');
+                                    cell.font = { bold: true, color: { argb: 'FF0F5132' } };
+                                } else if (val.includes('rej') || val.includes('repair required')) {
+                                    cell.fill = hFill('FFF8D7DA');
+                                    cell.font = { bold: true, color: { argb: 'FF842029' } };
+                                } else if (val.includes('repaired')) {
+                                    cell.fill = hFill('FFE8F5E9');
+                                    cell.font = { bold: true, color: { argb: 'FF2E7D32' } };
+                                } else {
+                                    cell.fill = hFill('FFFFF3CD');
+                                    cell.font = { color: { argb: 'FF664D03' } };
+                                }
+                            }
+                        });
+                    });
+                });
+
+                // Column widths Sheet 2
+                ws2.columns = [
+                    { width: 6 },   // No.
+                    { width: 26 },  // Test Package
+                    { width: 30 },  // Line No.
+                    { width: 32 },  // Drawing No.
+                    { width: 28 },  // Spool No.
+                    { width: 12 },  // Joint No.
+                    { width: 10 },  // Weld Type
+                    { width: 10 },  // Size
+                    { width: 10 },  // Thick
+                    { width: 10 },  // Material
+                    { width: 8 },   // Spec
+                    { width: 12 },  // Welder ID
+                    { width: 16 },  // WPS No.
+                    { width: 14 },  // Weld Date
+                    { width: 12 },  // Fit-Up
+                    { width: 12 },  // Visual
+                    { width: 18 },  // RT
+                    { width: 18 },  // PAUT
+                    { width: 18 },  // MT
+                    { width: 18 },  // PT
+                    { width: 12 },  // PMI
+                    { width: 12 },  // PWHT
+                    { width: 12 },  // Hardness
+                    { width: 12 },  // Ferrite
+                    { width: 15 },  // Joint Status
+                    { width: 42 },  // Status / Action Required
+                    { width: 20 },  // Location
+                    { width: 24 }   // Remarks / TV
+                ];
+
+                const buffer = await wb.xlsx.writeBuffer();
+                saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `Hydrotest_Clearance_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+            } catch (err) {
+                console.error("Export Excel error: ", err);
+                alert("Export Excel error: " + err.message);
+            } finally {
+                if (exportBtn && origBtnHtml) {
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = origBtnHtml;
+                }
+            }
         }
 
         async function exportComplianceExcel() {
