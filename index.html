@@ -5820,17 +5820,17 @@
             // Trường hợp 1: cand bắt đầu bằng orig (Ví dụ: J1 -> J1#R1, J1R1, J1-R1; J12#RW -> J12#RWR1, J12#RW#R1, J12#RW-R1...)
             if (cand.startsWith(orig)) {
                 const rem = cand.slice(orig.length);
-                if (/^[#\-_]?(RW)?#?R\d+$/i.test(rem) || /^[#\-_]?R\d+$/i.test(rem) || /^R\d+$/i.test(rem) || /^[#\-_]?RW$/i.test(rem)) {
+                if (/^[#\-_]?(RW)?#?R\d+$/i.test(rem) || /^[#\-_]?R\d+$/i.test(rem) || /^R\d+$/i.test(rem) || /^[#\-_]?RW\d*$/i.test(rem)) {
                     return true;
                 }
             }
 
             // Trường hợp 2: Cùng số mối cơ sở (Ví dụ: orig là J12#RW hoặc J12, cand là J12#RWR1)
-            const cleanJointBase = (str) => str.replace(/[-#\s]*(RW)?[-#\s]*R\d+$/i, '').replace(/[-#\s]*RW$/i, '').trim();
+            const cleanJointBase = (str) => str.replace(/[-#\s]*(RW)?[-#\s]*R\d+$/i, '').replace(/[-#\s]*RW\d*$/i, '').trim();
             const origBase = cleanJointBase(orig);
             const candBase = cleanJointBase(cand);
             if (origBase && origBase === candBase) {
-                if (/[#\-_]?(RW)?#?R\d+/i.test(cand) || /[#\-_]?RW/i.test(cand)) {
+                if (/[#\-_]?(RW)?#?R\d+/i.test(cand) || /[#\-_]?RW\d*/i.test(cand)) {
                     return true;
                 }
             }
@@ -5877,6 +5877,42 @@
                 return { isRej: false, isRepaired: true, repairJoint: repairJointFound, rejMethods: rejMethods };
             }
             return { isRej: true, isRepaired: false, repairJoint: null, rejMethods: rejMethods };
+        }
+
+        // === HELPER: Kiểm tra một mối hàn chưa Completed nhưng đã có mối Reweld (#RW) hoàn tất 100% thay thế ===
+        function checkJointReweldStatus(d, allJoints) {
+            if (!d || !allJoints || allJoints.length === 0) return { isRewelded: false, reweldJoint: null, isCompleted: false };
+            const dJoint = (d.joint || '').toString().trim();
+            if (!dJoint) return { isRewelded: false, reweldJoint: null, isCompleted: false };
+
+            const dSpool = (d.spool || '').toString().trim().toUpperCase();
+            const dDwg = (d.dwg || '').toString().trim().toUpperCase();
+
+            for (let other of allJoints) {
+                const otherJoint = (other.joint || '').toString().trim();
+                if (!otherJoint || !/RW/i.test(otherJoint)) continue;
+                const sameSpool = !dSpool || (other.spool || '').toString().trim().toUpperCase() === dSpool;
+                const sameDwg = !dDwg || (other.dwg || '').toString().trim().toUpperCase() === dDwg;
+                if (sameSpool && sameDwg && isRepairJointCandidate(dJoint, otherJoint)) {
+                    const isWeld = !!other.wDate;
+                    const isFitup = other.fitupAcc === 'ACC';
+                    const isVisual = other.visualACC === 'ACC';
+                    const isStt = (other.statusCol || '').toString().trim().toLowerCase() === 'completed';
+                    const hasPend = (other.reqRT && (!other.hasRT || other.rtRes === '')) ||
+                                    (other.reqPAUT && (!other.hasPAUT || other.pautRes === '')) ||
+                                    (other.reqMT && (!other.hasMT || other.mtRes === '')) ||
+                                    (other.reqPT && (!other.hasPT || other.ptRes === '')) ||
+                                    (other.reqPmi && (!other.hasPMI || other.pmiRep === '')) ||
+                                    (other.reqPwht && (!other.pwhtRes || other.pwhtRes !== 'ACC')) ||
+                                    (other.reqHardness && (!other.hasHardness || other.hardnessRep === ''));
+                    const hasRej = other.rtRes === 'REJ' || other.pautRes === 'REJ' || other.mtRes === 'REJ' || other.ptRes === 'REJ';
+
+                    if (isWeld && isFitup && isVisual && isStt && !hasPend && !hasRej) {
+                        return { isRewelded: true, reweldJoint: otherJoint, isCompleted: true, reweldData: other };
+                    }
+                }
+            }
+            return { isRewelded: false, reweldJoint: null, isCompleted: false };
         }
 
         function buildHydroMap() {
@@ -6059,13 +6095,9 @@
                     const allPkgJoints = joints.map(oj => oj.data);
                     const repCheck = !isDEL ? checkJointRepairStatus(d, allPkgJoints) : { isRej: false, isRepaired: false, repairJoint: null, rejMethods: [] };
                     let isRej = repCheck.isRej;
+                    const reweldCheck = !isDEL ? checkJointReweldStatus(d, allPkgJoints) : { isRewelded: false, reweldJoint: null, isCompleted: false };
 
-                    const isPend = !isDEL && (((d.reqRT&&(!d.hasRT || d.rtRes==='')) || 
-                                    (d.reqPAUT&&(!d.hasPAUT || d.pautRes==='')) || 
-                                    (d.reqMT&&(!d.hasMT || d.mtRes==='')) || 
-                                    (d.reqPT&&(!d.hasPT || d.ptRes===''))));
-
-                    if(isRej) {
+                    if(isRej && !reweldCheck.isCompleted) {
                         h.r++;
                         let rejMethods = [];
                         if(d.rtRes==='REJ') rejMethods.push('RT');
@@ -6073,7 +6105,7 @@
                         if(d.mtRes==='REJ') rejMethods.push('MT');
                         if(d.ptRes==='REJ') rejMethods.push('PT');
                         h.pendingSummary.push(`${d.joint}: REPAIR(${rejMethods.join('/')})`);
-                    } else if(isPend) {
+                    } else if(isPend && !reweldCheck.isCompleted) {
                         if (!['FW', 'BRW', 'TJ', 'SW'].includes(j.wtClass)) {
                             h.p++;
                             let m = [];
@@ -6090,8 +6122,8 @@
                         h.d++;
                     }
 
-                    if (d.wDate) weldedCount++;
-                    if (d.statusCol && d.statusCol.toString().trim().toLowerCase() === 'completed') {
+                    if (d.wDate || reweldCheck.isCompleted) weldedCount++;
+                    if ((d.statusCol && d.statusCol.toString().trim().toLowerCase() === 'completed') || reweldCheck.isCompleted) {
                         completeCount++;
                     }
 
@@ -6128,10 +6160,10 @@
                     if (d.ferriteRep) ferriteDoneCount++;
 
                     const jKey = (d.line || '') + '|' + (d.dwg || '') + '|' + base;
-                    const effRt = (d.rtRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'rtRes')) ? 'ACC' : d.rtRes;
-                    const effPaut = (d.pautRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'pautRes')) ? 'ACC' : d.pautRes;
-                    const effMt = (d.mtRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'mtRes')) ? 'ACC' : d.mtRes;
-                    const effPt = (d.ptRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'ptRes')) ? 'ACC' : d.ptRes;
+                    const effRt = (d.rtRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'rtRes')) ? 'ACC' : (reweldCheck.isCompleted ? 'ACC' : d.rtRes);
+                    const effPaut = (d.pautRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'pautRes')) ? 'ACC' : (reweldCheck.isCompleted ? 'ACC' : d.pautRes);
+                    const effMt = (d.mtRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'mtRes')) ? 'ACC' : (reweldCheck.isCompleted ? 'ACC' : d.mtRes);
+                    const effPt = (d.ptRes === 'REJ' && repCheck.isRepaired && repCheck.rejMethods.some(m => m.key === 'ptRes')) ? 'ACC' : (reweldCheck.isCompleted ? 'ACC' : d.ptRes);
 
                     if (!jointStatusMap[jKey] || jointStatusMap[jKey].rev < rev) {
                         jointStatusMap[jKey] = {
@@ -7412,7 +7444,7 @@
                                 } else if (val.includes('rej') || val.includes('repair required')) {
                                     cell.fill = hFill('FFF8D7DA');
                                     cell.font = { bold: true, color: { argb: 'FF842029' } };
-                                } else if (val.includes('repaired')) {
+                                } else if (val.includes('repaired') || val.includes('rewelded')) {
                                     cell.fill = hFill('FFE8F5E9');
                                     cell.font = { bold: true, color: { argb: 'FF2E7D32' } };
                                 } else {
@@ -8660,6 +8692,8 @@
                 // 2. NDT Repair / Reweld status
                 const repInfo = checkJointRepairStatus(x, subset);
                 const isRej = repInfo.isRej; // True only if REJ and not yet repaired to ACC
+                const reweldInfo = checkJointReweldStatus(x, subset);
+                const isReweldedComp = reweldInfo.isRewelded && reweldInfo.isCompleted;
 
                 // 3. NDT Pending status
                 const pendMethods = [];
@@ -8670,28 +8704,35 @@
                 if (x.reqPmi && (!x.hasPMI || x.pmiRep === '')) pendMethods.push('PMI');
                 if (x.reqPwht && (!x.pwhtRes || x.pwhtRes !== 'ACC')) pendMethods.push('PWHT');
                 if (x.reqHardness && (!x.hasHardness || x.hardnessRep === '')) pendMethods.push('Hardness');
-                const isPend = pendMethods.length > 0;
+                const isPend = !isReweldedComp && pendMethods.length > 0;
 
                 // 4. Collect issues in pure English
                 const issues = [];
-                if (!isWelded) issues.push('Unwelded');
-                if (!isFitupAcc) issues.push('Fit-Up Pending');
-                if (!isVisualAcc) issues.push('VT Pending');
-                if (isRej) {
-                    const rejStr = repInfo.rejMethods.map(m => m.name).join('/');
-                    issues.push(`REJ (${rejStr}) - Repair Required`);
-                } else if (repInfo.isRepaired) {
-                    issues.push(`Repaired: ${repInfo.repairJoint} (ACC)`);
-                }
-                if (isPend) {
-                    issues.push(`Pending NDT: ${pendMethods.join(', ')}`);
-                }
-                if (!isCompletedStt && issues.length === 0) {
-                    issues.push(`Status: ${x.statusCol || 'Incomplete'}`);
+                if (isReweldedComp) {
+                    issues.push(`Rewelded: ${reweldInfo.reweldJoint} (Completed)`);
+                } else {
+                    if (!isWelded) issues.push('Unwelded');
+                    if (!isFitupAcc) issues.push('Fit-Up Pending');
+                    if (!isVisualAcc) issues.push('VT Pending');
+                    if (isRej) {
+                        const rejStr = repInfo.rejMethods.map(m => m.name).join('/');
+                        issues.push(`REJ (${rejStr}) - Repair Required`);
+                    } else if (repInfo.isRepaired) {
+                        issues.push(`Repaired: ${repInfo.repairJoint} (ACC)`);
+                    }
+                    if (isPend) {
+                        issues.push(`Pending NDT: ${pendMethods.join(', ')}`);
+                    }
+                    if (!isCompletedStt && issues.length === 0) {
+                        issues.push(`Status: ${x.statusCol || 'Incomplete'}`);
+                    }
                 }
 
                 // 5. Statistics classification: d, p, r
-                if (isRej) {
+                if (isReweldedComp) {
+                    d++;
+                    completedCount++;
+                } else if (isRej) {
                     r++;
                     pendingList.push({ j: x.joint, s: x.spool, st: 'REJ', msg: repInfo.rejMethods.map(m => m.name).join(',') });
                 } else if (isPend) {
@@ -8733,7 +8774,7 @@
                 const pwhtText = getMethodText(!!x.reqPwht, x.pwhtRes, hasPwhtRep, null);
                 const hardText = getMethodText(!!x.reqHardness, '', hasHardAcc, null);
 
-                const isIncomplete = !isWelded || !isVisualAcc || !isFitupAcc || !isCompletedStt || isRej || isPend;
+                const isIncomplete = isReweldedComp ? false : (!isWelded || !isVisualAcc || !isFitupAcc || !isCompletedStt || isRej || isPend);
 
                 const jointDetail = {
                     data: x,
@@ -8762,7 +8803,8 @@
                     hardText: hardText,
                     issues: issues,
                     isIncomplete: isIncomplete,
-                    repInfo: repInfo
+                    repInfo: repInfo,
+                    reweldInfo: reweldInfo
                 };
 
                 allJointDetails.push(jointDetail);
@@ -8805,7 +8847,7 @@
                 const issuesHtml = j.issues.map(iss => {
                     if (iss.includes('Unwelded') || iss.includes('REJ')) {
                         return `<span class="badge bg-danger text-white me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
-                    } else if (iss.includes('Repaired')) {
+                    } else if (iss.includes('Repaired') || iss.includes('Rewelded')) {
                         return `<span class="badge bg-success text-white me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
                     } else {
                         return `<span class="badge bg-warning text-dark me-1 mb-1" style="font-size:0.65rem;">${iss}</span>`;
