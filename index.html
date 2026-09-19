@@ -6081,6 +6081,8 @@
 
                 let hydroDoneCount = 0;
                 const jointStatusMap = {};
+                const allPkgJoints = joints.map(oj => oj.data);
+                const hasAnyRwInPkg = allPkgJoints.some(oj => /RW/i.test(oj.joint || ''));
 
                 joints.forEach(j => {
                     const d = j.data;
@@ -6092,10 +6094,14 @@
                     const isDEL = (j.wtClass === 'DEL');
                     const isFW = (j.wtClass === 'FW');
                     
-                    const allPkgJoints = joints.map(oj => oj.data);
                     const repCheck = !isDEL ? checkJointRepairStatus(d, allPkgJoints) : { isRej: false, isRepaired: false, repairJoint: null, rejMethods: [] };
                     let isRej = repCheck.isRej;
-                    const reweldCheck = !isDEL ? checkJointReweldStatus(d, allPkgJoints) : { isRewelded: false, reweldJoint: null, isCompleted: false };
+                    const reweldCheck = (!isDEL && hasAnyRwInPkg) ? checkJointReweldStatus(d, allPkgJoints) : { isRewelded: false, reweldJoint: null, isCompleted: false };
+
+                    const isPend = !isDEL && (((d.reqRT&&(!d.hasRT || d.rtRes==='')) || 
+                                    (d.reqPAUT&&(!d.hasPAUT || d.pautRes==='')) || 
+                                    (d.reqMT&&(!d.hasMT || d.mtRes==='')) || 
+                                    (d.reqPT&&(!d.hasPT || d.ptRes===''))));
 
                     if(isRej && !reweldCheck.isCompleted) {
                         h.r++;
